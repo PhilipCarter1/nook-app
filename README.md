@@ -11,6 +11,9 @@ A premium SaaS web application for property management, built with Next.js, Tail
 - Responsive design with mobile support
 - Dark mode support
 - Modern UI with shadcn/ui components
+- Error tracking with Sentry
+- SEO optimized
+- Production-ready security headers
 
 ## Tech Stack
 
@@ -23,12 +26,14 @@ A premium SaaS web application for property management, built with Next.js, Tail
 - **Animations**: Framer Motion
 - **Form Handling**: React Hook Form
 - **Validation**: Zod
+- **Error Tracking**: Sentry
+- **Deployment**: Vercel
 
 ## Getting Started
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/nook-app.git
+   git clone https://github.com/PhilipCarter1/nook-app.git
    cd nook-app
    ```
 
@@ -43,6 +48,10 @@ A premium SaaS web application for property management, built with Next.js, Tail
      ```
      NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
      NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+     STRIPE_SECRET_KEY=your_stripe_secret_key
+     STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+     NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
      ```
 
 4. Run the development server:
@@ -70,6 +79,16 @@ A premium SaaS web application for property management, built with Next.js, Tail
 5. Add Environment Variables:
    - NEXT_PUBLIC_SUPABASE_URL
    - NEXT_PUBLIC_SUPABASE_ANON_KEY
+   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+   - STRIPE_SECRET_KEY
+   - STRIPE_WEBHOOK_SECRET
+   - NEXT_PUBLIC_SENTRY_DSN
+   - NEXT_PUBLIC_APP_URL
+   - NEXT_PUBLIC_APP_NAME
+   - NEXT_PUBLIC_APP_DESCRIPTION
+   - NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT
+   - NEXT_PUBLIC_ENABLE_CONCIERGE
+   - NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING
 
 6. Click "Deploy"
 
@@ -77,6 +96,32 @@ A premium SaaS web application for property management, built with Next.js, Tail
    - Go to Project Settings > Domains
    - Add your domain: rentwithnook.com
    - Follow the DNS configuration instructions
+
+8. Set up Stripe webhook:
+   - Go to Stripe Dashboard > Developers > Webhooks
+   - Add endpoint: https://rentwithnook.com/api/webhooks/stripe
+   - Select events: payment_intent.succeeded, payment_intent.payment_failed
+   - Copy webhook signing secret to STRIPE_WEBHOOK_SECRET
+
+9. Set up Sentry:
+   - Create a new project in Sentry
+   - Copy DSN to NEXT_PUBLIC_SENTRY_DSN
+   - Configure error tracking in sentry.client.config.ts and sentry.server.config.ts
+
+## Production Checklist
+
+Before deploying to production, ensure:
+
+1. All environment variables are set in Vercel
+2. Database migrations are run in Supabase
+3. Stripe webhook is configured
+4. Sentry error tracking is set up
+5. Custom domain is configured
+6. SSL certificate is valid
+7. Security headers are properly configured
+8. SEO meta tags are set
+9. Analytics is configured
+10. Backup strategy is in place
 
 ## Project Structure
 
