@@ -24,8 +24,8 @@ export default function LandlordDashboard() {
       try {
         const [propertiesData, paymentsData, ticketsData] = await Promise.all([
           getProperties(),
-          getPaymentsByProperty(user.property_id),
-          getTicketsByProperty(user.property_id),
+          getPaymentsByProperty(user.property_id ?? ''),
+          getTicketsByProperty(user.property_id ?? ''),
         ]);
 
         setProperties(propertiesData);
