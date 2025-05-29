@@ -51,21 +51,14 @@ export default function Home() {
                 From tenant onboarding to maintenance requests, we've got you
                 covered.
               </MotionP>
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="mt-10 flex items-center gap-x-6"
-              >
-                <Link href="/onboarding">
-                  <Button size="lg">Get Started</Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/signup" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                  Get Started
                 </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg">
-                    Sign In
-                  </Button>
+                <Link href="/login" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  Log In
                 </Link>
-              </MotionDiv>
+              </div>
             </div>
           </div>
         </section>

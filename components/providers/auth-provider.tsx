@@ -5,6 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
 import { UserWithAuth } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
+import { LoadingPage } from '@/components/ui/loading';
 
 interface AuthContextType {
   user: UserWithAuth | null;
@@ -48,12 +49,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        getUser();
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setLoading(true);
+        await getUser();
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setRole(null);
+        setLoading(false);
       }
     });
 
@@ -63,21 +66,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateRole = (newRole: UserRole) => {
     setRole(newRole);
   };
+
+  if (loading) {
+    return <LoadingPage />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, role, loading, signIn, signOut, updateRole }}>

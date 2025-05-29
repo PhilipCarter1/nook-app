@@ -86,27 +86,24 @@ export default function LandingPage() {
             Nook combines powerful features with an intuitive interface to make property management a breeze.
           </p>
         </div>
-        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-4">
-            {features.map((feature) => (
-              <motion.div
-                key={feature.name}
-                className="flex flex-col"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
-                  <feature.icon className="h-5 w-5 flex-none text-nook-purple-600" aria-hidden="true" />
-                  {feature.name}
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">{feature.description}</p>
-                </dd>
-              </motion.div>
-            ))}
-          </dl>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature) => (
+            <Link
+              key={feature.name}
+              href="/features"
+              className="group relative rounded-lg border p-6 hover:border-nook-purple-500 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <feature.icon className="h-8 w-8 text-nook-purple-500" />
+                <h3 className="text-lg font-semibold">{feature.name}</h3>
+              </div>
+              <p className="mt-4 text-muted-foreground">{feature.description}</p>
+              <div className="mt-4 flex items-center text-nook-purple-500">
+                Learn more
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -160,6 +157,9 @@ export default function LandingPage() {
             </Link>
             <Link href="/terms" className="text-gray-400 hover:text-gray-500">
               Terms of Service
+            </Link>
+            <Link href="/contact" className="text-gray-400 hover:text-gray-500">
+              Contact Us
             </Link>
           </div>
           <div className="mt-8 md:order-1 md:mt-0">

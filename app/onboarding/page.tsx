@@ -1,187 +1,133 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import React from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
-import { getClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Building2, CheckCircle2 } from 'lucide-react';
 
-const steps = [
-  {
-    title: 'Personal Information',
-    fields: [
-      { name: 'name', label: 'Full Name', type: 'text', required: true },
-      { name: 'email', label: 'Email', type: 'email', required: true },
-      { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
-    ],
-  },
-  {
-    title: 'Company Details',
-    fields: [
-      { name: 'companyName', label: 'Company Name', type: 'text', required: true },
-      { name: 'companyType', label: 'Company Type', type: 'select', options: ['LLC', 'Corporation', 'Sole Proprietorship'], required: true },
-      { name: 'taxId', label: 'Tax ID / EIN', type: 'text', required: true },
-    ],
-  },
-  {
-    title: 'Property Information',
-    fields: [
-      { name: 'propertyName', label: 'Property Name', type: 'text', required: true },
-      { name: 'propertyAddress', label: 'Property Address', type: 'text', required: true },
-      { name: 'propertyType', label: 'Property Type', type: 'select', options: ['Apartment', 'House', 'Condo', 'Commercial'], required: true },
-      { name: 'units', label: 'Number of Units', type: 'number', required: true },
-    ],
-  },
-  {
-    title: 'Payment Setup',
-    fields: [
-      { name: 'bankName', label: 'Bank Name', type: 'text', required: true },
-      { name: 'accountNumber', label: 'Account Number', type: 'text', required: true },
-      { name: 'routingNumber', label: 'Routing Number', type: 'text', required: true },
-    ],
-  },
-];
+// Import steps
+import CompanyInfo from './steps/company-info';
+import PropertySetup from './steps/property-setup';
+import FeatureSelection from './steps/feature-selection';
+import PaymentSetup from './steps/payment-setup';
+import OnboardingComplete from './steps/onboarding-complete';
 
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const { user, role } = useAuth();
   const router = useRouter();
-  const { user } = useAuth();
-  const supabase = getClient();
+  const [currentStep, setCurrentStep] = React.useState(1);
+  const [onboardingData, setOnboardingData] = React.useState({
+    company: {
+      name: '',
+      email: '',
+    },
+    property: {
+      address: '',
+      unitCount: 0,
+      type: '',
+    },
+    features: {
+      concierge: false,
+      legalAssistant: false,
+      customBranding: false,
+    },
+    payment: {
+      method: '',
+      stripeConnected: false,
+    },
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  // Redirect if not a landlord
+  React.useEffect(() => {
+    if (role !== 'landlord') {
+      router.push('/dashboard');
+    }
+  }, [role, router]);
 
-  const handleNext = async () => {
-    if (currentStep === steps.length - 1) {
-      await handleSubmit();
-    } else {
-      setCurrentStep((prev) => prev + 1);
+  const steps = [
+    { id: 1, title: 'Company Information', component: CompanyInfo },
+    { id: 2, title: 'Property Setup', component: PropertySetup },
+    { id: 3, title: 'Feature Selection', component: FeatureSelection },
+    { id: 4, title: 'Payment Setup', component: PaymentSetup },
+    { id: 5, title: 'Complete', component: OnboardingComplete },
+  ];
+
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    setCurrentStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = async () => {
-    if (!user) return;
-    setLoading(true);
-
-    try {
-      // Create company record
-      const { data: company, error: companyError } = await supabase
-        .from('companies')
-        .insert({
-          name: formData.companyName,
-          type: formData.companyType,
-          tax_id: formData.taxId,
-        })
-        .select()
-        .single();
-
-      if (companyError) throw companyError;
-
-      // Create property record
-      const { data: property, error: propertyError } = await supabase
-        .from('properties')
-        .insert({
-          name: formData.propertyName,
-          address: formData.propertyAddress,
-          type: formData.propertyType,
-          units: parseInt(formData.units),
-          company_id: company.id,
-        })
-        .select()
-        .single();
-
-      if (propertyError) throw propertyError;
-
-      // Update user profile
-      const { error: userError } = await supabase
-        .from('users')
-        .update({
-          name: formData.name,
-          phone: formData.phone,
-          company_id: company.id,
-          role: 'landlord',
-        })
-        .eq('id', user.id);
-
-      if (userError) throw userError;
-
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error during onboarding:', error);
-    } finally {
-      setLoading(false);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  const currentStepData = steps[currentStep];
+  const handleStepComplete = (stepData: any) => {
+    setOnboardingData(prev => ({
+      ...prev,
+      ...stepData,
+    }));
+    handleNext();
+  };
+
+  const CurrentStepComponent = steps[currentStep - 1].component;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-      <div className="container mx-auto px-4 py-16">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
-              {currentStepData.title}
-            </CardTitle>
-            <Progress value={(currentStep / (steps.length - 1)) * 100} className="mt-4" />
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
-              {currentStepData.fields.map((field) => (
-                <div key={field.name} className="space-y-2">
-                  <Label htmlFor={field.name}>{field.label}</Label>
-                  {field.type === 'select' ? (
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      required={field.required}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2"
-                    >
-                      <option value="">Select {field.label}</option>
-                      {field.options?.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold">Welcome to Nook</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Let's get your property management set up
+          </p>
+        </div>
+
+        <div className="mb-8">
+          <Progress value={(currentStep / steps.length) * 100} />
+          <div className="flex justify-between mt-2">
+            {steps.map((step) => (
+              <div
+                key={step.id}
+                className={`flex flex-col items-center ${
+                  step.id <= currentStep ? 'text-primary' : 'text-gray-400'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
+                    step.id < currentStep
+                      ? 'bg-primary text-white'
+                      : step.id === currentStep
+                      ? 'border-2 border-primary'
+                      : 'border-2 border-gray-300'
+                  }`}
+                >
+                  {step.id < currentStep ? (
+                    <CheckCircle2 className="w-5 h-5" />
                   ) : (
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type={field.type}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                      required={field.required}
-                    />
+                    <span>{step.id}</span>
                   )}
                 </div>
-              ))}
-              <div className="flex justify-between pt-4">
-                {currentStep > 0 && (
-                  <Button type="button" variant="outline" onClick={handleBack}>
-                    Back
-                  </Button>
-                )}
-                <Button type="submit" className="ml-auto" disabled={loading}>
-                  {currentStep === steps.length - 1 ? 'Complete' : 'Next'}
-                </Button>
+                <span className="text-sm">{step.title}</span>
               </div>
-            </form>
+            ))}
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CurrentStepComponent
+              data={onboardingData}
+              onComplete={handleStepComplete}
+              onBack={handleBack}
+            />
           </CardContent>
         </Card>
       </div>
