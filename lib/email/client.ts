@@ -1,6 +1,17 @@
-import { Resend } from 'resend';
+// Mock Resend for preview
+class MockResend {
+  async sendEmail() {
+    console.log('Mock email sent');
+    return { id: 'mock-email-id' };
+  }
+}
 
-if (!process.env.RESEND_API_KEY) {
+// Use real Resend in production, mock in development
+const Resend = process.env.NODE_ENV === 'production' 
+  ? require('resend').Resend 
+  : MockResend;
+
+if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === 'production') {
   throw new Error('RESEND_API_KEY is not set');
 }
 

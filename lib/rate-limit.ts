@@ -43,7 +43,45 @@ export async function rateLimit(identifier: string, limit: number, window: numbe
   };
 }
 
-export const checkRateLimit = async (identifier: string) => {
-  // 100 requests per minute
-  return rateLimit(identifier, 100, 60 * 1000);
-}; 
+// Mock rate limiting for preview
+export async function checkRateLimit(ip: string) {
+  if (process.env.NODE_ENV !== 'production') {
+    return {
+      success: true,
+      limit: 100,
+      remaining: 99,
+      reset: Date.now() + 3600000
+    };
+  }
+
+  // Real implementation for production
+  const Redis = require('@upstash/redis').Redis;
+  
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set');
+  }
+
+  const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  const key = `rate-limit:${ip}`;
+  const limit = 100; // requests
+  const window = 3600; // 1 hour in seconds
+
+  const current = await redis.incr(key);
+  if (current === 1) {
+    await redis.expire(key, window);
+  }
+
+  const remaining = Math.max(0, limit - current);
+  const reset = await redis.ttl(key);
+
+  return {
+    success: current <= limit,
+    limit,
+    remaining,
+    reset: Date.now() + (reset * 1000),
+  };
+} 
