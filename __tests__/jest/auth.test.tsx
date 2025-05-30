@@ -22,16 +22,15 @@ jest.mock('next/navigation', () => ({
 const mockSignInWithPassword = jest.fn();
 const mockGetUser = jest.fn();
 const mockOnAuthStateChange = jest.fn();
-const mockGetSession = jest.fn();
 const mockFrom = jest.fn();
 
-jest.mock('@/lib/supabase/client', () => ({
-  getClient: () => ({
+jest.mock('@supabase/auth-helpers-nextjs', () => ({
+  createClientComponentClient: () => ({
     auth: {
       signInWithPassword: mockSignInWithPassword,
       getUser: mockGetUser,
       onAuthStateChange: mockOnAuthStateChange,
-      getSession: mockGetSession,
+      signOut: jest.fn(),
     },
     from: mockFrom,
   }),
@@ -40,7 +39,10 @@ jest.mock('@/lib/supabase/client', () => ({
 // Mock the auth provider
 jest.mock('@/components/providers/auth-provider', () => ({
   useAuth: () => ({
-    signIn: mockSignInWithPassword,
+    signIn: async (email: string, password: string) => {
+      const { error } = await mockSignInWithPassword({ email, password });
+      if (error) throw error;
+    },
     signOut: jest.fn(),
     user: null,
     role: null,
@@ -89,7 +91,10 @@ describe('Login Page', () => {
   });
 
   it('handles login error', async () => {
-    mockSignInWithPassword.mockRejectedValue(new Error('Invalid login credentials'));
+    mockSignInWithPassword.mockResolvedValue({
+      data: { user: null },
+      error: new Error('Invalid login credentials'),
+    });
 
     render(<LoginPage />);
 
@@ -136,12 +141,6 @@ describe('AuthProvider', () => {
       error: null,
     });
 
-    // Mock successful session fetch
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: 'test-user-id' } } },
-      error: null,
-    });
-
     // Mock successful role fetch
     mockFrom.mockImplementation(() => ({
       select: jest.fn().mockReturnValue({
@@ -183,12 +182,6 @@ describe('AuthProvider', () => {
     // Mock no user
     mockGetUser.mockResolvedValue({
       data: { user: null },
-      error: null,
-    });
-
-    // Mock no session
-    mockGetSession.mockResolvedValue({
-      data: { session: null },
       error: null,
     });
 
