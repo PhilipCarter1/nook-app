@@ -19,6 +19,11 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock the LoadingPage component
+jest.mock('@/components/ui/loading', () => ({
+  LoadingPage: () => <div data-testid="loading">Loading...</div>,
+}));
+
 // Mock the Supabase client
 const mockSignInWithPassword = jest.fn();
 const mockGetUser = jest.fn();
@@ -39,40 +44,88 @@ jest.mock('@supabase/auth-helpers-nextjs', () => ({
 }));
 
 // Mock the auth provider
-jest.mock('@/components/providers/auth-provider', () => ({
-  useAuth: () => ({
-    signIn: async (email: string, password: string) => {
-      try {
-        const { error } = await mockSignInWithPassword({ email, password });
-        if (error) throw error;
-      } catch (error) {
-        throw error;
-      }
-    },
-    signOut: async () => {
-      try {
-        const { error } = await mockSignOut();
-        if (error) throw error;
-      } catch (error) {
-        throw error;
-      }
-    },
+jest.mock('@/components/providers/auth-provider', () => {
+  const React = require('react');
+  const { createContext, useContext } = React;
+  
+  const AuthContext = createContext({
     user: null,
     role: null,
     loading: false,
+    signIn: jest.fn(),
+    signOut: jest.fn(),
     updateRole: jest.fn(),
-  }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => {
-    const [loading, setLoading] = React.useState(true);
-    React.useEffect(() => {
-      setLoading(false);
-    }, []);
-    if (loading) {
-      return <div data-testid="loading">Loading...</div>;
-    }
-    return <>{children}</>;
-  },
-}));
+  });
+
+  return {
+    useAuth: () => {
+      const context = useContext(AuthContext);
+      if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+      }
+      return context;
+    },
+    AuthProvider: ({ children }: { children: React.ReactNode }) => {
+      const [loading, setLoading] = React.useState(true);
+      const [user, setUser] = React.useState(null);
+      const [role, setRole] = React.useState(null);
+
+      React.useEffect(() => {
+        const initialize = async () => {
+          try {
+            const { data: { user: authUser } } = await mockGetUser();
+            if (authUser) {
+              setUser(authUser);
+              const { data: userData } = await mockFrom().select().eq().single();
+              if (userData) {
+                setRole(userData.role);
+              }
+            }
+          } catch (error) {
+            console.error('Error in mock AuthProvider:', error);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        initialize();
+      }, []);
+
+      if (loading) {
+        return <div data-testid="loading">Loading...</div>;
+      }
+
+      return (
+        <AuthContext.Provider
+          value={{
+            user,
+            role,
+            loading,
+            signIn: async (email: string, password: string) => {
+              try {
+                const { error } = await mockSignInWithPassword({ email, password });
+                if (error) throw error;
+              } catch (error) {
+                throw error;
+              }
+            },
+            signOut: async () => {
+              try {
+                const { error } = await mockSignOut();
+                if (error) throw error;
+              } catch (error) {
+                throw error;
+              }
+            },
+            updateRole: (newRole: string) => setRole(newRole),
+          }}
+        >
+          {children}
+        </AuthContext.Provider>
+      );
+    },
+  };
+});
 
 describe('Login Page', () => {
   beforeEach(() => {
