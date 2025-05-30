@@ -41,12 +41,20 @@ jest.mock('@supabase/auth-helpers-nextjs', () => ({
 jest.mock('@/components/providers/auth-provider', () => ({
   useAuth: () => ({
     signIn: async (email: string, password: string) => {
-      const { error } = await mockSignInWithPassword({ email, password });
-      if (error) throw error;
+      try {
+        const { error } = await mockSignInWithPassword({ email, password });
+        if (error) throw error;
+      } catch (error) {
+        throw error;
+      }
     },
     signOut: async () => {
-      const { error } = await mockSignOut();
-      if (error) throw error;
+      try {
+        const { error } = await mockSignOut();
+        if (error) throw error;
+      } catch (error) {
+        throw error;
+      }
     },
     user: null,
     role: null,
