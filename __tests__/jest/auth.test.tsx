@@ -76,7 +76,11 @@ jest.mock('@/components/providers/auth-provider', () => {
           try {
             const { data: { user: authUser } } = await mockGetUser();
             if (authUser) {
-              const { data: userData } = await mockFrom().select('*').eq('id', authUser.id).single();
+              const { data: userData } = await mockFrom()
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
+              
               if (userData) {
                 setUser({ ...authUser, ...userData });
                 setRole(userData.role);
@@ -91,10 +95,10 @@ jest.mock('@/components/providers/auth-provider', () => {
 
         getUser();
 
-        const { data: { subscription } } = mockOnAuthStateChange((event: string, session: any) => {
+        const { data: { subscription } } = mockOnAuthStateChange(async (event: string, session: any) => {
           if (event === 'SIGNED_IN' && session?.user) {
             setLoading(true);
-            getUser();
+            await getUser();
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
             setRole(null);
