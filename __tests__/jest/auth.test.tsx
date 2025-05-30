@@ -5,6 +5,7 @@ import { AuthProvider } from '@/components/providers/auth-provider';
 import { toast } from 'sonner';
 import React from 'react';
 import { UserRole } from '@/lib/types';
+import { UserWithAuth } from '@/types/supabase';
 
 // Mock the toast
 jest.mock('sonner', () => ({
@@ -49,14 +50,16 @@ jest.mock('@/components/providers/auth-provider', () => {
   const React = require('react');
   const { createContext, useContext } = React;
   
-  const AuthContext = createContext({
-    user: null,
-    role: null,
-    loading: false,
-    signIn: jest.fn(),
-    signOut: jest.fn(),
-    updateRole: jest.fn(),
-  });
+  interface AuthContextType {
+    user: UserWithAuth | null;
+    role: UserRole | null;
+    loading: boolean;
+    signIn: (email: string, password: string) => Promise<void>;
+    signOut: () => Promise<void>;
+    updateRole: (role: UserRole) => void;
+  }
+
+  const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
   return {
     useAuth: () => {
@@ -67,9 +70,9 @@ jest.mock('@/components/providers/auth-provider', () => {
       return context;
     },
     AuthProvider: ({ children }: { children: React.ReactNode }) => {
-      const [loading, setLoading] = React.useState(true);
-      const [user, setUser] = React.useState(null);
-      const [role, setRole] = React.useState(null);
+      const [loading, setLoading] = React.useState<boolean>(true);
+      const [user, setUser] = React.useState<UserWithAuth | null>(null);
+      const [role, setRole] = React.useState<UserRole | null>(null);
 
       React.useEffect(() => {
         const getUser = async () => {
@@ -82,8 +85,8 @@ jest.mock('@/components/providers/auth-provider', () => {
                 .single();
               
               if (userData) {
-                setUser({ ...authUser, ...userData });
-                setRole(userData.role);
+                setUser({ ...authUser, ...userData } as UserWithAuth);
+                setRole(userData.role as UserRole);
               }
             }
           } catch (error) {
