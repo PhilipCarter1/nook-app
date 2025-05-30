@@ -19,21 +19,19 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock the Supabase client
-const mockSignIn = jest.fn();
+const mockSignInWithPassword = jest.fn();
 const mockGetUser = jest.fn();
 const mockOnAuthStateChange = jest.fn();
+const mockGetSession = jest.fn();
 const mockFrom = jest.fn();
 
 jest.mock('@/lib/supabase/client', () => ({
   getClient: () => ({
     auth: {
-      signInWithPassword: mockSignIn,
+      signInWithPassword: mockSignInWithPassword,
       getUser: mockGetUser,
       onAuthStateChange: mockOnAuthStateChange,
-      getSession: jest.fn().mockResolvedValue({
-        data: { session: null },
-        error: null,
-      }),
+      getSession: mockGetSession,
     },
     from: mockFrom,
   }),
@@ -42,7 +40,7 @@ jest.mock('@/lib/supabase/client', () => ({
 // Mock the auth provider
 jest.mock('@/components/providers/auth-provider', () => ({
   useAuth: () => ({
-    signIn: mockSignIn,
+    signIn: mockSignInWithPassword,
     signOut: jest.fn(),
     user: null,
     role: null,
@@ -65,7 +63,7 @@ describe('Login Page', () => {
   });
 
   it('handles successful login', async () => {
-    mockSignIn.mockResolvedValue({
+    mockSignInWithPassword.mockResolvedValue({
       data: { user: { id: '123', email: 'test@example.com' } },
       error: null,
     });
@@ -83,12 +81,15 @@ describe('Login Page', () => {
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      });
     });
   });
 
   it('handles login error', async () => {
-    mockSignIn.mockRejectedValue(new Error('Invalid login credentials'));
+    mockSignInWithPassword.mockRejectedValue(new Error('Invalid login credentials'));
 
     render(<LoginPage />);
 
@@ -135,6 +136,12 @@ describe('AuthProvider', () => {
       error: null,
     });
 
+    // Mock successful session fetch
+    mockGetSession.mockResolvedValue({
+      data: { session: { user: { id: 'test-user-id' } } },
+      error: null,
+    });
+
     // Mock successful role fetch
     mockFrom.mockImplementation(() => ({
       select: jest.fn().mockReturnValue({
@@ -176,6 +183,12 @@ describe('AuthProvider', () => {
     // Mock no user
     mockGetUser.mockResolvedValue({
       data: { user: null },
+      error: null,
+    });
+
+    // Mock no session
+    mockGetSession.mockResolvedValue({
+      data: { session: null },
       error: null,
     });
 
