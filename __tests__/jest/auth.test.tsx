@@ -37,19 +37,23 @@ jest.mock('@supabase/auth-helpers-nextjs', () => ({
 }));
 
 // Mock the auth provider
-jest.mock('@/components/providers/auth-provider', () => ({
-  useAuth: () => ({
-    signIn: async (email: string, password: string) => {
-      const { error } = await mockSignInWithPassword({ email, password });
-      if (error) throw error;
-    },
-    signOut: jest.fn(),
-    user: null,
-    role: null,
-    loading: false,
-  }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
+jest.mock('@/components/providers/auth-provider', () => {
+  const originalModule = jest.requireActual('@/components/providers/auth-provider');
+  return {
+    ...originalModule,
+    useAuth: () => ({
+      signIn: async (email: string, password: string) => {
+        const { error } = await mockSignInWithPassword({ email, password });
+        if (error) throw error;
+      },
+      signOut: jest.fn(),
+      user: null,
+      role: null,
+      loading: false,
+    }),
+    AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 describe('Login Page', () => {
   beforeEach(() => {
