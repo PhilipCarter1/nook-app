@@ -3,6 +3,7 @@ import LoginPage from '@/app/login/page';
 import '@testing-library/jest-dom';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { toast } from 'sonner';
+import React from 'react';
 
 // Mock the toast
 jest.mock('sonner', () => ({
@@ -61,7 +62,16 @@ jest.mock('@/components/providers/auth-provider', () => ({
     loading: false,
     updateRole: jest.fn(),
   }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AuthProvider: ({ children }: { children: React.ReactNode }) => {
+    const [loading, setLoading] = React.useState(true);
+    React.useEffect(() => {
+      setLoading(false);
+    }, []);
+    if (loading) {
+      return <div data-testid="loading">Loading...</div>;
+    }
+    return <>{children}</>;
+  },
 }));
 
 describe('Login Page', () => {
