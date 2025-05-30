@@ -23,6 +23,7 @@ const mockSignInWithPassword = jest.fn();
 const mockGetUser = jest.fn();
 const mockOnAuthStateChange = jest.fn();
 const mockFrom = jest.fn();
+const mockSignOut = jest.fn();
 
 jest.mock('@supabase/auth-helpers-nextjs', () => ({
   createClientComponentClient: () => ({
@@ -30,7 +31,7 @@ jest.mock('@supabase/auth-helpers-nextjs', () => ({
       signInWithPassword: mockSignInWithPassword,
       getUser: mockGetUser,
       onAuthStateChange: mockOnAuthStateChange,
-      signOut: jest.fn(),
+      signOut: mockSignOut,
     },
     from: mockFrom,
   }),
@@ -46,10 +47,14 @@ jest.mock('@/components/providers/auth-provider', () => {
         const { error } = await mockSignInWithPassword({ email, password });
         if (error) throw error;
       },
-      signOut: jest.fn(),
+      signOut: async () => {
+        const { error } = await mockSignOut();
+        if (error) throw error;
+      },
       user: null,
       role: null,
       loading: false,
+      updateRole: jest.fn(),
     }),
     AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
@@ -156,6 +161,15 @@ describe('AuthProvider', () => {
         }),
       }),
     }));
+
+    // Mock auth state change
+    mockOnAuthStateChange.mockReturnValue({
+      data: {
+        subscription: {
+          unsubscribe: jest.fn(),
+        },
+      },
+    });
   });
 
   it('renders children when authenticated', async () => {
