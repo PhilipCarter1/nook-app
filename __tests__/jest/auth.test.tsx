@@ -71,24 +71,29 @@ jest.mock('@/components/providers/auth-provider', () => {
       const [role, setRole] = React.useState(null);
 
       React.useEffect(() => {
-        const initialize = async () => {
+        const getUser = async () => {
           try {
             const { data: { user: authUser } } = await mockGetUser();
             if (authUser) {
-              setUser(authUser);
               const { data: userData } = await mockFrom().select().eq().single();
               if (userData) {
+                setUser({ ...authUser, ...userData });
                 setRole(userData.role);
               }
             }
           } catch (error) {
-            console.error('Error in mock AuthProvider:', error);
+            console.error('Error fetching user:', error);
           } finally {
             setLoading(false);
           }
         };
 
-        initialize();
+        getUser();
+
+        const { data: { subscription } } = mockOnAuthStateChange();
+        return () => {
+          subscription.unsubscribe();
+        };
       }, []);
 
       if (loading) {
@@ -102,19 +107,21 @@ jest.mock('@/components/providers/auth-provider', () => {
             role,
             loading,
             signIn: async (email: string, password: string) => {
+              setLoading(true);
               try {
                 const { error } = await mockSignInWithPassword({ email, password });
                 if (error) throw error;
-              } catch (error) {
-                throw error;
+              } finally {
+                setLoading(false);
               }
             },
             signOut: async () => {
+              setLoading(true);
               try {
                 const { error } = await mockSignOut();
                 if (error) throw error;
-              } catch (error) {
-                throw error;
+              } finally {
+                setLoading(false);
               }
             },
             updateRole: (newRole: string) => setRole(newRole),
