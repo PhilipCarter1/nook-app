@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,10 @@ import { getClient } from '@/lib/supabase/client';
 import DocumentUpload from '@/components/DocumentUpload';
 import DepositPayment from '@/components/DepositPayment';
 import LeaseAgreement from '@/components/LeaseAgreement';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const MotionDiv = motion.div;
 
 interface Property {
   id: string;
@@ -26,6 +29,24 @@ interface Lease {
   status: string;
 }
 
+const steps = [
+  {
+    id: 1,
+    title: 'Basic Information',
+    description: 'Enter tenant details and lease terms',
+  },
+  {
+    id: 2,
+    title: 'Document Upload',
+    description: 'Upload required documents and agreements',
+  },
+  {
+    id: 3,
+    title: 'Review & Submit',
+    description: 'Review all information and submit for approval',
+  },
+];
+
 export default function PreLeasePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -36,7 +57,7 @@ export default function PreLeasePage() {
   const [lease, setLease] = React.useState<Lease | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
-  const [currentStep, setCurrentStep] = React.useState(1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [documents, setDocuments] = React.useState<string[]>([]);
 
   React.useEffect(() => {
@@ -93,6 +114,18 @@ export default function PreLeasePage() {
     router.push('/dashboard');
   };
 
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -120,89 +153,137 @@ export default function PreLeasePage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{property.name}</h1>
-            <p className="text-gray-500">{property.address}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-gray-500">Step {currentStep} of 3</div>
-            <div className="flex gap-1">
-              {[1, 2, 3].map((step) => (
-                <div
-                  key={step}
-                  className={`h-2 w-2 rounded-full ${
-                    step <= currentStep ? 'bg-primary' : 'bg-gray-200'
-                  }`}
-                />
-              ))}
+    <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
+      <div className="container mx-auto py-8">
+        <div className="max-w-3xl mx-auto space-y-8">
+          <MotionDiv
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center justify-between"
+          >
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {property.name}
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+                {property.address}
+              </p>
             </div>
-          </div>
-        </div>
-
-        {currentStep === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Required Documents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <p className="text-gray-500">
-                  Please upload the following documents to proceed with your lease application:
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    {documents.length > 0 ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                    )}
-                    <span>Government-issued ID</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {documents.length > 1 ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                    )}
-                    <span>Proof of Income</span>
-                  </li>
-                </ul>
-                <DocumentUpload
-                  onUploadComplete={handleDocumentUpload}
-                  onUploadError={(error: Error) => console.error('Upload error:', error)}
-                  acceptedFileTypes={['application/pdf', 'image/jpeg', 'image/png']}
-                  propertyId={property.id}
-                  userId={user.id}
-                />
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">Step {currentStep} of {steps.length}</div>
+              <div className="flex gap-2">
+                {steps.map((step) => (
+                  <div
+                    key={step.id}
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      step.id <= currentStep ? 'bg-nook-purple-600' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  />
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </MotionDiv>
 
-        {currentStep === 2 && (
-          <DepositPayment
-            propertyId={property.id}
-            userId={user.id}
-            amount={property.security_deposit}
-            onPaymentComplete={handleDepositComplete}
-          />
-        )}
+          <MotionDiv
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-2xl font-semibold">
+                  {steps[currentStep - 1].title}
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  {steps[currentStep - 1].description}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {currentStep === 1 && (
+                  <div className="space-y-6">
+                    <p className="text-gray-500">
+                      Please upload the following documents to proceed with your lease application:
+                    </p>
+                    <ul className="space-y-2">
+                      <li className="flex items-center gap-2">
+                        {documents.length > 0 ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                        )}
+                        <span>Government-issued ID</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {documents.length > 1 ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                        )}
+                        <span>Proof of Income</span>
+                      </li>
+                    </ul>
+                    <DocumentUpload
+                      onUploadComplete={handleDocumentUpload}
+                      onUploadError={(error: Error) => console.error('Upload error:', error)}
+                      acceptedFileTypes={['application/pdf', 'image/jpeg', 'image/png']}
+                      propertyId={property.id}
+                      userId={user.id}
+                    />
+                  </div>
+                )}
 
-        {currentStep === 3 && (
-          <LeaseAgreement
-            propertyId={property.id}
-            userId={user.id}
-            tenantId={user.id}
-            startDate={lease?.start_date || new Date().toISOString()}
-            endDate={lease?.end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()}
-            monthlyRent={property.monthly_rent}
-            securityDeposit={property.security_deposit}
-            onAgreementComplete={handleLeaseComplete}
-          />
-        )}
+                {currentStep === 2 && (
+                  <DepositPayment
+                    propertyId={property.id}
+                    userId={user.id}
+                    amount={property.security_deposit}
+                    onPaymentComplete={handleDepositComplete}
+                  />
+                )}
+
+                {currentStep === 3 && (
+                  <LeaseAgreement
+                    propertyId={property.id}
+                    userId={user.id}
+                    tenantId={user.id}
+                    startDate={lease?.start_date || new Date().toISOString()}
+                    endDate={lease?.end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()}
+                    monthlyRent={property.monthly_rent}
+                    securityDeposit={property.security_deposit}
+                    onAgreementComplete={handleLeaseComplete}
+                  />
+                )}
+
+                <div className="mt-6 flex justify-between">
+                  {currentStep > 1 && (
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      className="text-nook-purple-600 border-nook-purple-600 hover:bg-nook-purple-50"
+                    >
+                      Back
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleNext}
+                    className="bg-nook-purple-600 hover:bg-nook-purple-500 ml-auto"
+                  >
+                    {currentStep === steps.length ? (
+                      <>
+                        Submit <CheckCircle2 className="ml-2 h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        Next <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </MotionDiv>
+        </div>
       </div>
     </div>
   );

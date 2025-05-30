@@ -46,7 +46,7 @@ jest.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock Stripe
-jest.mock('@/lib/stripe/client', () => ({
+jest.mock('@/lib/stripe', () => ({
   stripe: {
     paymentIntents: {
       create: jest.fn(),
