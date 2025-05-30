@@ -1,190 +1,79 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/components/providers/auth-provider';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Upload, FileText, CreditCard, Users, CheckCircle2, AlertCircle } from 'lucide-react';
+import { getClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/components/providers/auth-provider';
 import { Progress } from '@/components/ui/progress';
-import { getPaymentsByProperty, getTicketsByProperty } from '@/lib/supabase/client';
-import { formatCurrency } from '@/lib/utils';
-import { Building2, Wrench, CreditCard } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DocumentUpload } from '@/components/DocumentUpload';
+import { PaymentOptions } from '@/components/PaymentOptions';
+import { SplitRentSetup } from '@/components/SplitRentSetup';
+import { redirect } from 'next/navigation';
+import LeaseOverview from '@/components/LeaseOverview';
+import MaintenanceTicket from '@/components/MaintenanceTicket';
 
-export default function TenantDashboard() {
-  const { user } = useAuth();
-  const [payments, setPayments] = React.useState<any[]>([]);
-  const [tickets, setTickets] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
+interface TenantOnboarding {
+  id: string;
+  status: 'pending_documents' | 'pending_verification' | 'pending_payment' | 'active';
+  documents: {
+    id: string;
+    type: string;
+    url: string;
+    status: 'pending' | 'approved' | 'rejected';
+  }[];
+  payment_status: 'pending' | 'completed';
+  split_rent: {
+    enabled: boolean;
+    tenants: {
+      id: string;
+      name: string;
+      email: string;
+      percentage: number;
+    }[];
+  };
+}
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.property_id) return;
+export default async function TenantDashboard() {
+  const supabase = getClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-      try {
-        const [paymentsData, ticketsData] = await Promise.all([
-          getPaymentsByProperty(user.property_id),
-          getTicketsByProperty(user.property_id),
-        ]);
-
-        setPayments(paymentsData);
-        setTickets(ticketsData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [user]);
-
-  if (loading) {
-    return (
-      <MainLayout userRole="tenant">
-        <div>Loading...</div>
-      </MainLayout>
-    );
+  if (!user) {
+    redirect('/login');
   }
 
-  const latestPayment = payments[0];
-  const openTickets = tickets.filter((ticket) => ticket.status === 'open');
+  // Get tenant record
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('id, unit_id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!tenant) {
+    redirect('/onboarding');
+  }
 
   return (
-    <MainLayout userRole="tenant">
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rent Due</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(latestPayment?.amount || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Due in {latestPayment?.days_until_due || 0} days
-              </p>
-              <Progress
-                value={((latestPayment?.amount_paid || 0) / (latestPayment?.amount || 1)) * 100}
-                className="mt-2"
-              />
-            </CardContent>
-          </Card>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8">Tenant Dashboard</h1>
+      
+      <Tabs defaultValue="lease" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="lease">Lease & Payments</TabsTrigger>
+          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+        </TabsList>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{openTickets.length}</div>
-              <p className="text-xs text-muted-foreground">
-                {openTickets.length === 1 ? 'Active request' : 'Active requests'}
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="lease">
+          <LeaseOverview tenantId={tenant.id} />
+        </TabsContent>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Payment History</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(
-                  payments.reduce((sum, payment) => sum + (payment.amount_paid || 0), 0)
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Total paid this year
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Payments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {payments.slice(0, 5).map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0"
-                  >
-                    <div>
-                      <p className="font-medium">{payment.type}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(payment.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{formatCurrency(payment.amount)}</p>
-                      <p
-                        className={`text-sm ${
-                          payment.status === 'completed'
-                            ? 'text-green-600'
-                            : 'text-yellow-600'
-                        }`}
-                      >
-                        {payment.status}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Maintenance Requests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {tickets.slice(0, 5).map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0"
-                  >
-                    <div>
-                      <p className="font-medium">{ticket.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(ticket.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          ticket.status === 'open'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : ticket.status === 'in_progress'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {ticket.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex justify-end space-x-4">
-          <Button variant="outline" onClick={() => window.location.href = '/maintenance'}>
-            View All Tickets
-          </Button>
-          <Button onClick={() => window.location.href = '/payments'}>
-            Make Payment
-          </Button>
-        </div>
-      </div>
-    </MainLayout>
+        <TabsContent value="maintenance">
+          <MaintenanceTicket unitId={tenant.unit_id} tenantId={tenant.id} />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 } 

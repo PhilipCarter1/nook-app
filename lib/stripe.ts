@@ -1,30 +1,42 @@
-import { loadStripe } from '@stripe/stripe-js';
+import Stripe from 'stripe';
 import { supabase } from './supabase';
 
-export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
 
-export async function createPaymentIntent(amount: number, propertyId: string, type: 'rent' | 'deposit') {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
 
-  const response = await fetch('/api/create-payment-intent', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+export async function createPaymentIntent(amount: number, currency: string = 'usd') {
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      propertyId,
-      type,
-      userId: user.id,
-    }),
-  });
+      currency,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to create payment intent');
+    return {
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+    };
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    throw error;
   }
+}
 
-  return response.json();
+export async function confirmPayment(paymentIntentId: string) {
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    return paymentIntent.status === 'succeeded';
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    throw error;
+  }
 }
 
 export async function createPaypalOrder(amount: number, propertyId: string, type: 'rent' | 'deposit') {

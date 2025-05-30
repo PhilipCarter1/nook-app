@@ -1,176 +1,200 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/components/providers/auth-provider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getClient } from '@/lib/supabase/client';
+import { redirect } from 'next/navigation';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Users, Building2, DollarSign, Settings, Shield } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
-export default function AdminDashboardPage() {
-  const { role } = useAuth();
-  const [stats, setStats] = React.useState({
-    totalUsers: 0,
-    totalProperties: 0,
-    totalRevenue: 0,
-    activeLeases: 0,
-  });
-
-  // Mock data for now - will be replaced with actual data fetching
-  const mockStats = {
-    totalUsers: 150,
-    totalProperties: 45,
-    totalRevenue: 125000,
-    activeLeases: 38,
+interface Organization {
+  id: string;
+  name: string;
+  status: 'pending' | 'active' | 'suspended';
+  client_config: {
+    legal_assistant: boolean;
+    concierge_setup: boolean;
+    custom_branding: boolean;
   };
+  created_at: string;
+  properties_count: number;
+  tenants_count: number;
+}
 
-  React.useEffect(() => {
-    // TODO: Fetch admin stats
-    setStats(mockStats);
-  }, []);
+export default async function AdminDashboard() {
+  const supabase = getClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (role !== 'admin' && role !== 'builder_super') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-500">
-            You don't have permission to access this page.
-          </p>
-        </div>
-      </div>
-    );
+  if (!user) {
+    redirect('/login');
   }
 
+  // Check if user is an admin
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!admin) {
+    redirect('/dashboard');
+  }
+
+  // Get all organizations with their stats
+  const { data: organizations } = await supabase
+    .from('organizations')
+    .select(`
+      *,
+      properties:properties(count),
+      tenants:tenants(count)
+    `)
+    .order('created_at', { ascending: false });
+
+  const handleImpersonate = async (orgId: string) => {
+    try {
+      // Create a session for the admin as the organization
+      const { data: { session }, error } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: 'admin-impersonation',
+        options: {
+          data: {
+            impersonating: true,
+            organization_id: orgId,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      // Redirect to the organization's dashboard
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Error impersonating organization:', error);
+      toast.error('Failed to impersonate organization');
+    }
+  };
+
+  const handleFeatureToggle = async (orgId: string, feature: string, enabled: boolean) => {
+    try {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('client_config')
+        .eq('id', orgId)
+        .single();
+
+      if (!org) throw new Error('Organization not found');
+
+      const updatedConfig = {
+        ...org.client_config,
+        [feature]: enabled,
+      };
+
+      const { error } = await supabase
+        .from('organizations')
+        .update({ client_config: updatedConfig })
+        .eq('id', orgId);
+
+      if (error) throw error;
+
+      toast.success(`Feature ${enabled ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      console.error('Error updating feature flag:', error);
+      toast.error('Failed to update feature flag');
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'suspended':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Welcome to the admin dashboard. Here you can manage users, properties, and system settings.
-        </p>
-      </div>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-gray-500">
-              Active users across all roles
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-            <Building2 className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProperties}</div>
-            <p className="text-xs text-gray-500">
-              Properties in the system
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-gray-500">
-              Total revenue this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Leases</CardTitle>
-            <Building2 className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeLeases}</div>
-            <p className="text-xs text-gray-500">
-              Currently active leases
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="mr-2 h-4 w-4" />
-                Manage Users
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Building2 className="mr-2 h-4 w-4" />
-                Manage Properties
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <DollarSign className="mr-2 h-4 w-4" />
-                View Financial Reports
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Settings className="mr-2 h-4 w-4" />
-                System Settings
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <div className="space-y-6">
+        {organizations?.map((org: Organization) => (
+          <Card key={org.id} className="p-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm font-medium">New user registered</p>
-                  <p className="text-xs text-gray-500">2 minutes ago</p>
+                  <h2 className="text-2xl font-bold">{org.name}</h2>
+                  <div className="flex gap-2 mt-2">
+                    <Badge className={getStatusColor(org.status)}>
+                      {org.status}
+                    </Badge>
+                    <span className="text-sm text-gray-500">
+                      Created {new Date(org.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={() => handleImpersonate(org.id)}
+                >
+                  Impersonate
+                </Button>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-blue-500" />
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium">New property added</p>
-                  <p className="text-xs text-gray-500">1 hour ago</p>
+                  <h3 className="font-medium mb-2">Organization Stats</h3>
+                  <div className="space-y-2">
+                    <p>Properties: {org.properties_count}</p>
+                    <p>Tenants: {org.tenants_count}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-yellow-500" />
+
                 <div>
-                  <p className="text-sm font-medium">Payment processed</p>
-                  <p className="text-xs text-gray-500">3 hours ago</p>
+                  <h3 className="font-medium mb-2">Feature Flags</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`legal-${org.id}`}>Legal Assistant</Label>
+                      <Switch
+                        id={`legal-${org.id}`}
+                        checked={org.client_config.legal_assistant}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'legal_assistant', checked)
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`concierge-${org.id}`}>Concierge Setup</Label>
+                      <Switch
+                        id={`concierge-${org.id}`}
+                        checked={org.client_config.concierge_setup}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'concierge_setup', checked)
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`branding-${org.id}`}>Custom Branding</Label>
+                      <Switch
+                        id={`branding-${org.id}`}
+                        checked={org.client_config.custom_branding}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'custom_branding', checked)
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </Card>
+        ))}
       </div>
     </div>
   );

@@ -4,27 +4,17 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getClient } from '@/lib/supabase/client';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, CheckCircle2, XCircle } from 'lucide-react';
 
 interface DocumentUploadProps {
-  onUploadComplete: (url: string) => void;
-  onUploadError: (error: Error) => void;
-  acceptedFileTypes: string[];
-  propertyId: string;
-  userId: string;
+  type: 'id' | 'income';
+  onUpload: (file: File) => void;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
-export default function DocumentUpload({
-  onUploadComplete,
-  onUploadError,
-  acceptedFileTypes,
-  propertyId,
-  userId,
-}: DocumentUploadProps) {
-  const [file, setFile] = React.useState<File | null>(null);
-  const [uploading, setUploading] = React.useState(false);
+export default function DocumentUpload({ type, onUpload, status }: DocumentUploadProps) {
   const [dragActive, setDragActive] = React.useState(false);
-  const supabase = getClient();
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -46,110 +36,92 @@ export default function DocumentUpload({
     }
   };
 
-  const handleFile = (selectedFile: File) => {
-    if (!acceptedFileTypes.includes(selectedFile.type)) {
-      onUploadError(new Error('Invalid file type'));
-      return;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
     }
-
-    if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
-      onUploadError(new Error('File size too large'));
-      return;
-    }
-
-    setFile(selectedFile);
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
+  const handleFile = (file: File) => {
+    // Check file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload a PDF, JPEG, or PNG file');
+      return;
+    }
 
-    setUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${userId}/${propertyId}/${fileName}`;
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
 
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file);
+    onUpload(file);
+  };
 
-      if (uploadError) throw uploadError;
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+      case 'rejected':
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return null;
+    }
+  };
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('documents')
-        .getPublicUrl(filePath);
-
-      onUploadComplete(publicUrl);
-      setFile(null);
-    } catch (error) {
-      onUploadError(error instanceof Error ? error : new Error('Upload failed'));
-    } finally {
-      setUploading(false);
+  const getStatusText = () => {
+    switch (status) {
+      case 'approved':
+        return 'Document approved';
+      case 'rejected':
+        return 'Document rejected';
+      case 'pending':
+        return 'Document pending review';
+      default:
+        return 'Upload document';
     }
   };
 
   return (
-    <div
-      className="relative"
-      onDragEnter={handleDrag}
-      onDragLeave={handleDrag}
-      onDragOver={handleDrag}
-      onDrop={handleDrop}
-    >
-      <Card className={`border-2 border-dashed ${dragActive ? 'border-primary' : 'border-gray-300'}`}>
-        <CardContent className="p-6">
-          <div className="text-center">
-            <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <div className="mt-4">
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-gray-50"
-              >
-                <span>Upload a file</span>
-                <input
-                  id="file-upload"
-                  name="file-upload"
-                  type="file"
-                  className="sr-only"
-                  accept={acceptedFileTypes.join(',')}
-                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                />
-              </label>
-              <p className="mt-2 text-xs text-gray-500">
-                or drag and drop
-              </p>
-              <p className="text-xs text-gray-500">
-                {acceptedFileTypes.map(type => type.split('/')[1]).join(', ')} up to 5MB
-              </p>
-            </div>
+    <Card className={`p-4 ${dragActive ? 'border-primary' : ''}`}>
+      <div
+        className="relative"
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={handleChange}
+        />
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">
+              {type === 'id' ? 'Proof of ID' : 'Proof of Income'}
+            </h3>
+            <p className="text-sm text-gray-500">
+              Upload a PDF, JPEG, or PNG file (max 5MB)
+            </p>
           </div>
-
-          {file && (
-            <div className="mt-4 flex items-center justify-between rounded-md bg-gray-50 p-2">
-              <div className="flex items-center">
-                <span className="text-sm text-gray-500">{file.name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setFile(null)}
-                  disabled={uploading}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleUpload}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          {getStatusIcon()}
+        </div>
+        <div className="mt-4">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => inputRef.current?.click()}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {getStatusText()}
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 } 

@@ -1,208 +1,273 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/components/providers/auth-provider';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { getProperties, getPaymentsByProperty, getTicketsByProperty } from '@/lib/supabase/client';
-import { formatCurrency } from '@/lib/utils';
-import { Building2, Users, CreditCard, Wrench } from 'lucide-react';
+import { Plus, Users, Home, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { getClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+
+const inviteSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+});
+
+type InviteFormData = z.infer<typeof inviteSchema>;
+
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  units: Unit[];
+}
+
+interface Unit {
+  id: string;
+  number: string;
+  property_id: string;
+  tenants: Tenant[];
+}
+
+interface Tenant {
+  id: string;
+  name: string;
+  email: string;
+  status: 'active' | 'pending';
+}
 
 export default function LandlordDashboard() {
-  const { user } = useAuth();
-  const [properties, setProperties] = React.useState<any[]>([]);
-  const [payments, setPayments] = React.useState<any[]>([]);
-  const [tickets, setTickets] = React.useState<any[]>([]);
+  const router = useRouter();
+  const { toast } = useToast();
+  const [properties, setProperties] = React.useState<Property[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [selectedUnit, setSelectedUnit] = React.useState<Unit | null>(null);
+  const supabase = getClient();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<InviteFormData>({
+    resolver: zodResolver(inviteSchema),
+  });
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
+    fetchProperties();
+  }, []);
 
-      try {
-        const [propertiesData, paymentsData, ticketsData] = await Promise.all([
-          getProperties(),
-          getPaymentsByProperty(user.property_id ?? ''),
-          getTicketsByProperty(user.property_id ?? ''),
-        ]);
+  const fetchProperties = async () => {
+    try {
+      const { data: properties, error } = await supabase
+        .from('properties')
+        .select(`
+          id,
+          name,
+          address,
+          units (
+            id,
+            number,
+            property_id,
+            tenants (
+              id,
+              name,
+              email,
+              status
+            )
+          )
+        `);
 
-        setProperties(propertiesData);
-        setPayments(paymentsData);
-        setTickets(ticketsData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      if (error) throw error;
+      setProperties(properties || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load properties',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, [user]);
+  const handleInvite = async (data: InviteFormData) => {
+    if (!selectedUnit) return;
+
+    try {
+      // Create tenant record
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .insert({
+          name: data.name,
+          email: data.email,
+          status: 'pending',
+          unit_id: selectedUnit.id,
+        })
+        .select()
+        .single();
+
+      if (tenantError) throw tenantError;
+
+      // Create user record with tenant role
+      const { error: userError } = await supabase.auth.admin.createUser({
+        email: data.email,
+        email_confirm: true,
+        user_metadata: {
+          role: 'tenant',
+          tenant_id: tenant.id,
+        },
+      });
+
+      if (userError) throw userError;
+
+      // TODO: Send onboarding email
+      // This would be implemented with your email service
+
+      toast({
+        title: 'Success',
+        description: 'Tenant invited successfully',
+      });
+
+      // Refresh properties to show new tenant
+      fetchProperties();
+      reset();
+    } catch (error) {
+      console.error('Error inviting tenant:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to invite tenant',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (loading) {
-    return (
-      <MainLayout userRole="landlord">
-        <div>Loading...</div>
-      </MainLayout>
-    );
+    return <div>Loading...</div>;
   }
 
-  const totalRevenue = payments.reduce((sum, payment) => sum + (payment.amount_paid || 0), 0);
-  const openTickets = tickets.filter((ticket) => ticket.status === 'open');
-  const occupancyRate = (properties.reduce((sum, property) => sum + (property.occupied_units || 0), 0) /
-    properties.reduce((sum, property) => sum + (property.total_units || 0), 0)) * 100;
-
   return (
-    <MainLayout userRole="landlord">
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{properties.length}</div>
-              <p className="text-xs text-muted-foreground">
-                {properties.length === 1 ? 'Property' : 'Properties'} managed
-              </p>
-            </CardContent>
-          </Card>
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Property Management</h1>
+        <Button onClick={() => router.push('/properties/new')}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Property
+        </Button>
+      </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tenants</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {properties.reduce((sum, property) => sum + (property.tenants?.length || 0), 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Active tenants
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-              <p className="text-xs text-muted-foreground">
-                This month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{openTickets.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Pending requests
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {properties.map((property) => (
+          <Card key={property.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle>Property Overview</CardTitle>
+              <CardTitle className="flex items-center">
+                <Home className="w-5 h-5 mr-2" />
+                {property.name}
+              </CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="text-sm text-gray-500 mb-4">{property.address}</p>
               <div className="space-y-4">
-                {properties.map((property) => (
+                {property.units.map((unit) => (
                   <div
-                    key={property.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0"
+                    key={unit.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => router.push(`/units/${unit.id}`)}
                   >
-                    <div>
-                      <p className="font-medium">{property.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {property.address}
-                      </p>
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">Unit {unit.number}</h3>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedUnit(unit);
+                            }}
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            Invite Tenant
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Invite Tenant to Unit {unit.number}</DialogTitle>
+                          </DialogHeader>
+                          <form onSubmit={handleSubmit(handleInvite)} className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="name">Tenant Name</Label>
+                              <Input
+                                id="name"
+                                {...register('name')}
+                                placeholder="Enter tenant name"
+                              />
+                              {errors.name && (
+                                <p className="text-sm text-red-500">{errors.name.message}</p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="email">Email Address</Label>
+                              <Input
+                                id="email"
+                                type="email"
+                                {...register('email')}
+                                placeholder="Enter tenant email"
+                              />
+                              {errors.email && (
+                                <p className="text-sm text-red-500">{errors.email.message}</p>
+                              )}
+                            </div>
+                            <Button type="submit" className="w-full">
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Invitation
+                            </Button>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium">
-                        {property.occupied_units}/{property.total_units} Units
-                      </p>
-                      <Progress
-                        value={(property.occupied_units / property.total_units) * 100}
-                        className="mt-2"
-                      />
+                    <div className="space-y-2">
+                      {unit.tenants.map((tenant) => (
+                        <div
+                          key={tenant.id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span>{tenant.name}</span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              tenant.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {tenant.status}
+                          </span>
+                        </div>
+                      ))}
+                      {unit.tenants.length === 0 && (
+                        <p className="text-sm text-gray-500">No tenants assigned</p>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[...payments, ...tickets]
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .slice(0, 5)
-                  .map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between border-b pb-4 last:border-0"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {item.type === 'payment' ? 'Payment Received' : item.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {item.type === 'payment' ? (
-                          <p className="font-medium text-green-600">
-                            {formatCurrency(item.amount)}
-                          </p>
-                        ) : (
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              item.status === 'open'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : item.status === 'in_progress'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex justify-end space-x-4">
-          <Button variant="outline" onClick={() => window.location.href = '/properties'}>
-            Manage Properties
-          </Button>
-          <Button onClick={() => window.location.href = '/tenants'}>
-            View Tenants
-          </Button>
-        </div>
+        ))}
       </div>
-    </MainLayout>
+    </div>
   );
 } 
