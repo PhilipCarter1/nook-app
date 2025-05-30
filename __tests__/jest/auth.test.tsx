@@ -48,7 +48,8 @@ jest.mock('@/components/providers/auth-provider', () => {
         if (error) throw error;
       },
       signOut: async () => {
-        await mockSignOut();
+        const { error } = await mockSignOut();
+        if (error) throw error;
       },
       user: null,
       role: null,
