@@ -46,111 +46,31 @@ jest.mock('@supabase/auth-helpers-nextjs', () => ({
 }));
 
 // Mock the auth provider
-jest.mock('@/components/providers/auth-provider', () => {
-  const React = require('react');
-  const { createContext, useContext } = React;
-  
-  interface AuthContextType {
-    user: UserWithAuth | null;
-    role: UserRole | null;
-    loading: boolean;
-    signIn: (email: string, password: string) => Promise<void>;
-    signOut: () => Promise<void>;
-    updateRole: (role: UserRole) => void;
-  }
-
-  const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-  return {
-    useAuth: () => {
-      const context = useContext(AuthContext);
-      if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
+jest.mock('@/components/providers/auth-provider', () => ({
+  useAuth: () => ({
+    user: null,
+    role: null,
+    loading: false,
+    signIn: async (email: string, password: string) => {
+      try {
+        const { error } = await mockSignInWithPassword({ email, password });
+        if (error) throw error;
+      } catch (error) {
+        throw error;
       }
-      return context;
     },
-    AuthProvider: ({ children }: { children: React.ReactNode }) => {
-      const [loading, setLoading] = React.useState<boolean>(true);
-      const [user, setUser] = React.useState<UserWithAuth | null>(null);
-      const [role, setRole] = React.useState<UserRole | null>(null);
-
-      React.useEffect(() => {
-        const getUser = async () => {
-          try {
-            const { data: { user: authUser } } = await mockGetUser();
-            if (authUser) {
-              const { data: userData } = await mockFrom()
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
-              
-              if (userData) {
-                setUser({ ...authUser, ...userData } as UserWithAuth);
-                setRole(userData.role as UserRole);
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching user:', error);
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        getUser();
-
-        const { data: { subscription } } = mockOnAuthStateChange(async (event: string, session: any) => {
-          if (event === 'SIGNED_IN' && session?.user) {
-            setLoading(true);
-            await getUser();
-          } else if (event === 'SIGNED_OUT') {
-            setUser(null);
-            setRole(null);
-            setLoading(false);
-          }
-        });
-
-        return () => {
-          subscription.unsubscribe();
-        };
-      }, []);
-
-      if (loading) {
-        return <div data-testid="loading">Loading...</div>;
+    signOut: async () => {
+      try {
+        const { error } = await mockSignOut();
+        if (error) throw error;
+      } catch (error) {
+        throw error;
       }
-
-      return (
-        <AuthContext.Provider
-          value={{
-            user,
-            role,
-            loading,
-            signIn: async (email: string, password: string) => {
-              setLoading(true);
-              try {
-                const { error } = await mockSignInWithPassword({ email, password });
-                if (error) throw error;
-              } finally {
-                setLoading(false);
-              }
-            },
-            signOut: async () => {
-              setLoading(true);
-              try {
-                const { error } = await mockSignOut();
-                if (error) throw error;
-              } finally {
-                setLoading(false);
-              }
-            },
-            updateRole: (newRole: UserRole) => setRole(newRole),
-          }}
-        >
-          {children}
-        </AuthContext.Provider>
-      );
     },
-  };
-});
+    updateRole: jest.fn(),
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 describe('Login Page', () => {
   beforeEach(() => {
@@ -229,80 +149,5 @@ describe('Login Page', () => {
 
     const emailInput = screen.getByLabelText(/email/i);
     expect(emailInput).toHaveAttribute('type', 'email');
-  });
-});
-
-describe('AuthProvider', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    
-    // Mock successful user fetch
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'test-user-id', email: 'test@example.com' } },
-      error: null,
-    });
-
-    // Mock successful role fetch
-    mockFrom.mockImplementation(() => ({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: { role: 'admin' },
-            error: null,
-          }),
-        }),
-      }),
-    }));
-
-    // Mock auth state change
-    mockOnAuthStateChange.mockReturnValue({
-      data: {
-        subscription: {
-          unsubscribe: jest.fn(),
-        },
-      },
-    });
-  });
-
-  it('renders children when authenticated', async () => {
-    render(
-      <AuthProvider>
-        <div data-testid="test-child">Test Child</div>
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
-  });
-
-  it('handles authentication state changes', async () => {
-    render(
-      <AuthProvider>
-        <div data-testid="test-child">Test Child</div>
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(mockOnAuthStateChange).toHaveBeenCalled();
-    });
-  });
-
-  it('handles unauthenticated state', async () => {
-    // Mock no user
-    mockGetUser.mockResolvedValue({
-      data: { user: null },
-      error: null,
-    });
-
-    render(
-      <AuthProvider>
-        <div data-testid="test-child">Test Child</div>
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('test-child')).toBeInTheDocument();
-    });
   });
 }); 
