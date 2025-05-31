@@ -11,6 +11,11 @@
 /test-results
 /playwright-report
 /playwright/.cache/
+__tests__/
+tests/
+jest.setup.js
+jest.config.js
+playwright.config.ts
 
 # next.js
 /.next/
@@ -40,14 +45,4 @@ yarn-error.log*
 
 # IDE
 .idea
-.vscode
-
-# Test files and directories
-__tests__/
-tests/
-- /test-results
-- playwright-report/
-coverage/
-jest.setup.js
-jest.config.js
-playwright.config.ts 
+.vscode 
