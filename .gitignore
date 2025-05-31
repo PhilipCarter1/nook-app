@@ -45,7 +45,7 @@ yarn-error.log*
 # Test files and directories
 __tests__/
 tests/
-test-results/
+- /test-results
 playwright-report/
 coverage/
 jest.setup.js
