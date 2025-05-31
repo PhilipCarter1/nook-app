@@ -11,11 +11,11 @@
 /test-results
 /playwright-report
 /playwright/.cache/
-__tests__/
-tests/
-jest.setup.js
-jest.config.js
-playwright.config.ts
+/__tests__
+/tests
+/jest.setup.js
+/jest.config.js
+/playwright.config.ts
 
 # next.js
 /.next/
