@@ -46,7 +46,7 @@ yarn-error.log*
 __tests__/
 tests/
 - /test-results
-playwright-report/
+- playwright-report/
 coverage/
 jest.setup.js
 jest.config.js
