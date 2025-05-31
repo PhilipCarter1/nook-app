@@ -41,4 +41,14 @@ next-env.d.ts
 
 # IDE
 .idea
-.vscode 
+.vscode
+
+# Test files and directories
+__tests__/
+tests/
+test-results/
+playwright-report/
+coverage/
+jest.setup.js
+jest.config.js
+playwright.config.ts 
