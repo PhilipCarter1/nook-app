@@ -42,7 +42,7 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
         .from('tenants')
         .select(`
           id,
-          user:user_id(
+          user:user_id!inner(
             full_name,
             email
           )
@@ -50,7 +50,10 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
         .eq('unit_id', unitId);
 
       if (tenantsError) throw tenantsError;
-      setTenants(tenantsData || []);
+      setTenants((tenantsData || []).map(tenant => ({
+        id: tenant.id,
+        user: tenant.user[0]
+      })));
 
       // Fetch existing splits
       const { data: splitsData, error: splitsError } = await supabase

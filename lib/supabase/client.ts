@@ -126,42 +126,6 @@ export async function updateTicketStatus(id: string, status: 'open' | 'in_progre
   }
 }
 
-// Comment Helpers
-export async function getCommentsByTicket(ticketId: string) {
-  try {
-    const { data, error } = await supabase
-      .from('comments')
-      .select(`
-        *,
-        user:users(name, avatar_url)
-      `)
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error getting comments:', error);
-    return [];
-  }
-}
-
-export async function createComment(comment: Database['public']['Tables']['comments']['Insert']) {
-  try {
-    const { data, error } = await supabase
-      .from('comments')
-      .insert(comment)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error creating comment:', error);
-    throw error;
-  }
-}
-
 // Payment Helpers
 export async function getPaymentsByProperty(propertyId: string) {
   try {

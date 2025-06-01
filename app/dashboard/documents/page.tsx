@@ -23,6 +23,7 @@ interface Document {
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   user: {
+    id: string;
     name: string;
     email: string;
   };
@@ -52,7 +53,7 @@ export default function DocumentsPage() {
         .from('documents')
         .select(`
           *,
-          user:users(name, email),
+          user:users(id, name, email),
           property:properties(name, address)
         `)
         .order('created_at', { ascending: false });

@@ -60,14 +60,21 @@ export default async function AdminDashboard() {
         email: user.email!,
         password: 'admin-impersonation',
         options: {
-          data: {
-            impersonating: true,
-            organization_id: orgId,
-          },
+          captchaToken: undefined,
         },
       });
 
       if (error) throw error;
+
+      // Update user metadata after successful sign in
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          impersonating: true,
+          organization_id: orgId,
+        },
+      });
+
+      if (updateError) throw updateError;
 
       // Redirect to the organization's dashboard
       window.location.href = '/dashboard';

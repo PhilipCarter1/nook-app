@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -41,7 +41,6 @@ interface CompanyInfoProps {
 }
 
 export default function CompanyInfo({ data, onComplete, onBack }: CompanyInfoProps) {
-  const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
   const supabase = getClient();
 
@@ -88,10 +87,7 @@ export default function CompanyInfo({ data, onComplete, onBack }: CompanyInfoPro
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Company information saved successfully',
-      });
+      toast.success('Company information saved successfully');
 
       onComplete({
         company: {
@@ -101,11 +97,7 @@ export default function CompanyInfo({ data, onComplete, onBack }: CompanyInfoPro
       });
     } catch (error) {
       console.error('Error creating company:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save company information',
-        variant: 'destructive',
-      });
+      toast.error('Failed to save company information');
     } finally {
       setLoading(false);
     }

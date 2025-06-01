@@ -49,7 +49,31 @@ export default function OnboardingPage() {
   const { user, role } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [onboardingData, setOnboardingData] = useState({});
+  const [onboardingData, setOnboardingData] = useState({
+    company: {
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      zip: '',
+    },
+    property: {
+      address: '',
+      unitCount: 1,
+      type: '',
+    },
+    features: {
+      concierge: false,
+      legalAssistant: false,
+      customBranding: false,
+    },
+    payment: {
+      method: '',
+      stripeConnected: false,
+    },
+  });
 
   // Redirect if not a landlord
   React.useEffect(() => {
@@ -146,7 +170,7 @@ export default function OnboardingPage() {
                 onComplete={handleStepComplete}
                 onBack={handleBack}
                 data={onboardingData}
-                isLastStep={currentStep === steps.length}
+                {...(currentStep === steps.length ? { isLastStep: true } : {})}
               />
             </CardContent>
           </Card>

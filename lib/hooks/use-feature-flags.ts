@@ -17,6 +17,7 @@ export function useFeatureFlags() {
   const supabase = getClient();
 
   useEffect(() => {
+    let channel: any;
     async function fetchFeatureFlags() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -36,6 +37,25 @@ export function useFeatureFlags() {
         if (org?.client_config) {
           setFlags(org.client_config as FeatureFlags);
         }
+
+        // Subscribe to changes in the organization's client config
+        channel = supabase
+          .channel('organization_config')
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'organizations',
+              filter: `id=eq.${orgId}`,
+            },
+            (payload) => {
+              if (payload.new.client_config) {
+                setFlags(payload.new.client_config as FeatureFlags);
+              }
+            }
+          )
+          .subscribe();
       } catch (error) {
         console.error('Error fetching feature flags:', error);
       } finally {
@@ -45,27 +65,10 @@ export function useFeatureFlags() {
 
     fetchFeatureFlags();
 
-    // Subscribe to changes in the organization's client config
-    const channel = supabase
-      .channel('organization_config')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'organizations',
-          filter: `id=eq.${user?.user_metadata.organization_id}`,
-        },
-        (payload) => {
-          if (payload.new.client_config) {
-            setFlags(payload.new.client_config as FeatureFlags);
-          }
-        }
-      )
-      .subscribe();
-
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [supabase]);
 

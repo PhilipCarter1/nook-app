@@ -38,10 +38,14 @@ interface MaintenanceTicketProps {
 export default function MaintenanceTicket({ unitId, tenantId }: MaintenanceTicketProps) {
   const [tickets, setTickets] = React.useState<MaintenanceTicket[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [newTicket, setNewTicket] = React.useState({
+  const [newTicket, setNewTicket] = React.useState<{
+    title: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+  }>({
     title: '',
     description: '',
-    priority: 'medium' as const,
+    priority: 'medium',
   });
   const [showNewTicket, setShowNewTicket] = React.useState(false);
   const supabase = getClient();

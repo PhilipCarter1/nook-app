@@ -82,6 +82,16 @@ export default function DepositPayment({
     setReceiptUrl(url);
   };
 
+  // Upload file to Supabase storage and return the public URL
+  const handleFileUpload = async (file: File): Promise<void> => {
+    const filePath = `receipts/${userId}/${propertyId}/${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage.from('receipts').upload(filePath, file);
+    if (error) throw error;
+    const { data: publicUrlData } = supabase.storage.from('receipts').getPublicUrl(filePath);
+    if (!publicUrlData?.publicUrl) throw new Error('Failed to get public URL');
+    setReceiptUrl(publicUrlData.publicUrl);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -146,6 +156,7 @@ export default function DepositPayment({
               <div className="space-y-4">
                 <Label>Upload Payment Receipt</Label>
                 <DocumentUpload
+                  onUpload={handleFileUpload}
                   onUploadComplete={handleReceiptUpload}
                   onUploadError={(error) => console.error('Upload error:', error)}
                   acceptedFileTypes={['application/pdf', 'image/jpeg', 'image/png']}

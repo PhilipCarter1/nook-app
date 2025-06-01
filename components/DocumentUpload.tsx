@@ -1,127 +1,108 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
-import { getClient } from '@/lib/supabase/client';
-import { Upload, X, CheckCircle2, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface DocumentUploadProps {
-  type: 'id' | 'income';
-  onUpload: (file: File) => void;
-  status?: 'pending' | 'approved' | 'rejected';
+  onUpload: (file: File) => Promise<void>;
+  accept?: Record<string, string[]>;
+  maxSize?: number;
+  className?: string;
+  onUploadComplete?: (url: string) => void;
+  onUploadError?: (error: any) => void;
+  acceptedFileTypes?: string[];
+  propertyId?: string;
+  userId?: string;
+  type?: string;
+  status?: string;
 }
 
-export default function DocumentUpload({ type, onUpload, status }: DocumentUploadProps) {
-  const [dragActive, setDragActive] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+export function DocumentUpload({
+  onUpload,
+  accept = {
+    'application/pdf': ['.pdf'],
+    'image/*': ['.png', '.jpg', '.jpeg'],
+  },
+  maxSize = 5 * 1024 * 1024, // 5MB
+  className,
+  onUploadComplete,
+  onUploadError,
+  acceptedFileTypes,
+  propertyId,
+  userId,
+  type,
+  status,
+}: DocumentUploadProps) {
+  const [uploading, setUploading] = React.useState(false);
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
+  const effectiveAccept = acceptedFileTypes
+    ? acceptedFileTypes.reduce((acc, type) => {
+        if (type === 'application/pdf') acc['application/pdf'] = ['.pdf'];
+        if (type === 'image/jpeg' || type === 'image/png') acc['image/*'] = ['.png', '.jpg', '.jpeg'];
+        return acc;
+      }, {} as Record<string, string[]>)
+    : accept;
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: effectiveAccept,
+    maxSize,
+    multiple: false,
+    onDropRejected: (fileRejections) => {
+      const error = fileRejections[0].errors[0];
+      if (error.code === 'file-too-large') {
+        toast.error(`File is too large. Maximum size is ${maxSize / 1024 / 1024}MB`);
+      } else if (error.code === 'file-invalid-type') {
+        toast.error('Invalid file type. Please upload a PDF or image file.');
+      } else {
+        toast.error('Error uploading file. Please try again.');
+      }
+      if (onUploadError) onUploadError(error);
+    },
+    onDrop: async (acceptedFiles) => {
+      if (acceptedFiles.length === 0) return;
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
+      const file = acceptedFiles[0];
+      setUploading(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
-  const handleFile = (file: File) => {
-    // Check file type
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a PDF, JPEG, or PNG file');
-      return;
-    }
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
-      return;
-    }
-
-    onUpload(file);
-  };
-
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      case 'rejected':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusText = () => {
-    switch (status) {
-      case 'approved':
-        return 'Document approved';
-      case 'rejected':
-        return 'Document rejected';
-      case 'pending':
-        return 'Document pending review';
-      default:
-        return 'Upload document';
-    }
-  };
+      try {
+        await onUpload(file);
+        toast.success('File uploaded successfully');
+        if (onUploadComplete) onUploadComplete('uploaded-file-url'); // Replace with actual URL if available
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast.error('Failed to upload file');
+        if (onUploadError) onUploadError(error);
+      } finally {
+        setUploading(false);
+      }
+    },
+  });
 
   return (
-    <Card className={`p-4 ${dragActive ? 'border-primary' : ''}`}>
-      <div
-        className="relative"
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          className="hidden"
-          accept=".pdf,.jpg,.jpeg,.png"
-          onChange={handleChange}
-        />
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium">
-              {type === 'id' ? 'Proof of ID' : 'Proof of Income'}
-            </h3>
-            <p className="text-sm text-gray-500">
-              Upload a PDF, JPEG, or PNG file (max 5MB)
-            </p>
-          </div>
-          {getStatusIcon()}
-        </div>
-        <div className="mt-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            {getStatusText()}
-          </Button>
-        </div>
+    <div
+      {...getRootProps()}
+      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+        isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+      } ${className}`}
+    >
+      <input {...getInputProps()} />
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          {isDragActive
+            ? 'Drop the file here'
+            : 'Drag and drop a file here, or click to select'}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {uploading ? 'Uploading...' : 'Select File'}
+        </Button>
       </div>
-    </Card>
+    </div>
   );
 } 

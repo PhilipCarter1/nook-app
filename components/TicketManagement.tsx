@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { getClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { sendEmail } from '@/lib/email';
+import { emailService } from '../lib/email-service';
 
 interface MaintenanceTicket {
   id: string;
@@ -144,17 +145,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       // Get the ticket to send email notification
       const ticket = tickets.find(t => t.id === ticketId);
       if (ticket) {
-        await sendEmail({
-          to: ticket.tenant.user.email,
-          subject: `Maintenance Ticket Update: ${ticket.title}`,
-          template: 'maintenance-update',
-          data: {
-            ticketTitle: ticket.title,
-            status: newStatus,
-            propertyName: ticket.unit.property.name,
-            unitNumber: ticket.unit.unit_number,
-          },
-        });
+        await emailService.sendDocumentApproval(ticket.tenant.user.email, ticket.tenant.user.full_name);
       }
 
       toast.success('Ticket status updated');
@@ -177,16 +168,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       // Get the ticket to send email notification
       const ticket = tickets.find(t => t.id === ticketId);
       if (ticket) {
-        await sendEmail({
-          to: ticket.tenant.user.email,
-          subject: `Maintenance Ticket Assigned: ${ticket.title}`,
-          template: 'maintenance-assigned',
-          data: {
-            ticketTitle: ticket.title,
-            propertyName: ticket.unit.property.name,
-            unitNumber: ticket.unit.unit_number,
-          },
-        });
+        await emailService.sendLeaseActivation(ticket.tenant.user.email, ticket.tenant.user.full_name);
       }
 
       toast.success('Ticket assigned');

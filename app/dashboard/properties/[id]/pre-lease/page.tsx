@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { getClient } from '@/lib/supabase/client';
-import DocumentUpload from '@/components/DocumentUpload';
+import { DocumentUpload } from '@/components/DocumentUpload';
 import DepositPayment from '@/components/DepositPayment';
 import LeaseAgreement from '@/components/LeaseAgreement';
 import { AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const MotionDiv = motion.div;
 
@@ -99,10 +100,30 @@ export default function PreLeasePage() {
     fetchData();
   }, [params?.id, user?.id]);
 
-  const handleDocumentUpload = (url: string) => {
-    setDocuments((prev) => [...prev, url]);
-    if (documents.length >= 2) {
-      setCurrentStep(2);
+  const handleDocumentUpload = async (file: File) => {
+    try {
+      const supabase = getClient();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${user?.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath);
+
+      setDocuments((prev) => [...prev, publicUrl]);
+      if (documents.length >= 2) {
+        setCurrentStep(2);
+      }
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast.error('Failed to upload document');
     }
   };
 
@@ -224,34 +245,48 @@ export default function PreLeasePage() {
                       </li>
                     </ul>
                     <DocumentUpload
-                      onUploadComplete={handleDocumentUpload}
-                      onUploadError={(error: Error) => console.error('Upload error:', error)}
-                      acceptedFileTypes={['application/pdf', 'image/jpeg', 'image/png']}
-                      propertyId={property.id}
-                      userId={user.id}
+                      onUpload={handleDocumentUpload}
+                      accept={{
+                        'application/pdf': ['.pdf'],
+                        'image/*': ['.png', '.jpg', '.jpeg']
+                      }}
+                      maxSize={5 * 1024 * 1024}
                     />
                   </div>
                 )}
 
                 {currentStep === 2 && (
+                  <div className="space-y-6">
+                    <DocumentUpload
+                      onUpload={handleDocumentUpload}
+                      accept={{
+                        'application/pdf': ['.pdf'],
+                        'image/*': ['.png', '.jpg', '.jpeg']
+                      }}
+                      maxSize={5 * 1024 * 1024}
+                    />
+                    {documents.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="font-medium">Uploaded Documents</h3>
+                        <ul className="space-y-2">
+                          {documents.map((url, index) => (
+                            <li key={url} className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <span className="text-sm">Document {index + 1}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {currentStep === 3 && (
                   <DepositPayment
                     propertyId={property.id}
                     userId={user.id}
                     amount={property.security_deposit}
                     onPaymentComplete={handleDepositComplete}
-                  />
-                )}
-
-                {currentStep === 3 && (
-                  <LeaseAgreement
-                    propertyId={property.id}
-                    userId={user.id}
-                    tenantId={user.id}
-                    startDate={lease?.start_date || new Date().toISOString()}
-                    endDate={lease?.end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()}
-                    monthlyRent={property.monthly_rent}
-                    securityDeposit={property.security_deposit}
-                    onAgreementComplete={handleLeaseComplete}
                   />
                 )}
 

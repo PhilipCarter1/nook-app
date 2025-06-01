@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Users, Home, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getClient } from '@/lib/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -50,7 +50,6 @@ interface Tenant {
 
 export default function LandlordDashboard() {
   const router = useRouter();
-  const { toast } = useToast();
   const [properties, setProperties] = React.useState<Property[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [selectedUnit, setSelectedUnit] = React.useState<Unit | null>(null);
@@ -94,11 +93,7 @@ export default function LandlordDashboard() {
       setProperties(properties || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load properties',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load properties');
     } finally {
       setLoading(false);
     }
@@ -137,21 +132,14 @@ export default function LandlordDashboard() {
       // TODO: Send onboarding email
       // This would be implemented with your email service
 
-      toast({
-        title: 'Success',
-        description: 'Tenant invited successfully',
-      });
+      toast.success('Tenant invited successfully');
 
       // Refresh properties to show new tenant
       fetchProperties();
       reset();
     } catch (error) {
       console.error('Error inviting tenant:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to invite tenant',
-        variant: 'destructive',
-      });
+      toast.error('Failed to invite tenant');
     }
   };
 

@@ -12,7 +12,7 @@ export default function PaymentOptions({ onComplete }: PaymentOptionsProps) {
   const [selectedMethod, setSelectedMethod] = React.useState<string | null>(null);
   const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
 
-  const handleReceiptUpload = (file: File) => {
+  const handleReceiptUpload = async (file: File): Promise<void> => {
     setReceiptFile(file);
   };
 

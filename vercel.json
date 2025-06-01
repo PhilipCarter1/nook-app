@@ -8,7 +8,7 @@
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://rentwithnook.com",
     "NEXT_PUBLIC_APP_NAME": "Nook",
-    "NEXT_PUBLIC_APP_DESCRIPTION": "Your property management platform",
+    "NEXT_PUBLIC_APP_DESCRIPTION": "Modern Property Management Platform",
     "NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT": "true",
     "NEXT_PUBLIC_ENABLE_CONCIERGE": "true",
     "NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING": "true"
@@ -36,6 +36,10 @@
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.sentry.io; frame-src 'self' https://js.stripe.com;"
         }
       ]
     }
@@ -46,5 +50,10 @@
       "destination": "/dashboard/tenant",
       "permanent": true
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_APP_URL": "https://rentwithnook.com"
+    }
+  }
 } 

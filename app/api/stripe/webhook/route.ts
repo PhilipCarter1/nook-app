@@ -28,13 +28,24 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        
+        let receiptUrl: string | null = null;
+        if (session.payment_intent) {
+          const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+          const pi = (paymentIntent as any).charges ? paymentIntent : (paymentIntent as any).data;
+          if (
+            pi.charges &&
+            Array.isArray(pi.charges.data) &&
+            pi.charges.data.length > 0
+          ) {
+            receiptUrl = pi.charges.data[0].receipt_url || null;
+          }
+        }
         // Update payment status
         await supabase
           .from('payments')
           .update({
             status: 'completed',
-            receipt_url: session.receipt_url,
+            receipt_url: receiptUrl,
           })
           .eq('payment_intent_id', session.payment_intent);
 

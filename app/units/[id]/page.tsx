@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Mail, Calendar, DollarSign } from 'lucide-react';
 import { getClient } from '@/lib/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+interface Unit {
+  id: string;
+  number: string;
+  rent_amount: number;
+  lease_start: string;
+  lease_end: string;
+  property: {
+    id: string;
+    name: string;
+    address: string;
+  };
+  tenants: Array<{
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+  }>;
+}
+
 const inviteSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -27,51 +46,23 @@ const inviteSchema = z.object({
 
 type InviteFormData = z.infer<typeof inviteSchema>;
 
-interface Unit {
-  id: string;
-  number: string;
-  property: {
-    id: string;
-    name: string;
-    address: string;
-  };
-  tenants: Tenant[];
-  rent_amount: number;
-  lease_start: string;
-  lease_end: string;
-}
-
-interface Tenant {
-  id: string;
-  name: string;
-  email: string;
-  status: 'active' | 'pending';
-}
-
-export default function UnitDetail() {
+export default function UnitPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const [unit, setUnit] = React.useState<Unit | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const supabase = getClient();
+  const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<InviteFormData>({
+  const form = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
   });
 
-  React.useEffect(() => {
-    fetchUnit();
-  }, [params.id]);
-
   const fetchUnit = async () => {
+    if (!params?.id) return;
+    
     try {
-      const { data: unit, error } = await supabase
+      const supabase = getClient();
+      const { data, error } = await supabase
         .from('units')
         .select(`
           id,
@@ -79,12 +70,8 @@ export default function UnitDetail() {
           rent_amount,
           lease_start,
           lease_end,
-          property:properties (
-            id,
-            name,
-            address
-          ),
-          tenants (
+          property:properties(id, name, address),
+          tenants:unit_tenants(
             id,
             name,
             email,
@@ -95,31 +82,35 @@ export default function UnitDetail() {
         .single();
 
       if (error) throw error;
-      setUnit(unit);
+
+      if (data) {
+        setUnit({
+          ...data,
+          property: data.property[0],
+          tenants: data.tenants || []
+        });
+      }
     } catch (error) {
       console.error('Error fetching unit:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load unit details',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load unit details');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInvite = async (data: InviteFormData) => {
-    if (!unit) return;
+  React.useEffect(() => {
+    fetchUnit();
+  }, [params?.id]);
 
+  const handleInvite = async (data: InviteFormData) => {
     try {
       // Create tenant record
-      const { data: tenant, error: tenantError } = await supabase
+      const { data: tenant, error: tenantError } = await getClient()
         .from('tenants')
         .insert({
           name: data.name,
           email: data.email,
-          status: 'pending',
-          unit_id: unit.id,
+          status: 'pending'
         })
         .select()
         .single();
@@ -127,35 +118,34 @@ export default function UnitDetail() {
       if (tenantError) throw tenantError;
 
       // Create user record with tenant role
-      const { error: userError } = await supabase.auth.admin.createUser({
+      const { error: userError } = await getClient().auth.admin.createUser({
         email: data.email,
         email_confirm: true,
         user_metadata: {
           role: 'tenant',
-          tenant_id: tenant.id,
-        },
+          tenant_id: tenant.id
+        }
       });
 
       if (userError) throw userError;
 
-      // TODO: Send onboarding email
-      // This would be implemented with your email service
+      // Associate tenant with unit
+      const { error: unitTenantError } = await getClient()
+        .from('unit_tenants')
+        .insert({
+          unit_id: params?.id,
+          tenant_id: tenant.id
+        });
 
-      toast({
-        title: 'Success',
-        description: 'Tenant invited successfully',
-      });
+      if (unitTenantError) throw unitTenantError;
 
-      // Refresh unit data
+      toast.success('Tenant invited successfully');
+      setInviteDialogOpen(false);
+      form.reset();
       fetchUnit();
-      reset();
     } catch (error) {
       console.error('Error inviting tenant:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to invite tenant',
-        variant: 'destructive',
-      });
+      toast.error('Failed to invite tenant');
     }
   };
 
@@ -229,16 +219,16 @@ export default function UnitDetail() {
                 <DialogHeader>
                   <DialogTitle>Invite Tenant to Unit {unit.number}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(handleInvite)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handleInvite)} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Tenant Name</Label>
                     <Input
                       id="name"
-                      {...register('name')}
+                      {...form.register('name')}
                       placeholder="Enter tenant name"
                     />
-                    {errors.name && (
-                      <p className="text-sm text-red-500">{errors.name.message}</p>
+                    {form.formState.errors.name && (
+                      <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -246,11 +236,11 @@ export default function UnitDetail() {
                     <Input
                       id="email"
                       type="email"
-                      {...register('email')}
+                      {...form.register('email')}
                       placeholder="Enter tenant email"
                     />
-                    {errors.email && (
-                      <p className="text-sm text-red-500">{errors.email.message}</p>
+                    {form.formState.errors.email && (
+                      <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
                     )}
                   </div>
                   <Button type="submit" className="w-full">
