@@ -1,58 +1,87 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { getClient } from '@/lib/supabase/client';
 import { Building2, Scale, Palette } from 'lucide-react';
+import { toast } from 'sonner';
+
+// Define the OnboardingData type based on the structure in page.tsx
+export type OnboardingData = {
+  company: {
+    name: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    id?: string;
+  };
+  property: {
+    address: string;
+    unitCount: number;
+    type: string;
+    id?: string;
+  };
+  features: {
+    concierge: boolean;
+    legalAssistant: boolean;
+    customBranding: boolean;
+  };
+  payment: {
+    method: string;
+    stripeConnected: boolean;
+  };
+};
 
 interface FeatureSelectionProps {
-  data: {
-    features: {
-      concierge: boolean;
-      legalAssistant: boolean;
-      customBranding: boolean;
-    };
-  };
-  onComplete: (data: any) => void;
+  onComplete: (data: OnboardingData) => void;
   onBack: () => void;
+  data: OnboardingData;
 }
 
-export default function FeatureSelection({ data, onComplete, onBack }: FeatureSelectionProps) {
-  const [formData, setFormData] = React.useState({
-    concierge: data.features.concierge,
-    legalAssistant: data.features.legalAssistant,
-    customBranding: data.features.customBranding,
-  });
+export default function FeatureSelection({ onComplete, onBack, data }: FeatureSelectionProps) {
+  const [features, setFeatures] = useState(data.features);
   const [loading, setLoading] = React.useState(false);
   const supabase = getClient();
+
+  const handleFeatureToggle = (feature: keyof typeof features) => {
+    setFeatures((prev) => ({
+      ...prev,
+      [feature]: !prev[feature],
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Update client config in Supabase
       const { error } = await supabase
         .from('clients')
         .update({
           config: {
-            enable_concierge: formData.concierge,
-            enable_legal_assistant: formData.legalAssistant,
-            enable_custom_branding: formData.customBranding,
+            enable_legal_assistant: features.legalAssistant,
+            enable_concierge: features.concierge,
+            enable_custom_branding: features.customBranding,
           },
         })
         .eq('id', data.company.id);
 
       if (error) throw error;
 
+      toast.success('Features updated successfully');
       onComplete({
-        features: formData,
+        ...data,
+        features,
       });
     } catch (error) {
       console.error('Error updating features:', error);
+      toast.error('Failed to update features');
     } finally {
       setLoading(false);
     }
@@ -74,10 +103,8 @@ export default function FeatureSelection({ data, onComplete, onBack }: FeatureSe
                 </div>
               </div>
               <Switch
-                checked={formData.concierge}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, concierge: checked })
-                }
+                checked={features.concierge}
+                onCheckedChange={() => handleFeatureToggle('concierge')}
               />
             </div>
           </CardContent>
@@ -96,10 +123,8 @@ export default function FeatureSelection({ data, onComplete, onBack }: FeatureSe
                 </div>
               </div>
               <Switch
-                checked={formData.legalAssistant}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, legalAssistant: checked })
-                }
+                checked={features.legalAssistant}
+                onCheckedChange={() => handleFeatureToggle('legalAssistant')}
               />
             </div>
           </CardContent>
@@ -118,10 +143,8 @@ export default function FeatureSelection({ data, onComplete, onBack }: FeatureSe
                 </div>
               </div>
               <Switch
-                checked={formData.customBranding}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, customBranding: checked })
-                }
+                checked={features.customBranding}
+                onCheckedChange={() => handleFeatureToggle('customBranding')}
               />
             </div>
           </CardContent>
