@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { LoadingPage } from '@/components/ui/loading';
 
 const MotionDiv = motion.div;
 
@@ -28,12 +29,17 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       router.push('/dashboard');
-    } catch (error) {
-      toast.error('Invalid email or password');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
@@ -64,6 +70,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="focus:ring-nook-purple-500"
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -75,6 +82,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="focus:ring-nook-purple-500"
+                    disabled={loading}
                   />
                 </div>
                 <Button 

@@ -6,6 +6,7 @@ import { Database } from '@/types/supabase';
 import { UserWithAuth } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
 import { LoadingPage } from '@/components/ui/loading';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: UserWithAuth | null;
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient<Database>();
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
@@ -38,10 +40,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (userData) {
             setUser({ ...authUser, ...userData } as UserWithAuth);
             setRole(userData.role as UserRole);
+          } else {
+            // If no user data exists, create it with default role
+            const { data: newUserData, error } = await supabase
+              .from('users')
+              .insert([
+                {
+                  id: authUser.id,
+                  email: authUser.email,
+                  role: 'tenant', // Default role
+                  created_at: new Date().toISOString(),
+                }
+              ])
+              .select()
+              .single();
+
+            if (error) throw error;
+            if (newUserData) {
+              setUser({ ...authUser, ...newUserData } as UserWithAuth);
+              setRole(newUserData.role as UserRole);
+            }
           }
         }
       } catch (error) {
         console.error('Error fetching user:', error);
+        // If there's an error, sign out the user
+        await signOut();
+        router.push('/login');
       } finally {
         setLoading(false);
       }
@@ -57,13 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setRole(null);
         setLoading(false);
+        router.push('/');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, router]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -73,6 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       if (error) throw error;
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -91,6 +120,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateRole = (newRole: UserRole) => {
     setRole(newRole);
   };
+
+  // Add a timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+      }
+    }, 5000); // 5 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   if (loading) {
     return <LoadingPage />;
