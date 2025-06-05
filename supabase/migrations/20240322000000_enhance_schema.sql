@@ -1,0 +1,256 @@
+-- Enable necessary extensions
+create extension if not exists "uuid-ossp";
+
+-- Add missing columns to users table
+alter table users
+add column if not exists email_verified boolean default false,
+add column if not exists last_login timestamp with time zone,
+add column if not exists password_reset_token text,
+add column if not exists password_reset_expires timestamp with time zone;
+
+-- Create property_amenities table
+create table property_amenities (
+    id uuid primary key default uuid_generate_v4(),
+    property_id uuid references properties(id) on delete cascade,
+    name text not null,
+    description text,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create property_media table
+create table property_media (
+    id uuid primary key default uuid_generate_v4(),
+    property_id uuid references properties(id) on delete cascade,
+    type text not null check (type in ('image', 'video', 'document')),
+    url text not null,
+    title text,
+    description text,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create lease_documents table
+create table lease_documents (
+    id uuid primary key default uuid_generate_v4(),
+    lease_id uuid references leases(id) on delete cascade,
+    version integer not null,
+    document_url text not null,
+    status text not null check (status in ('draft', 'pending', 'approved', 'rejected')),
+    created_by uuid references users(id),
+    approved_by uuid references users(id),
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create lease_renewals table
+create table lease_renewals (
+    id uuid primary key default uuid_generate_v4(),
+    lease_id uuid references leases(id) on delete cascade,
+    new_start_date date not null,
+    new_end_date date not null,
+    status text not null check (status in ('pending', 'approved', 'rejected')),
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create maintenance_schedule table
+create table maintenance_schedule (
+    id uuid primary key default uuid_generate_v4(),
+    property_id uuid references properties(id) on delete cascade,
+    title text not null,
+    description text,
+    frequency text not null check (frequency in ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
+    last_performed timestamp with time zone,
+    next_due timestamp with time zone,
+    assigned_to uuid references users(id),
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create maintenance_history table
+create table maintenance_history (
+    id uuid primary key default uuid_generate_v4(),
+    schedule_id uuid references maintenance_schedule(id) on delete cascade,
+    performed_by uuid references users(id),
+    performed_at timestamp with time zone not null,
+    notes text,
+    created_at timestamp with time zone default now()
+);
+
+-- Create payment_receipts table
+create table payment_receipts (
+    id uuid primary key default uuid_generate_v4(),
+    payment_id uuid references payments(id) on delete cascade,
+    receipt_number text not null unique,
+    receipt_url text not null,
+    created_at timestamp with time zone default now()
+);
+
+-- Create late_fees table
+create table late_fees (
+    id uuid primary key default uuid_generate_v4(),
+    payment_id uuid references payments(id) on delete cascade,
+    amount decimal(10,2) not null,
+    days_late integer not null,
+    status text not null check (status in ('pending', 'paid', 'waived')),
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Add RLS policies
+alter table property_amenities enable row level security;
+alter table property_media enable row level security;
+alter table lease_documents enable row level security;
+alter table lease_renewals enable row level security;
+alter table maintenance_schedule enable row level security;
+alter table maintenance_history enable row level security;
+alter table payment_receipts enable row level security;
+alter table late_fees enable row level security;
+
+-- Create policies for property_amenities
+create policy "Users can view property amenities"
+    on property_amenities for select
+    using (
+        exists (
+            select 1 from properties p
+            where p.id = property_amenities.property_id
+            and (
+                p.landlord_id = auth.uid()
+                or exists (
+                    select 1 from leases l
+                    where l.property_id = p.id
+                    and l.tenant_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for property_media
+create policy "Users can view property media"
+    on property_media for select
+    using (
+        exists (
+            select 1 from properties p
+            where p.id = property_media.property_id
+            and (
+                p.landlord_id = auth.uid()
+                or exists (
+                    select 1 from leases l
+                    where l.property_id = p.id
+                    and l.tenant_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for lease_documents
+create policy "Users can view lease documents"
+    on lease_documents for select
+    using (
+        exists (
+            select 1 from leases l
+            where l.id = lease_documents.lease_id
+            and (
+                l.tenant_id = auth.uid()
+                or exists (
+                    select 1 from properties p
+                    where p.id = l.property_id
+                    and p.landlord_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for lease_renewals
+create policy "Users can view lease renewals"
+    on lease_renewals for select
+    using (
+        exists (
+            select 1 from leases l
+            where l.id = lease_renewals.lease_id
+            and (
+                l.tenant_id = auth.uid()
+                or exists (
+                    select 1 from properties p
+                    where p.id = l.property_id
+                    and p.landlord_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for maintenance_schedule
+create policy "Users can view maintenance schedule"
+    on maintenance_schedule for select
+    using (
+        exists (
+            select 1 from properties p
+            where p.id = maintenance_schedule.property_id
+            and (
+                p.landlord_id = auth.uid()
+                or exists (
+                    select 1 from leases l
+                    where l.property_id = p.id
+                    and l.tenant_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for maintenance_history
+create policy "Users can view maintenance history"
+    on maintenance_history for select
+    using (
+        exists (
+            select 1 from maintenance_schedule ms
+            join properties p on p.id = ms.property_id
+            where ms.id = maintenance_history.schedule_id
+            and (
+                p.landlord_id = auth.uid()
+                or exists (
+                    select 1 from leases l
+                    where l.property_id = p.id
+                    and l.tenant_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for payment_receipts
+create policy "Users can view payment receipts"
+    on payment_receipts for select
+    using (
+        exists (
+            select 1 from payments p
+            join leases l on l.id = p.lease_id
+            where p.id = payment_receipts.payment_id
+            and (
+                l.tenant_id = auth.uid()
+                or exists (
+                    select 1 from properties pr
+                    where pr.id = l.property_id
+                    and pr.landlord_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for late_fees
+create policy "Users can view late fees"
+    on late_fees for select
+    using (
+        exists (
+            select 1 from payments p
+            join leases l on l.id = p.lease_id
+            where p.id = late_fees.payment_id
+            and (
+                l.tenant_id = auth.uid()
+                or exists (
+                    select 1 from properties pr
+                    where pr.id = l.property_id
+                    and pr.landlord_id = auth.uid()
+                )
+            )
+        )
+    ); 
