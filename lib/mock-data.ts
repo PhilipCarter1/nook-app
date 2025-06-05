@@ -7,10 +7,14 @@ export const mockUsers: Database['public']['Tables']['users']['Row'][] = [
     name: 'Admin User',
     role: 'admin',
     property_id: null,
-    avatar_url: 'https://github.com/shadcn.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
     phone: '+1234567890',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -18,10 +22,14 @@ export const mockUsers: Database['public']['Tables']['users']['Row'][] = [
     name: 'Landlord User',
     role: 'landlord',
     property_id: '1',
-    avatar_url: 'https://github.com/shadcn.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=landlord',
     phone: '+1234567891',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '3',
@@ -29,11 +37,15 @@ export const mockUsers: Database['public']['Tables']['users']['Row'][] = [
     name: 'Tenant User',
     role: 'tenant',
     property_id: '1',
-    avatar_url: 'https://github.com/shadcn.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tenant',
     phone: '+1234567892',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockProperties: Database['public']['Tables']['properties']['Row'][] = [
