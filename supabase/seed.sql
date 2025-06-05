@@ -129,4 +129,53 @@ VALUES (
   'test-landlord-1',
   'test-property-1'
 )
-ON CONFLICT (id) DO NOTHING; 
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert test users
+INSERT INTO users (id, email, name, role, phone, email_verified)
+VALUES 
+    ('00000000-0000-0000-0000-000000000001', 'landlord@test.com', 'Test Landlord', 'landlord', '+1234567890', true),
+    ('00000000-0000-0000-0000-000000000002', 'tenant@test.com', 'Test Tenant', 'tenant', '+1234567891', true),
+    ('00000000-0000-0000-0000-000000000003', 'admin@test.com', 'Test Admin', 'admin', '+1234567892', true);
+
+-- Insert test property
+INSERT INTO properties (id, name, address, type, units, landlord_id, status, monthly_rent, security_deposit)
+VALUES 
+    ('00000000-0000-0000-0000-000000000101', 'Sunset Apartments', '123 Main St', 'apartment', 4, '00000000-0000-0000-0000-000000000001', 'available', 2000.00, 2000.00);
+
+-- Insert test lease
+INSERT INTO leases (id, property_id, tenant_id, start_date, end_date, status, monthly_rent, security_deposit)
+VALUES 
+    ('00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000002', '2024-01-01', '2024-12-31', 'active', 2000.00, 2000.00);
+
+-- Insert test property amenities
+INSERT INTO property_amenities (id, property_id, name, description)
+VALUES 
+    ('00000000-0000-0000-0000-000000000301', '00000000-0000-0000-0000-000000000101', 'Swimming Pool', 'Outdoor swimming pool'),
+    ('00000000-0000-0000-0000-000000000302', '00000000-0000-0000-0000-000000000101', 'Gym', 'Fitness center');
+
+-- Insert test property media
+INSERT INTO property_media (id, property_id, type, url, title)
+VALUES 
+    ('00000000-0000-0000-0000-000000000401', '00000000-0000-0000-0000-000000000101', 'image', 'https://example.com/property1.jpg', 'Front View'),
+    ('00000000-0000-0000-0000-000000000402', '00000000-0000-0000-0000-000000000101', 'image', 'https://example.com/property2.jpg', 'Living Room');
+
+-- Insert test lease document
+INSERT INTO lease_documents (id, lease_id, version, document_url, status, created_by)
+VALUES 
+    ('00000000-0000-0000-0000-000000000501', '00000000-0000-0000-0000-000000000201', 1, 'https://example.com/lease1.pdf', 'approved', '00000000-0000-0000-0000-000000000001');
+
+-- Insert test maintenance schedule
+INSERT INTO maintenance_schedule (id, property_id, title, description, frequency, next_due)
+VALUES 
+    ('00000000-0000-0000-0000-000000000601', '00000000-0000-0000-0000-000000000101', 'HVAC Maintenance', 'Regular HVAC system check', 'monthly', '2024-04-01');
+
+-- Insert test payment
+INSERT INTO payments (id, lease_id, amount, type, status, due_date)
+VALUES 
+    ('00000000-0000-0000-0000-000000000701', '00000000-0000-0000-0000-000000000201', 2000.00, 'rent', 'pending', '2024-04-01');
+
+-- Insert test payment receipt
+INSERT INTO payment_receipts (id, payment_id, receipt_number, receipt_url)
+VALUES 
+    ('00000000-0000-0000-0000-000000000801', '00000000-0000-0000-0000-000000000701', 'REC-001', 'https://example.com/receipt1.pdf'); 
