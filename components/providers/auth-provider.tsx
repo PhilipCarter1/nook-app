@@ -27,54 +27,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    let mounted = true;
+
     const getUser = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
+        console.log('Fetching user data...');
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          console.error('Auth error:', authError);
+          throw authError;
+        }
+
         if (authUser) {
-          const { data: userData } = await supabase
+          console.log('Auth user found:', authUser.email);
+          const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', authUser.id)
             .single();
           
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            throw userError;
+          }
+
           if (userData) {
-            setUser({ ...authUser, ...userData } as UserWithAuth);
-            setRole(userData.role as UserRole);
+            console.log('User data found:', userData);
+            if (mounted) {
+              setUser({ ...authUser, ...userData } as UserWithAuth);
+              setRole(userData.role as UserRole);
+            }
           } else {
-            // If no user data exists, create it with default role
-            const { data: newUserData, error } = await supabase
+            console.log('No user data found, creating new user record...');
+            const { data: newUserData, error: createError } = await supabase
               .from('users')
               .insert([
                 {
                   id: authUser.id,
                   email: authUser.email,
-                  role: 'tenant', // Default role
+                  role: 'tenant',
                   created_at: new Date().toISOString(),
                 }
               ])
               .select()
               .single();
 
-            if (error) throw error;
-            if (newUserData) {
+            if (createError) {
+              console.error('Error creating user data:', createError);
+              throw createError;
+            }
+
+            if (newUserData && mounted) {
+              console.log('New user data created:', newUserData);
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
               setRole(newUserData.role as UserRole);
             }
           }
+        } else {
+          console.log('No auth user found');
+          if (mounted) {
+            setUser(null);
+            setRole(null);
+          }
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
-        // If there's an error, sign out the user
-        await signOut();
-        router.push('/login');
+        console.error('Error in getUser:', error);
+        if (mounted) {
+          setUser(null);
+          setRole(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' && session?.user) {
         setLoading(true);
         await getUser();
@@ -87,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [supabase, router]);
@@ -94,13 +128,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
+      console.log('Attempting sign in...');
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) throw error;
+      if (error) {
+        console.error('Sign in error:', error);
+        throw error;
+      }
+      console.log('Sign in successful');
     } catch (error) {
-      console.error('Error signing in:', error);
+      console.error('Error in signIn:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -125,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
+        console.log('Loading timeout reached, forcing loading state to false');
         setLoading(false);
       }
     }, 5000); // 5 second timeout
