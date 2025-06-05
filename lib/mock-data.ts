@@ -60,7 +60,7 @@ export const mockProperties: Database['public']['Tables']['properties']['Row'][]
     monthly_rent: 2000,
     security_deposit: 1000,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -73,8 +73,8 @@ export const mockProperties: Database['public']['Tables']['properties']['Row'][]
     monthly_rent: 2500,
     security_deposit: 1200,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockTickets: Database['public']['Tables']['maintenance_tickets']['Row'][] = [
@@ -87,7 +87,7 @@ export const mockTickets: Database['public']['Tables']['maintenance_tickets']['R
     property_id: '1',
     tenant_id: '3',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -98,6 +98,6 @@ export const mockTickets: Database['public']['Tables']['maintenance_tickets']['R
     property_id: '1',
     tenant_id: '3',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ]; 
