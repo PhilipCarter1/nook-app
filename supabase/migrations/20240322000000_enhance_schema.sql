@@ -1,15 +1,54 @@
 -- Enable necessary extensions
 create extension if not exists "uuid-ossp";
 
--- Add missing columns to users table
-alter table users
-add column if not exists email_verified boolean default false,
-add column if not exists last_login timestamp with time zone,
-add column if not exists password_reset_token text,
-add column if not exists password_reset_expires timestamp with time zone;
+-- Create users table if it doesn't exist
+create table if not exists users (
+    id uuid primary key default uuid_generate_v4(),
+    email text unique not null,
+    name text not null,
+    role text not null check (role in ('tenant', 'landlord', 'admin', 'super')),
+    property_id uuid,
+    avatar_url text,
+    phone text,
+    email_verified boolean default false,
+    last_login timestamp with time zone,
+    password_reset_token text,
+    password_reset_expires timestamp with time zone,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create properties table if it doesn't exist
+create table if not exists properties (
+    id uuid primary key default uuid_generate_v4(),
+    name text not null,
+    address text not null,
+    type text not null check (type in ('apartment', 'house', 'condo', 'commercial')),
+    units integer not null,
+    landlord_id uuid references users(id),
+    status text not null check (status in ('available', 'leased', 'maintenance')),
+    monthly_rent numeric not null,
+    security_deposit numeric not null,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
+-- Create leases table if it doesn't exist
+create table if not exists leases (
+    id uuid primary key default uuid_generate_v4(),
+    property_id uuid references properties(id) on delete cascade,
+    tenant_id uuid references users(id) on delete cascade,
+    start_date date not null,
+    end_date date not null,
+    status text not null check (status in ('pending', 'active', 'expired', 'terminated')),
+    monthly_rent numeric not null,
+    security_deposit numeric not null,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
 
 -- Create property_amenities table
-create table property_amenities (
+create table if not exists property_amenities (
     id uuid primary key default uuid_generate_v4(),
     property_id uuid references properties(id) on delete cascade,
     name text not null,
@@ -19,7 +58,7 @@ create table property_amenities (
 );
 
 -- Create property_media table
-create table property_media (
+create table if not exists property_media (
     id uuid primary key default uuid_generate_v4(),
     property_id uuid references properties(id) on delete cascade,
     type text not null check (type in ('image', 'video', 'document')),
@@ -31,7 +70,7 @@ create table property_media (
 );
 
 -- Create lease_documents table
-create table lease_documents (
+create table if not exists lease_documents (
     id uuid primary key default uuid_generate_v4(),
     lease_id uuid references leases(id) on delete cascade,
     version integer not null,
@@ -44,7 +83,7 @@ create table lease_documents (
 );
 
 -- Create lease_renewals table
-create table lease_renewals (
+create table if not exists lease_renewals (
     id uuid primary key default uuid_generate_v4(),
     lease_id uuid references leases(id) on delete cascade,
     new_start_date date not null,
@@ -55,7 +94,7 @@ create table lease_renewals (
 );
 
 -- Create maintenance_schedule table
-create table maintenance_schedule (
+create table if not exists maintenance_schedule (
     id uuid primary key default uuid_generate_v4(),
     property_id uuid references properties(id) on delete cascade,
     title text not null,
@@ -69,7 +108,7 @@ create table maintenance_schedule (
 );
 
 -- Create maintenance_history table
-create table maintenance_history (
+create table if not exists maintenance_history (
     id uuid primary key default uuid_generate_v4(),
     schedule_id uuid references maintenance_schedule(id) on delete cascade,
     performed_by uuid references users(id),
@@ -78,8 +117,21 @@ create table maintenance_history (
     created_at timestamp with time zone default now()
 );
 
+-- Create payments table if it doesn't exist
+create table if not exists payments (
+    id uuid primary key default uuid_generate_v4(),
+    lease_id uuid references leases(id) on delete cascade,
+    amount numeric not null,
+    type text not null check (type in ('rent', 'deposit', 'maintenance')),
+    status text not null check (status in ('pending', 'completed', 'failed')),
+    due_date date not null,
+    paid_date timestamp with time zone,
+    created_at timestamp with time zone default now(),
+    updated_at timestamp with time zone default now()
+);
+
 -- Create payment_receipts table
-create table payment_receipts (
+create table if not exists payment_receipts (
     id uuid primary key default uuid_generate_v4(),
     payment_id uuid references payments(id) on delete cascade,
     receipt_number text not null unique,
@@ -88,10 +140,10 @@ create table payment_receipts (
 );
 
 -- Create late_fees table
-create table late_fees (
+create table if not exists late_fees (
     id uuid primary key default uuid_generate_v4(),
     payment_id uuid references payments(id) on delete cascade,
-    amount decimal(10,2) not null,
+    amount numeric not null,
     days_late integer not null,
     status text not null check (status in ('pending', 'paid', 'waived')),
     created_at timestamp with time zone default now(),
@@ -99,14 +151,51 @@ create table late_fees (
 );
 
 -- Add RLS policies
+alter table users enable row level security;
+alter table properties enable row level security;
+alter table leases enable row level security;
 alter table property_amenities enable row level security;
 alter table property_media enable row level security;
 alter table lease_documents enable row level security;
 alter table lease_renewals enable row level security;
 alter table maintenance_schedule enable row level security;
 alter table maintenance_history enable row level security;
+alter table payments enable row level security;
 alter table payment_receipts enable row level security;
 alter table late_fees enable row level security;
+
+-- Create policies for users
+create policy "Users can view their own profile"
+    on users for select
+    using (auth.uid() = id);
+
+create policy "Users can update their own profile"
+    on users for update
+    using (auth.uid() = id);
+
+-- Create policies for properties
+create policy "Users can view properties they own or rent"
+    on properties for select
+    using (
+        landlord_id = auth.uid()
+        or exists (
+            select 1 from leases
+            where property_id = properties.id
+            and tenant_id = auth.uid()
+        )
+    );
+
+-- Create policies for leases
+create policy "Users can view their leases"
+    on leases for select
+    using (
+        tenant_id = auth.uid()
+        or exists (
+            select 1 from properties
+            where id = leases.property_id
+            and landlord_id = auth.uid()
+        )
+    );
 
 -- Create policies for property_amenities
 create policy "Users can view property amenities"
@@ -212,6 +301,24 @@ create policy "Users can view maintenance history"
                     select 1 from leases l
                     where l.property_id = p.id
                     and l.tenant_id = auth.uid()
+                )
+            )
+        )
+    );
+
+-- Create policies for payments
+create policy "Users can view their payments"
+    on payments for select
+    using (
+        exists (
+            select 1 from leases l
+            where l.id = payments.lease_id
+            and (
+                l.tenant_id = auth.uid()
+                or exists (
+                    select 1 from properties p
+                    where p.id = l.property_id
+                    and p.landlord_id = auth.uid()
                 )
             )
         )
