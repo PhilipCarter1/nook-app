@@ -102,7 +102,7 @@ create table if not exists maintenance_schedule (
     frequency text not null check (frequency in ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
     last_performed timestamp with time zone,
     next_due timestamp with time zone,
-    assigned_to uuid references users(id),
+    assigned_to uuid references users(id),help 
     created_at timestamp with time zone default now(),
     updated_at timestamp with time zone default now()
 );
