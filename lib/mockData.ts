@@ -12,10 +12,14 @@ export const mockUsers: User[] = [
     name: 'John Tenant',
     role: 'tenant',
     property_id: '1',
-    avatar_url: null,
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tenant',
     phone: '+1234567890',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -23,10 +27,14 @@ export const mockUsers: User[] = [
     name: 'Jane Landlord',
     role: 'landlord',
     property_id: null,
-    avatar_url: null,
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=landlord',
     phone: '+1234567891',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '3',
@@ -34,11 +42,15 @@ export const mockUsers: User[] = [
     name: 'Admin User',
     role: 'admin',
     property_id: null,
-    avatar_url: null,
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
     phone: '+1234567892',
+    email_verified: true,
+    last_login: new Date().toISOString(),
+    password_reset_token: null,
+    password_reset_expires: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockClients: Client[] = [
@@ -49,16 +61,16 @@ export const mockClients: Client[] = [
       features: {
         legalAssistant: true,
         concierge: false,
-        customBranding: true,
+        customBranding: true
       },
       branding: {
         primaryColor: '#8b5cf6',
-        logo: '/logos/acme.png',
-      },
+        logo: '/logos/acme.png'
+      }
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockProperties: Property[] = [
@@ -73,7 +85,7 @@ export const mockProperties: Property[] = [
     monthly_rent: 2500,
     security_deposit: 1000,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -86,8 +98,8 @@ export const mockProperties: Property[] = [
     monthly_rent: 3200,
     security_deposit: 1200,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockPayments: Payment[] = [
@@ -100,7 +112,7 @@ export const mockPayments: Payment[] = [
     due_date: new Date().toISOString(),
     paid_date: new Date().toISOString(),
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -111,8 +123,8 @@ export const mockPayments: Payment[] = [
     due_date: new Date().toISOString(),
     paid_date: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockMaintenanceTickets = [
@@ -127,7 +139,7 @@ export const mockMaintenanceTickets = [
     assigned_to: null,
     upvotes: 2,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -140,8 +152,8 @@ export const mockMaintenanceTickets = [
     assigned_to: null,
     upvotes: 5,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ];
 
 export const mockDocuments = [
@@ -155,7 +167,7 @@ export const mockDocuments = [
     approved_by: '2',
     url: '/documents/id.pdf',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
@@ -167,6 +179,6 @@ export const mockDocuments = [
     approved_by: null,
     url: '/documents/income.pdf',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()
+  }
 ]; 
