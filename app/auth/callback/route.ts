@@ -9,8 +9,23 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = createRouteHandlerClient({ cookies });
     await supabase.auth.exchangeCodeForSession(code);
+
+    // Check if user already has a role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      // If user has a role, redirect to dashboard
+      if (userData?.role) {
+        return NextResponse.redirect(new URL('/dashboard', requestUrl.origin));
+      }
+    }
   }
 
-  // URL to redirect to after sign in process completes
+  // If no role is set, redirect to role selection
   return NextResponse.redirect(new URL('/role-select', requestUrl.origin));
 } 

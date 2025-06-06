@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (mounted) {
               setUser({ ...authUser, ...userData } as UserWithAuth);
               setRole(userData.role as UserRole);
+              setLoading(false);
             }
           } else {
             console.log('No user data found, creating new user record...');
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.log('New user data created:', newUserData);
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
               setRole(newUserData.role as UserRole);
+              setLoading(false);
             }
           }
         } else {
@@ -89,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (mounted) {
             setUser(null);
             setRole(null);
+            setLoading(false);
           }
         }
       } catch (error) {
@@ -96,9 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted) {
           setUser(null);
           setRole(null);
-        }
-      } finally {
-        if (mounted) {
           setLoading(false);
         }
       }
