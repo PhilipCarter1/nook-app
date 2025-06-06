@@ -31,14 +31,15 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
   ],
-  coverageThreshold: {
+  // Only enforce coverage thresholds in CI
+  coverageThreshold: process.env.CI ? {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
       statements: 80,
     },
-  },
+  } : undefined,
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
