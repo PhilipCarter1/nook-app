@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Settings, Shield } from 'lucide-react';
+import { Building2, MessageSquare, CreditCard, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -11,75 +11,71 @@ import type { Database } from '@/types/supabase';
 
 const MotionDiv = motion.div;
 
-export default function AdminDashboard() {
+export default function TenantDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = React.useState({
-    totalUsers: 0,
-    totalProperties: 0,
-    activeClients: 0,
-    systemStatus: 'Healthy'
-  });
+  const [propertyData, setPropertyData] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const supabase = createClientComponentClient<Database>();
 
   React.useEffect(() => {
-    async function fetchAdminStats() {
+    async function fetchTenantData() {
+      if (!user) return;
+
       try {
-        // Fetch total users
-        const { count: userCount } = await supabase
+        // Fetch tenant's property data
+        const { data: tenantData, error: tenantError } = await supabase
           .from('users')
-          .select('*', { count: 'exact', head: true });
+          .select('property_id')
+          .eq('id', user.id)
+          .single();
 
-        // Fetch total properties
-        const { count: propertyCount } = await supabase
-          .from('properties')
-          .select('*', { count: 'exact', head: true });
+        if (tenantError) throw tenantError;
 
-        // Fetch active clients
-        const { count: clientCount } = await supabase
-          .from('clients')
-          .select('*', { count: 'exact', head: true });
+        if (tenantData?.property_id) {
+          // Fetch property details
+          const { data: property, error: propertyError } = await supabase
+            .from('properties')
+            .select('*')
+            .eq('id', tenantData.property_id)
+            .single();
 
-        setStats({
-          totalUsers: userCount || 0,
-          totalProperties: propertyCount || 0,
-          activeClients: clientCount || 0,
-          systemStatus: 'Healthy'
-        });
+          if (propertyError) throw propertyError;
+          setPropertyData(property);
+        }
       } catch (error) {
-        console.error('Error fetching admin stats:', error);
+        console.error('Error fetching tenant data:', error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchAdminStats();
-  }, [supabase]);
+    fetchTenantData();
+  }, [user, supabase]);
 
-  const statItems = [
+  const stats = [
     {
-      name: 'Total Users',
-      value: stats.totalUsers.toString(),
-      icon: Users,
-      description: 'Across all roles',
-    },
-    {
-      name: 'Properties',
-      value: stats.totalProperties.toString(),
+      name: 'Property',
+      value: propertyData?.name || 'Not Assigned',
       icon: Building2,
-      description: 'Total properties',
+      description: 'Your current residence',
     },
     {
-      name: 'Active Clients',
-      value: stats.activeClients.toString(),
-      icon: Shield,
-      description: 'With active subscriptions',
+      name: 'Maintenance',
+      value: '0',
+      icon: MessageSquare,
+      description: 'Open requests',
     },
     {
-      name: 'System Status',
-      value: stats.systemStatus,
-      icon: Settings,
-      description: 'All systems operational',
+      name: 'Payments',
+      value: '$0',
+      icon: CreditCard,
+      description: 'This month',
+    },
+    {
+      name: 'Documents',
+      value: '0',
+      icon: FileText,
+      description: 'Pending review',
     },
   ];
 
@@ -88,7 +84,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <RoleGuard allowedRoles={['admin']}>
+    <RoleGuard allowedRoles={['tenant']}>
       <div>
         <MotionDiv
           initial={{ opacity: 0, y: 20 }}
@@ -97,7 +93,7 @@ export default function AdminDashboard() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Admin Dashboard
+            Tenant Dashboard
           </h1>
           <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
             Welcome back, {user?.email}
@@ -105,7 +101,7 @@ export default function AdminDashboard() {
         </MotionDiv>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {statItems.map((stat) => (
+          {stats.map((stat) => (
             <MotionDiv
               key={stat.name}
               initial={{ opacity: 0, y: 20 }}
@@ -158,13 +154,13 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="space-y-2">
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-nook-purple-50 dark:text-gray-300 dark:hover:bg-nook-purple-900/50 rounded-md transition-colors">
-                    Create New User
+                    Submit Maintenance Request
                   </button>
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-nook-purple-50 dark:text-gray-300 dark:hover:bg-nook-purple-900/50 rounded-md transition-colors">
-                    Manage Clients
+                    Make Payment
                   </button>
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-nook-purple-50 dark:text-gray-300 dark:hover:bg-nook-purple-900/50 rounded-md transition-colors">
-                    System Settings
+                    View Documents
                   </button>
                 </div>
               </CardContent>
