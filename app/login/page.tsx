@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { LoadingPage } from '@/components/ui/loading';
+import { supabase } from '@/lib/supabase';
 
 const MotionDiv = motion.div;
 
@@ -28,7 +29,33 @@ export default function LoginPage() {
 
     try {
       await signIn(email, password);
-      router.push('/dashboard');
+      
+      // Get user role from the auth provider
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (userData) {
+          // Redirect based on role
+          switch (userData.role) {
+            case 'admin':
+              router.push('/admin/dashboard');
+              break;
+            case 'landlord':
+              router.push('/landlord/dashboard');
+              break;
+            case 'tenant':
+              router.push('/tenant/dashboard');
+              break;
+            default:
+              router.push('/dashboard');
+          }
+        }
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       toast.error(error.message || 'Invalid email or password');
@@ -71,6 +98,7 @@ export default function LoginPage() {
                     required
                     className="focus:ring-nook-purple-500"
                     disabled={loading}
+                    placeholder="Enter your email"
                   />
                 </div>
                 <div className="space-y-2">
@@ -83,6 +111,7 @@ export default function LoginPage() {
                     required
                     className="focus:ring-nook-purple-500"
                     disabled={loading}
+                    placeholder="Enter your password"
                   />
                 </div>
                 <Button 

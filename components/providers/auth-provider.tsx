@@ -58,6 +58,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser({ ...authUser, ...userData } as UserWithAuth);
               setRole(userData.role as UserRole);
               setLoading(false);
+
+              // Redirect based on role
+              const pathname = window.location.pathname;
+              if (pathname === '/login' || pathname === '/signup') {
+                switch (userData.role) {
+                  case 'admin':
+                    router.push('/admin/dashboard');
+                    break;
+                  case 'landlord':
+                    router.push('/landlord/dashboard');
+                    break;
+                  case 'tenant':
+                    router.push('/tenant/dashboard');
+                    break;
+                  default:
+                    router.push('/dashboard');
+                }
+              }
             }
           } else {
             console.log('No user data found, creating new user record...');
@@ -84,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
               setRole(newUserData.role as UserRole);
               setLoading(false);
+              router.push('/tenant/dashboard');
             }
           }
         } else {
@@ -151,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      router.push('/');
     } finally {
       setLoading(false);
     }
