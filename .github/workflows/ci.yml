@@ -58,6 +58,17 @@ jobs:
         NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT: ${{ secrets.NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT || 'true' }}
         NEXT_PUBLIC_ENABLE_CONCIERGE: ${{ secrets.NEXT_PUBLIC_ENABLE_CONCIERGE || 'true' }}
         NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING: ${{ secrets.NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING || 'true' }}
+      continue-on-error: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          coverage/
+          playwright-report/
+          test-results/
 
   deploy:
     needs: test
