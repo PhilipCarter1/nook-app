@@ -2,9 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MainNav } from './MainNav';
 
 interface SidebarProps {
-  userRole: 'tenant' | 'landlord' | 'admin';
+  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
+  className?: string;
 }
 
 const navigation = {
@@ -28,34 +32,19 @@ const navigation = {
   ],
 };
 
-export function Sidebar({ userRole }: SidebarProps) {
+export function Sidebar({ userRole, className }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex min-h-0 flex-1 flex-col border-r bg-background">
-        <div className="flex h-16 flex-shrink-0 items-center px-4">
-          <Link href="/" className="text-xl font-bold text-primary">
-            Nook
-          </Link>
-        </div>
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation[userRole].map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'group flex items-center rounded-md px-2 py-2 text-sm font-medium',
-                  pathname === item.href
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+    <div className={cn('pb-12 hidden lg:block', className)}>
+      <div className="space-y-4 py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+            Navigation
+          </h2>
+          <ScrollArea className="h-[300px] px-2">
+            <MainNav userRole={userRole} />
+          </ScrollArea>
         </div>
       </div>
     </div>

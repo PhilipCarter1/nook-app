@@ -1,33 +1,116 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Building2, Users, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '@/types/supabase';
+import { UserRole } from '@/lib/types';
+import { Building2, User, Shield, Wrench } from 'lucide-react';
 
 const MotionDiv = motion.div;
 
-export default function RoleSelectPage() {
+const roles = [
+  {
+    id: 'tenant',
+    title: 'Tenant',
+    description: 'I am looking to rent a property',
+    icon: User,
+    features: [
+      'View and manage your rental property',
+      'Submit maintenance requests',
+      'Pay rent online',
+      'Access important documents'
+    ]
+  },
+  {
+    id: 'landlord',
+    title: 'Landlord',
+    description: 'I own or manage properties',
+    icon: Building2,
+    features: [
+      'Manage multiple properties',
+      'Track rent payments',
+      'Handle maintenance requests',
+      'Manage tenant communications'
+    ]
+  },
+  {
+    id: 'super',
+    title: 'Property Manager',
+    description: 'I manage maintenance and operations',
+    icon: Wrench,
+    features: [
+      'View and manage maintenance requests',
+      'Track maintenance history',
+      'Schedule maintenance tasks',
+      'Communicate with tenants and landlords'
+    ]
+  },
+  {
+    id: 'admin',
+    title: 'Administrator',
+    description: 'I manage the platform',
+    icon: Shield,
+    features: [
+      'System-wide management',
+      'User management',
+      'Platform configuration',
+      'Analytics and reporting'
+    ]
+  }
+];
+
+export default function RoleSelect() {
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const supabase = createClientComponentClient<Database>();
 
-  const handleRoleSelect = async (role: string) => {
+  const handleRoleSelect = async (role: UserRole) => {
+    setSelectedRole(role);
+    setLoading(true);
+
     try {
-      const response = await fetch('/api/auth/role', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to set role');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No authenticated user found');
       }
 
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error setting role:', error);
+      // Update user role in the database
+      const { error } = await supabase
+        .from('users')
+        .update({ role })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Role selected successfully!');
+      
+      // Redirect based on role
+      switch (role) {
+        case 'admin':
+          router.push('/admin/dashboard');
+          break;
+        case 'landlord':
+          router.push('/landlord/dashboard');
+          break;
+        case 'super':
+          router.push('/super/dashboard');
+          break;
+        case 'tenant':
+          router.push('/tenant/dashboard');
+          break;
+      }
+    } catch (error: any) {
+      console.error('Error selecting role:', error);
+      toast.error(error.message || 'Failed to select role');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,100 +121,49 @@ export default function RoleSelectPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto"
+          className="max-w-4xl mx-auto"
         >
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
-              Select Your Role
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Choose how you'll use Nook to manage your properties
-            </p>
-          </div>
-          
-          <div className="grid gap-6 md:grid-cols-2">
-            <MotionDiv
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Card 
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleRoleSelect('tenant')}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-4 mb-2">
-                    <Users className="h-8 w-8 text-nook-purple-500" />
-                    <CardTitle>Tenant</CardTitle>
-                  </div>
-                  <CardDescription>
-                    I am looking to rent a property
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Submit maintenance requests
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Pay rent online
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Split rent with roommates
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Track payment history
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </MotionDiv>
-
-            <MotionDiv
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card 
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleRoleSelect('landlord')}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-4 mb-2">
-                    <Building2 className="h-8 w-8 text-nook-purple-500" />
-                    <CardTitle>Landlord</CardTitle>
-                  </div>
-                  <CardDescription>
-                    I own or manage properties
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Manage properties
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Handle maintenance requests
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Track rent payments
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ArrowRight className="h-4 w-4 text-nook-purple-500" />
-                      Generate reports
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </MotionDiv>
-          </div>
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold text-center">
+                Select Your Role
+              </CardTitle>
+              <p className="text-center text-sm text-muted-foreground">
+                Choose how you'll use Nook
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {roles.map((role) => (
+                  <Card
+                    key={role.id}
+                    className={`p-6 cursor-pointer transition-all ${
+                      selectedRole === role.id
+                        ? 'border-nook-purple-500 bg-nook-purple-50 dark:bg-nook-purple-900/20'
+                        : 'hover:border-nook-purple-300'
+                    }`}
+                    onClick={() => handleRoleSelect(role.id as UserRole)}
+                  >
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <role.icon className="w-12 h-12 text-nook-purple-500" />
+                      <h3 className="text-lg font-semibold">{role.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {role.description}
+                      </p>
+                      <ul className="text-sm text-left space-y-2">
+                        {role.features.map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <span className="mr-2">•</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </MotionDiv>
       </div>
     </div>

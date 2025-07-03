@@ -1,21 +1,27 @@
 import Stripe from 'stripe';
-import { supabase } from './supabase';
+import { db } from './db';
+import { payments } from './db/schema';
+import { eq } from 'drizzle-orm';
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+  throw new Error('STRIPE_SECRET_KEY is not set');
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
 
-export async function createPaymentIntent(amount: number, currency: string = 'usd') {
+export async function createPaymentIntent(amount: number, leaseId: string) {
   try {
+    // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency,
+      amount: amount * 100, // Convert to cents
+      currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
+      },
+      metadata: {
+        leaseId,
       },
     });
 
@@ -25,6 +31,50 @@ export async function createPaymentIntent(amount: number, currency: string = 'us
     };
   } catch (error) {
     console.error('Error creating payment intent:', error);
+    throw error;
+  }
+}
+
+export async function handleStripeWebhook(event: Stripe.Event) {
+  try {
+    switch (event.type) {
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const { leaseId } = paymentIntent.metadata;
+
+        // Update payment record
+        await db.update(payments)
+          .set({
+            status: 'completed',
+            stripePaymentId: paymentIntent.id,
+            paidAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(payments.leaseId, leaseId));
+
+        // TODO: Send email notification
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const { leaseId } = paymentIntent.metadata;
+
+        // Update payment record
+        await db.update(payments)
+          .set({
+            status: 'failed',
+            stripePaymentId: paymentIntent.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(payments.leaseId, leaseId));
+
+        // TODO: Send email notification
+        break;
+      }
+    }
+  } catch (error) {
+    console.error('Error handling webhook:', error);
     throw error;
   }
 }

@@ -1,119 +1,90 @@
 #!/bin/bash
 
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+echo "🚀 Starting pre-deployment checks..."
 
-echo -e "${BLUE}Starting pre-deployment checks...${NC}"
-
-# Skip environment variable checks if running locally
-if [ "$CI" != "true" ]; then
-  echo -e "\n${BLUE}Skipping environment variable checks (running locally)...${NC}"
-  echo -e "${BLUE}Note: Make sure to set all required environment variables in Vercel before deployment.${NC}"
-else
-  # Check for required environment variables
-  echo -e "\n${BLUE}Checking environment variables...${NC}"
-  required_vars=(
-    "NEXT_PUBLIC_SUPABASE_URL"
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
-    "STRIPE_SECRET_KEY"
-    "STRIPE_WEBHOOK_SECRET"
-    "RESEND_API_KEY"
-    "SENDGRID_API_KEY"
-    "NEXT_PUBLIC_SENTRY_DSN"
-    "NEXT_PUBLIC_APP_URL"
-    "NEXT_PUBLIC_APP_NAME"
-    "NEXT_PUBLIC_APP_DESCRIPTION"
-    "NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT"
-    "NEXT_PUBLIC_ENABLE_CONCIERGE"
-    "NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING"
-  )
-
-  missing_vars=0
-  for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-      echo -e "${RED}Missing environment variable: $var${NC}"
-      missing_vars=1
-    else
-      echo -e "${GREEN}✓ $var is set${NC}"
-    fi
-  done
-
-  if [ $missing_vars -eq 1 ]; then
-    echo -e "\n${RED}Please set all required environment variables before deploying.${NC}"
+# Check if we're in the right directory
+if [ ! -f "package.json" ]; then
+    echo "❌ Error: package.json not found. Please run this script from the project root."
     exit 1
-  fi
+fi
+
+# Check Node.js version
+echo "📋 Checking Node.js version..."
+NODE_VERSION=$(node --version)
+echo "Node.js version: $NODE_VERSION"
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm ci --silent
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Failed to install dependencies"
+    exit 1
 fi
 
 # Run linting
-echo -e "\n${BLUE}Running linting...${NC}"
-npm run lint -- --max-warnings 1000
-lint_status=$?
-if [ $lint_status -ne 0 ]; then
-  echo -e "${YELLOW}Warning: Linting issues found. These will not block deployment but should be fixed.${NC}"
+echo "🔍 Running linting checks..."
+npm run lint
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Linting failed"
+    exit 1
 fi
 
 # Run type checking
-echo -e "\n${BLUE}Running type checking...${NC}"
-npm run build
-build_status=$?
-if [ $build_status -ne 0 ]; then
-  echo -e "${RED}Type checking failed. Please fix the issues before deploying.${NC}"
-  exit 1
-fi
-
-# Run tests
-echo -e "\n${BLUE}Running tests...${NC}"
-npm test
-test_status=$?
-if [ $test_status -ne 0 ]; then
-  echo -e "${YELLOW}Warning: Some tests failed. These will not block deployment but should be investigated.${NC}"
-  echo -e "${YELLOW}Test results and coverage reports have been saved as artifacts.${NC}"
-fi
-
-# Check for uncommitted changes
-echo -e "\n${BLUE}Checking for uncommitted changes...${NC}"
-if [ -n "$(git status --porcelain)" ]; then
-  echo -e "${RED}You have uncommitted changes. Please commit or stash them before deploying.${NC}"
-  exit 1
-fi
-
-# Check if we're on the main branch
-echo -e "\n${BLUE}Checking current branch...${NC}"
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [ "$current_branch" != "main" ]; then
-  echo -e "${RED}You are not on the main branch. Please switch to main before deploying.${NC}"
-  exit 1
-fi
-
-# Pull latest changes
-echo -e "\n${BLUE}Pulling latest changes...${NC}"
-git pull origin main
+echo "🔍 Running TypeScript checks..."
+npx tsc --noEmit
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Failed to pull latest changes. Please resolve any conflicts before deploying.${NC}"
-  exit 1
+    echo "❌ Error: TypeScript errors found"
+    exit 1
 fi
 
-# Final status
-if [ $lint_status -eq 0 ] && [ $build_status -eq 0 ]; then
-  echo -e "\n${GREEN}✓ Pre-deployment checks completed successfully${NC}"
-  echo -e "\n${BLUE}Deployment Checklist:${NC}"
-  echo "1. Environment variables are set in Vercel"
-  echo "2. Database migrations are up to date"
-  echo "3. Stripe webhook is configured"
-  echo "4. Sentry error tracking is set up"
-  echo "5. Custom domain is configured (if applicable)"
-  echo "6. SSL certificate is valid"
-  echo "7. Security headers are properly configured"
-  echo "8. SEO meta tags are set"
-  echo "9. Analytics is configured"
-  echo "10. Backup strategy is in place"
-  exit 0
-else
-  echo -e "\n${YELLOW}⚠ Pre-deployment checks completed with warnings${NC}"
-  exit 0
-fi 
+# Run unit tests
+echo "🧪 Running unit tests..."
+npm run test:unit
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Unit tests failed"
+    exit 1
+fi
+
+# Run E2E tests
+echo "🧪 Running E2E tests..."
+npm run test:e2e
+if [ $? -ne 0 ]; then
+    echo "❌ Error: E2E tests failed"
+    exit 1
+fi
+
+# Build the application
+echo "🏗️ Building application..."
+npm run build
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Build failed"
+    exit 1
+fi
+
+# Check bundle size
+echo "📊 Checking bundle size..."
+npx @next/bundle-analyzer .next/static/chunks/pages/**/*.js
+
+# Check for security vulnerabilities
+echo "🔒 Checking for security vulnerabilities..."
+npm audit --audit-level moderate
+if [ $? -ne 0 ]; then
+    echo "⚠️ Warning: Security vulnerabilities found. Please review and fix."
+fi
+
+# Check environment variables
+echo "🔧 Checking environment variables..."
+if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+    echo "⚠️ Warning: NEXT_PUBLIC_SUPABASE_URL not set"
+fi
+
+if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+    echo "⚠️ Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY not set"
+fi
+
+if [ -z "$STRIPE_SECRET_KEY" ]; then
+    echo "⚠️ Warning: STRIPE_SECRET_KEY not set"
+fi
+
+echo "✅ All pre-deployment checks passed!"
+echo "🚀 Ready for deployment!" 

@@ -150,3 +150,6 @@ export async function getPaymentsByProperty(propertyId: string) {
 export function getClient() {
   return supabase;
 }
+
+// Export createClient for backward compatibility
+export const createClient = () => supabase;

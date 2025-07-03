@@ -2,7 +2,7 @@ import React from 'react';
 import { useFeatureFlags } from '@/lib/hooks/use-feature-flags';
 
 interface FeatureGateProps {
-  feature: 'legal_assistant' | 'concierge_setup' | 'custom_branding';
+  feature: 'legal_assistant' | 'concierge_setup' | 'custom_branding' | 'maintenance_tickets' | 'split_payments' | 'pre_lease_flow' | 'document_upload' | 'dark_mode';
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }

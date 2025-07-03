@@ -1,142 +1,138 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useAuth } from '@/components/providers/auth-provider';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import { LoadingPage } from '@/components/ui/loading';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 
-const MotionDiv = motion.div;
-
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    return true;
+  };
+
+  const validatePassword = (password: string) => {
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!validateEmail(formData.email) || !validatePassword(formData.password)) {
+      return;
+    }
+    
+    setIsLoading(true);
 
     try {
-      await signIn(email, password);
-      
-      // Get user role from the auth provider
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-        if (userData) {
-          // Redirect based on role
-          switch (userData.role) {
-            case 'admin':
-              router.push('/admin/dashboard');
-              break;
-            case 'landlord':
-              router.push('/landlord/dashboard');
-              break;
-            case 'tenant':
-              router.push('/tenant/dashboard');
-              break;
-            default:
-              router.push('/dashboard');
-          }
-        }
+      if (signInError) {
+        setError('Invalid email or password');
+        return;
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      toast.error(error.message || 'Invalid email or password');
+
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Invalid email or password');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
-    return <LoadingPage />;
-  }
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    if (field === 'email') {
+      validateEmail(value);
+    } else if (field === 'password') {
+      validatePassword(value);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-      <div className="container mx-auto px-4 py-16">
-        <MotionDiv
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md mx-auto"
-        >
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">
-                Welcome Back
-              </CardTitle>
-              <p className="text-center text-sm text-muted-foreground">
-                Enter your credentials to access your account
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center">Welcome back</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
+                aria-label="Email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                required
+                aria-label="Password"
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-500" role="alert">{error}</p>
+            )}
+
+            {searchParams?.get('message') && (
+              <p className="text-sm text-green-600" role="alert">{searchParams.get('message')}</p>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </Button>
+
+            <div className="text-center space-y-2">
+              <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-500">
+                Forgot password?
+              </Link>
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link href="/signup" className="text-blue-600 hover:text-blue-500">
+                  Create an account
+                </Link>
               </p>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="focus:ring-nook-purple-500"
-                    disabled={loading}
-                    placeholder="Enter your email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="focus:ring-nook-purple-500"
-                    disabled={loading}
-                    placeholder="Enter your password"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-nook-purple-600 hover:bg-nook-purple-500" 
-                  disabled={loading}
-                >
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </form>
-              <div className="mt-6 text-center text-sm">
-                <p className="text-muted-foreground">
-                  Don't have an account?{' '}
-                  <Link
-                    href="/signup"
-                    className="text-nook-purple-600 hover:text-nook-purple-500 font-medium inline-flex items-center"
-                  >
-                    Sign up <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </MotionDiv>
-      </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

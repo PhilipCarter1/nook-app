@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,19 +15,38 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { MaintenanceTicketList } from '@/components/maintenance/MaintenanceTicketList';
+import { MaintenanceTicketForm } from '@/components/maintenance/MaintenanceTicketForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getTicketStats } from '@/lib/services/maintenance';
+import { useQuery } from '@tanstack/react-query';
+
+interface MaintenanceTicket {
+  id: string;
+  title: string;
+  description: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  priority: 'low' | 'medium' | 'high';
+  created_at: string;
+}
 
 export default function MaintenancePage() {
   const { role } = useAuth();
-  const [tickets, setTickets] = React.useState<any[]>([]);
+  const [tickets, setTickets] = React.useState<MaintenanceTicket[]>([]);
   const [showForm, setShowForm] = React.useState(false);
   const [formData, setFormData] = React.useState({
     title: '',
     description: '',
-    priority: 'medium',
+    priority: 'medium' as const,
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ['maintenance-stats'],
+    queryFn: () => getTicketStats({}),
   });
 
   // Mock data for now - will be replaced with actual data fetching
-  const mockTickets = [
+  const mockTickets: MaintenanceTicket[] = [
     {
       id: '1',
       title: 'Leaking Faucet',
@@ -57,7 +76,7 @@ export default function MaintenancePage() {
   React.useEffect(() => {
     // TODO: Fetch maintenance tickets
     setTickets(mockTickets);
-  }, []);
+  }, [mockTickets]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,104 +98,70 @@ export default function MaintenancePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Maintenance Requests</h1>
-        {role === 'tenant' && (
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Request
-          </Button>
-        )}
-      </div>
-
-      {showForm && (
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Submit Maintenance Request</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={formData.priority}
-                  onValueChange={(value) => setFormData({ ...formData, priority: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Submit Request</Button>
-              </div>
-            </form>
+            <div className="text-2xl font-bold">{stats?.total || 0}</div>
           </CardContent>
         </Card>
-      )}
-
-      <div className="grid gap-4">
-        {tickets.map((ticket) => (
-          <Card key={ticket.id}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">{ticket.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{ticket.description}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(ticket.status)}
-                  <span className="text-sm capitalize">{ticket.status}</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">
-                    Priority: {ticket.priority}
-                  </span>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {new Date(ticket.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.byStatus.open || 0}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.byStatus.in_progress || 0}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Urgent Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.byPriority.high + stats?.byPriority.emergency || 0}</div>
+          </CardContent>
+        </Card>
       </div>
+
+      <Tabs defaultValue="all" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="all">All Tickets</TabsTrigger>
+          <TabsTrigger value="open">Open</TabsTrigger>
+          <TabsTrigger value="in_progress">In Progress</TabsTrigger>
+          <TabsTrigger value="resolved">Resolved</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="space-y-4">
+          <Suspense fallback={<div>Loading...</div>}>
+            <MaintenanceTicketList />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="open" className="space-y-4">
+          <Suspense fallback={<div>Loading...</div>}>
+            <MaintenanceTicketList status="open" />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="in_progress" className="space-y-4">
+          <Suspense fallback={<div>Loading...</div>}>
+            <MaintenanceTicketList status="in_progress" />
+          </Suspense>
+        </TabsContent>
+        <TabsContent value="resolved" className="space-y-4">
+          <Suspense fallback={<div>Loading...</div>}>
+            <MaintenanceTicketList status="resolved" />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 } 

@@ -1,116 +1,191 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { MaintenanceTicketList } from '@/components/maintenance/MaintenanceTicketList';
+import { MaintenanceTicketForm } from '@/components/maintenance/MaintenanceTicketForm';
+import { MaintenanceTicketDetail } from '@/components/maintenance/MaintenanceTicketDetail';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  createMaintenanceTicket,
+  getMaintenanceTickets,
+  getMaintenanceTicket,
+  updateMaintenanceTicket,
+  addMaintenanceComment,
+  assignMaintenanceTicket,
+} from '@/lib/services/maintenance';
+import { toast } from 'sonner';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { PremiumLayout } from '@/components/layout/PremiumLayout';
 import { useAuth } from '@/components/providers/auth-provider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Wrench } from 'lucide-react';
-import { motion } from 'framer-motion';
-import MaintenanceRequest from '@/components/MaintenanceRequest';
-
-const MotionDiv = motion.div;
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MaintenancePage() {
-  const { user, role } = useAuth();
-  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const ticketId = searchParams?.get('ticket') || null;
+  const isCreating = searchParams?.get('create') === 'true';
 
-  const tickets = [
-    {
-      id: '1',
-      title: 'Leaking Faucet',
-      description: 'Kitchen sink faucet is leaking water onto the counter.',
-      status: 'open',
-      priority: 'medium',
-      created_by: {
-        name: 'John Doe',
-      },
+  const { data: tickets, isLoading: isLoadingTickets } = useQuery({
+    queryKey: ['maintenance-tickets'],
+    queryFn: () => getMaintenanceTickets({}),
+  });
+
+  const { data: selectedTicket, isLoading: isLoadingTicket } = useQuery({
+    queryKey: ['maintenance-ticket', ticketId],
+    queryFn: () => getMaintenanceTicket(ticketId!),
+    enabled: !!ticketId,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createMaintenanceTicket,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-tickets'] });
+      toast.success('Maintenance ticket created successfully');
+      router.push('/maintenance');
     },
-    // Add more mock tickets as needed
-  ];
+    onError: (error) => {
+      toast.error('Failed to create maintenance ticket');
+      console.error('Create ticket error:', error);
+    },
+  });
 
-  const openNewTicketModal = () => {
-    setShowNewTicketModal(true);
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      updateMaintenanceTicket(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['maintenance-ticket', ticketId] });
+      toast.success('Maintenance ticket updated successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to update maintenance ticket');
+      console.error('Update ticket error:', error);
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: ({ ticketId, content }: { ticketId: string; content: string }) =>
+      addMaintenanceComment(ticketId, user?.id || '', content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-ticket', ticketId] });
+      toast.success('Comment added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add comment');
+      console.error('Add comment error:', error);
+    },
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: ({ ticketId, vendorId }: { ticketId: string; vendorId: string }) =>
+      assignMaintenanceTicket(ticketId, vendorId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['maintenance-ticket', ticketId] });
+      toast.success('Vendor assigned successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to assign vendor');
+      console.error('Assign vendor error:', error);
+    },
+  });
+
+  const handleCreateTicket = async (data: {
+    title: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    mediaUrls: string[];
+  }) => {
+    if (!user?.id) {
+      toast.error('You must be logged in to create a ticket');
+      return;
+    }
+
+    await createMutation.mutateAsync({
+      ...data,
+      propertyId: 'current-property-id', // Replace with actual property ID
+      unitId: 'current-unit-id', // Replace with actual unit ID
+      tenantId: user.id,
+    });
   };
 
-  const closeNewTicketModal = () => {
-    setShowNewTicketModal(false);
+  const handleStatusChange = async (status: string) => {
+    if (!ticketId) return;
+    await updateMutation.mutateAsync({
+      id: ticketId,
+      data: { status },
+    });
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-      <div className="container mx-auto px-4 py-8">
-        <MotionDiv
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-between items-center mb-8"
-        >
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Maintenance Tickets
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
-              Track and manage maintenance requests
-            </p>
-          </div>
-          {role === 'tenant' && (
-            <Button 
-              onClick={openNewTicketModal}
-              className="bg-nook-purple-600 hover:bg-nook-purple-500"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Ticket
-            </Button>
-          )}
-        </MotionDiv>
+  const handlePriorityChange = async (priority: string) => {
+    if (!ticketId) return;
+    await updateMutation.mutateAsync({
+      id: ticketId,
+      data: { priority },
+    });
+  };
 
-        <div className="grid gap-6">
-          {tickets.map((ticket, index) => (
-            <MotionDiv
-              key={ticket.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl font-semibold">{ticket.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Created by {ticket.created_by.name}
-                      </p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      ticket.status === 'open' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                      ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    }`}>
-                      {ticket.status}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{ticket.description}</p>
-                  <div className="flex items-center mt-4 text-sm text-muted-foreground">
-                    <Wrench className="h-4 w-4 mr-2 text-nook-purple-500" />
-                    Priority: {ticket.priority}
-                  </div>
-                </CardContent>
-              </Card>
-            </MotionDiv>
+  const handleComment = async (content: string) => {
+    if (!ticketId || !user?.id) return;
+    await commentMutation.mutateAsync({
+      ticketId,
+      content,
+    });
+  };
+
+  const handleAssign = async (vendorId: string) => {
+    if (!ticketId) return;
+    await assignMutation.mutateAsync({
+      ticketId,
+      vendorId,
+    });
+  };
+
+  if (isCreating) {
+    return (
+      <MaintenanceTicketForm
+        propertyId="current-property-id" // Replace with actual property ID
+        unitId="current-unit-id" // Replace with actual unit ID
+        onSubmit={handleCreateTicket}
+        onCancel={() => router.push('/maintenance')}
+      />
+    );
+  }
+
+  if (ticketId && selectedTicket) {
+    return (
+      <MaintenanceTicketDetail
+        ticket={selectedTicket}
+        onStatusChange={handleStatusChange}
+        onPriorityChange={handlePriorityChange}
+        onComment={handleComment}
+        onAssign={handleAssign}
+        onClose={() => router.push('/maintenance')}
+      />
+    );
+  }
+
+  if (isLoadingTickets) {
+    return (
+      <PremiumLayout>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
           ))}
         </div>
+      </PremiumLayout>
+    );
+  }
 
-        {showNewTicketModal && (
-          <MaintenanceRequest
-            propertyId="mock-property-id"
-            userId={user?.id || ''}
-            onRequestSubmitted={closeNewTicketModal}
-            isPremium={true}
-          />
-        )}
-      </div>
-    </div>
+  return (
+    <MaintenanceTicketList
+      tickets={tickets || []}
+      onStatusChange={handleStatusChange}
+      onPriorityChange={handlePriorityChange}
+      onAssign={handleAssign}
+      onCreateTicket={() => router.push('/maintenance?create=true')}
+    />
   );
 } 

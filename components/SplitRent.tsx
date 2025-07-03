@@ -22,14 +22,14 @@ interface Tenant {
 }
 
 interface SplitRentProps {
-  propertyId: string;
+  id: string;
   totalAmount: number;
   dueDate: string;
   onPaymentComplete: () => void;
 }
 
 export default function SplitRent({
-  propertyId,
+  id,
   totalAmount,
   dueDate,
   onPaymentComplete,
@@ -44,7 +44,7 @@ export default function SplitRent({
 
   React.useEffect(() => {
     fetchTenants();
-  }, [propertyId]);
+  }, [id]);
 
   const fetchTenants = async () => {
     try {
@@ -59,7 +59,7 @@ export default function SplitRent({
             avatar_url
           )
         `)
-        .eq('property_id', propertyId);
+        .eq('property_id', id);
 
       if (error) throw error;
 
@@ -106,7 +106,7 @@ export default function SplitRent({
       const { error: splitError } = await supabase
         .from('rent_splits')
         .insert({
-          property_id: propertyId,
+          property_id: id,
           tenant_id: userData.id,
           share_percentage: newTenantShare,
         });
@@ -130,7 +130,7 @@ export default function SplitRent({
       const { data: session, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           amount,
-          propertyId,
+          propertyId: id,
           userId: tenantId,
           type: 'rent',
         },

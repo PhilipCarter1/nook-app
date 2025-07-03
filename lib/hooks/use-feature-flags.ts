@@ -5,6 +5,11 @@ interface FeatureFlags {
   legal_assistant: boolean;
   concierge_setup: boolean;
   custom_branding: boolean;
+  maintenance_tickets: boolean;
+  split_payments: boolean;
+  pre_lease_flow: boolean;
+  document_upload: boolean;
+  dark_mode: boolean;
 }
 
 export function useFeatureFlags() {
@@ -12,6 +17,11 @@ export function useFeatureFlags() {
     legal_assistant: false,
     concierge_setup: false,
     custom_branding: false,
+    maintenance_tickets: true,
+    split_payments: true,
+    pre_lease_flow: true,
+    document_upload: true,
+    dark_mode: true,
   });
   const [loading, setLoading] = useState(true);
   const supabase = getClient();

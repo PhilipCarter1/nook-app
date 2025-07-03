@@ -1,185 +1,128 @@
-'use client';
-
 import React from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/components/providers/auth-provider';
-import { motion } from 'framer-motion';
-
-const MotionDiv = motion.div;
+import Link from 'next/link';
 
 export default function TermsOfService() {
-  const { role } = useAuth();
-  const mappedRole = role === 'builder_super' ? 'landlord' : (role || 'tenant');
-
   return (
-    <MainLayout userRole={mappedRole}>
-      <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-        <div className="container mx-auto px-4 py-16">
-          <MotionDiv
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto"
-          >
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  Terms of Service
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    1. Acceptance of Terms
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    By accessing and using Nook's services, you agree to be bound by these Terms of Service and all applicable laws and regulations.
-                  </p>
-                </MotionDiv>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Terms of Service</h1>
+          
+          <div className="prose prose-gray max-w-none">
+            <p className="text-gray-600 mb-6">
+              <strong>Last updated:</strong> {new Date().toLocaleDateString()}
+            </p>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    2. Description of Service
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Nook provides property management software and services, including but not limited to:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Tenant management</li>
-                    <li>Property management</li>
-                    <li>Payment processing</li>
-                    <li>Maintenance request handling</li>
-                    <li>Document management</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
+              <p className="text-gray-700 mb-4">
+                By accessing and using Nook's property management platform, you accept and agree to be bound by the terms and provision of this agreement.
+              </p>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    3. User Accounts
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    To use our services, you must:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Be at least 18 years old</li>
-                    <li>Provide accurate and complete information</li>
-                    <li>Maintain the security of your account</li>
-                    <li>Notify us immediately of any unauthorized use</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Description of Service</h2>
+              <p className="text-gray-700 mb-4">
+                Nook provides a comprehensive property management platform that includes:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Property and tenant management tools</li>
+                <li>Payment processing and rent collection</li>
+                <li>Maintenance request tracking</li>
+                <li>Document management and storage</li>
+                <li>Communication and notification systems</li>
+                <li>Analytics and reporting features</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    4. Payment Terms
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    By using our payment services, you agree to:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Pay all fees and charges on time</li>
-                    <li>Provide valid payment information</li>
-                    <li>Authorize us to charge your payment method</li>
-                    <li>Comply with all applicable payment laws and regulations</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. User Accounts</h2>
+              <p className="text-gray-700 mb-4">
+                To use our services, you must:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Create an account with accurate information</li>
+                <li>Maintain the security of your account credentials</li>
+                <li>Notify us immediately of any unauthorized use</li>
+                <li>Be at least 18 years old or have parental consent</li>
+                <li>Comply with all applicable laws and regulations</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    5. Prohibited Activities
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    You agree not to:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Violate any laws or regulations</li>
-                    <li>Infringe on others' intellectual property rights</li>
-                    <li>Interfere with the proper functioning of the service</li>
-                    <li>Attempt to gain unauthorized access</li>
-                    <li>Use the service for any illegal purposes</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. Payment Terms</h2>
+              <p className="text-gray-700 mb-4">
+                Payment processing is handled securely through Stripe. By using our payment features, you agree to:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Provide accurate payment information</li>
+                <li>Authorize charges for services used</li>
+                <li>Pay all fees and charges when due</li>
+                <li>Comply with Stripe's terms of service</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    6. Termination
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    We reserve the right to terminate or suspend your account at any time for violations of these terms or for any other reason at our sole discretion.
-                  </p>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Prohibited Uses</h2>
+              <p className="text-gray-700 mb-4">
+                You may not use our service to:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Violate any applicable laws or regulations</li>
+                <li>Infringe on intellectual property rights</li>
+                <li>Transmit harmful or malicious code</li>
+                <li>Attempt to gain unauthorized access to our systems</li>
+                <li>Interfere with the service or other users</li>
+                <li>Use the service for illegal activities</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.7 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    7. Limitation of Liability
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Nook shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.
-                  </p>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Privacy and Data</h2>
+              <p className="text-gray-700 mb-4">
+                Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the service.
+              </p>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    8. Changes to Terms
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    We reserve the right to modify these terms at any time. We will notify you of any material changes via email or through the service.
-                  </p>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Termination</h2>
+              <p className="text-gray-700 mb-4">
+                We may terminate or suspend your account at any time for violations of these terms. You may also terminate your account at any time.
+              </p>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.9 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    9. Contact Information
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    For questions about these Terms of Service, please contact us at:
-                    <br />
-                    <a href="mailto:legal@rentwithnook.com" className="text-nook-purple-600 hover:text-nook-purple-500">
-                      legal@rentwithnook.com
-                    </a>
-                  </p>
-                </MotionDiv>
-              </CardContent>
-            </Card>
-          </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Limitation of Liability</h2>
+              <p className="text-gray-700 mb-4">
+                Nook shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the service.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Contact Information</h2>
+              <p className="text-gray-700 mb-4">
+                If you have any questions about these Terms of Service, please contact us at:
+              </p>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-700">
+                  <strong>Email:</strong> legal@nook.app<br />
+                  <strong>Address:</strong> [Your Business Address]<br />
+                  <strong>Phone:</strong> [Your Phone Number]
+                </p>
+              </div>
+            </section>
+
+            <div className="border-t pt-6 mt-8">
+              <Link 
+                href="/"
+                className="text-nook-purple-600 hover:text-nook-purple-700 font-medium"
+              >
+                ← Back to Home
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 } 

@@ -1,226 +1,89 @@
-'use client';
-
-import React from 'react';
-import { useAuth } from '@/components/providers/auth-provider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { getClient } from '@/lib/supabase/client';
-import { File, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { getOrganization } from '@/lib/services/organization';
+import { getDocumentsByTenant } from '@/lib/services/documents';
+import { FileIcon, Share2, MessageSquare, Clock } from 'lucide-react';
 
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  property: {
-    name: string;
-    address: string;
-  };
-}
+export const metadata: Metadata = {
+  title: 'Documents | Nook',
+  description: 'Manage your documents',
+};
 
-export default function DocumentsPage() {
-  const { role } = useAuth();
-  const [documents, setDocuments] = React.useState<Document[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [filter, setFilter] = React.useState({
-    status: 'all',
-    search: '',
-  });
-  const supabase = getClient();
-
-  React.useEffect(() => {
-    fetchDocuments();
-  }, []);
-
-  const fetchDocuments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select(`
-          *,
-          user:users(id, name, email),
-          property:properties(name, address)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStatusChange = async (documentId: string, newStatus: 'approved' | 'rejected') => {
-    try {
-      const { error } = await supabase
-        .from('documents')
-        .update({ status: newStatus })
-        .eq('id', documentId);
-
-      if (error) throw error;
-
-      // Update local state
-      setDocuments(docs =>
-        docs.map(doc =>
-          doc.id === documentId ? { ...doc, status: newStatus } : doc
-        )
-      );
-
-      // Create notification for the user
-      const document = documents.find(doc => doc.id === documentId);
-      if (document) {
-        await supabase.from('notifications').insert({
-          user_id: document.user.id,
-          type: 'document_status',
-          title: 'Document Status Updated',
-          message: `Your document "${document.name}" has been ${newStatus}`,
-        });
-      }
-    } catch (error) {
-      console.error('Error updating document status:', error);
-    }
-  };
-
-  const filteredDocuments = documents.filter(doc => {
-    const matchesStatus = filter.status === 'all' || doc.status === filter.status;
-    const matchesSearch = doc.name.toLowerCase().includes(filter.search.toLowerCase()) ||
-                         doc.user.name.toLowerCase().includes(filter.search.toLowerCase()) ||
-                         doc.property.name.toLowerCase().includes(filter.search.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'rejected':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-yellow-500" />;
-    }
-  };
-
-  if (role !== 'landlord' && role !== 'admin' && role !== 'builder_super') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-500">
-            You don't have permission to access this page.
-          </p>
-        </div>
-      </div>
-    );
+export default async function DocumentsPage() {
+  const organization = await getOrganization();
+  if (!organization) {
+    redirect('/auth/signin');
   }
 
+  const documents = await getDocumentsByTenant(organization.id);
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Document Review</h1>
-      </div>
-
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search documents..."
-            value={filter.search}
-            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-            className="max-w-sm"
-          />
+    <MainLayout>
+      <div className="container mx-auto py-6">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Documents</h1>
+          <Button>Upload Document</Button>
         </div>
-        <Select
-          value={filter.status}
-          onValueChange={(value) => setFilter({ ...filter, status: value })}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      <div className="grid gap-4">
-        {filteredDocuments.map((doc) => (
-          <Card key={doc.id}>
-            <CardContent className="p-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {documents.map((doc: any) => (
+            <Card key={doc.id} className="p-6">
               <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <File className="h-6 w-6 text-gray-500" />
+                <div className="flex items-center space-x-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <FileIcon className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{doc.name}</h3>
-                    <div className="space-y-1 mt-1">
-                      <p className="text-sm text-gray-500">
-                        Uploaded by {doc.user.name} ({doc.user.email})
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Property: {doc.property.name} - {doc.property.address}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Uploaded on {new Date(doc.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {doc.type} • v{doc.version}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(doc.status)}
-                    <span className="text-sm capitalize">{doc.status}</span>
-                  </div>
-                  {doc.status === 'pending' && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleStatusChange(doc.id, 'approved')}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleStatusChange(doc.id, 'rejected')}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(doc.url, '_blank')}
-                  >
-                    View
-                  </Button>
+                <Button variant="ghost" size="icon">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 mr-2" />
+                  <span>
+                    Updated {new Date(doc.updatedAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <span>{doc.comments?.length || 0} comments</span>
                 </div>
               </div>
-            </CardContent>
+
+              <div className="mt-4 flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1">
+                  View
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1">
+                  Download
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {documents.length === 0 && (
+          <Card className="p-12 text-center">
+            <FileIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No documents yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Upload your first document to get started
+            </p>
+            <Button>Upload Document</Button>
           </Card>
-        ))}
+        )}
       </div>
-    </div>
+    </MainLayout>
   );
 } 

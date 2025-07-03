@@ -61,15 +61,12 @@ export default function UserManagementPage() {
     setUsers(mockUsers);
   }, []);
 
-  if (role !== 'admin' && role !== 'builder_super') {
+  if (role !== 'admin' && role !== 'super') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-500">
-            You don't have permission to access this page.
-          </p>
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p>You don't have permission to view this page.</p>
         </div>
       </div>
     );

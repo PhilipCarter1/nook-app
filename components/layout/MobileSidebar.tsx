@@ -4,11 +4,15 @@ import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MainNav } from './MainNav';
+import { Menu } from 'lucide-react';
 
 interface MobileSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  userRole: 'tenant' | 'landlord' | 'admin';
+  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
 }
 
 const navigation = {
@@ -38,41 +42,14 @@ export function MobileSidebar({ isOpen, onClose, userRole }: MobileSidebarProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-y-0 left-0 w-64 bg-background shadow-lg">
-        <div className="flex h-16 items-center justify-between px-4">
-          <Link href="/" className="text-xl font-bold text-primary">
-            Nook
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          >
-            <span className="sr-only">Close sidebar</span>
-            <X className="h-6 w-6" />
-          </Button>
-        </div>
-        <nav className="mt-5 px-2">
-          {navigation[userRole].map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'group flex items-center rounded-md px-2 py-2 text-sm font-medium',
-                pathname === item.href
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-              onClick={onClose}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-      </div>
-    </div>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10">
+          <div className="flex flex-col space-y-4">
+            <MainNav userRole={userRole} />
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 } 

@@ -7,6 +7,7 @@ import { UserWithAuth } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
 import { LoadingPage } from '@/components/ui/loading';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: UserWithAuth | null;
@@ -148,16 +149,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       console.log('Attempting sign in...');
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (error) {
         console.error('Sign in error:', error);
-        throw error;
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please verify your email address before signing in');
+        } else {
+          throw error;
+        }
       }
+
+      if (!data.user) {
+        throw new Error('No user data received');
+      }
+
       console.log('Sign in successful');
-    } catch (error) {
+      
+      // Fetch user data immediately after successful sign in
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        throw new Error('Failed to fetch user data. Please try again.');
+      }
+
+      if (userData) {
+        setUser({ ...data.user, ...userData } as UserWithAuth);
+        setRole(userData.role as UserRole);
+      } else {
+        throw new Error('User profile not found. Please contact support.');
+      }
+    } catch (error: any) {
       console.error('Error in signIn:', error);
       throw error;
     } finally {
@@ -170,7 +202,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Clear user data
+      setUser(null);
+      setRole(null);
+      
+      // Redirect to home page
       router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out. Please try again.');
     } finally {
       setLoading(false);
     }

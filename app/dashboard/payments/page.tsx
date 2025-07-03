@@ -14,205 +14,104 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DollarSign, Calendar, CreditCard, AlertCircle } from 'lucide-react';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { payments, leases } from '@/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { PaymentForm } from '@/components/payment-form';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
-export default function PaymentsPage() {
-  const { role } = useAuth();
-  const [payments, setPayments] = React.useState<any[]>([]);
-  const [showPaymentForm, setShowPaymentForm] = React.useState(false);
-  const [formData, setFormData] = React.useState({
-    amount: '',
-    type: 'rent',
-    paymentMethod: 'credit_card',
-  });
+interface Payment {
+  id: string;
+  amount: number;
+  type: 'rent' | 'deposit' | 'maintenance';
+  status: 'pending' | 'completed' | 'failed';
+  due_date: string;
+  paid_date?: string;
+}
 
-  // Mock data for now - will be replaced with actual data fetching
-  const mockPayments = [
-    {
-      id: '1',
-      amount: 2500,
-      type: 'rent',
-      status: 'completed',
-      due_date: '2024-04-01T00:00:00Z',
-      paid_date: '2024-03-28T10:30:00Z',
-      property: 'Sunset Apartments',
-    },
-    {
-      id: '2',
-      amount: 2500,
-      type: 'rent',
-      status: 'pending',
-      due_date: '2024-05-01T00:00:00Z',
-      paid_date: null,
-      property: 'Sunset Apartments',
-    },
-    {
-      id: '3',
-      amount: 2500,
-      type: 'deposit',
-      status: 'completed',
-      due_date: '2024-03-01T00:00:00Z',
-      paid_date: '2024-03-01T09:15:00Z',
-      property: 'Sunset Apartments',
-    },
-  ];
+export default async function PaymentsPage() {
+  const session = await auth();
+  if (!session?.user) {
+    return <div>Please sign in to view payments</div>;
+  }
 
-  React.useEffect(() => {
-    // TODO: Fetch payments
-    setPayments(mockPayments);
-  }, []);
+  // Get user's active lease
+  const [lease] = await db.select()
+    .from(leases)
+    .where(
+      and(
+        eq(leases.tenantId, session.user.id),
+        eq(leases.status, 'active')
+      )
+    )
+    .limit(1);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Process payment
-    setShowPaymentForm(false);
-  };
+  if (!lease) {
+    return <div>No active lease found</div>;
+  }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <DollarSign className="h-4 w-4 text-green-500" />;
-      case 'pending':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const upcomingPayments = payments.filter(p => p.status === 'pending');
-  const pastPayments = payments.filter(p => p.status === 'completed');
+  // Get payment history
+  const paymentHistory = await db.select()
+    .from(payments)
+    .where(eq(payments.leaseId, lease.id))
+    .orderBy(payments.createdAt);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Payments</h1>
-        {role === 'tenant' && (
-          <Button onClick={() => setShowPaymentForm(true)}>
-            <DollarSign className="mr-2 h-4 w-4" />
-            Make Payment
-          </Button>
-        )}
-      </div>
-
-      {showPaymentForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Make a Payment</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="type">Payment Type</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value) => setFormData({ ...formData, type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="rent">Rent</SelectItem>
-                    <SelectItem value="deposit">Security Deposit</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod">Payment Method</Label>
-                <Select
-                  value={formData.paymentMethod}
-                  onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="credit_card">Credit Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowPaymentForm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Process Payment</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {role === 'tenant' && upcomingPayments.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Payments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {upcomingPayments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                >
-                  <div>
-                    <h3 className="font-medium">${payment.amount}</h3>
-                    <p className="text-sm text-gray-500">
-                      Due: {new Date(payment.due_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Button variant="outline">Pay Now</Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {pastPayments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-              >
-                <div>
-                  <h3 className="font-medium">${payment.amount}</h3>
-                  <p className="text-sm text-gray-500">
-                    {payment.type === 'rent' ? 'Rent' : 'Security Deposit'} - {payment.property}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(payment.status)}
-                  <span className="text-sm capitalize">{payment.status}</span>
-                </div>
-              </div>
-            ))}
+    <div className="container mx-auto py-8">
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Make a Payment</h2>
+            <PaymentForm
+              amount={lease.monthlyRent}
+              leaseId={lease.id}
+              type="rent"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {paymentHistory.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div>
+                      <div className="font-medium">
+                        ${payment.amount.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {payment.type.charAt(0).toUpperCase() + payment.type.slice(1)}
+                        {payment.paidAt && (
+                          <> • {format(new Date(payment.paidAt), 'MMM d, yyyy')}</>
+                        )}
+                      </div>
+                    </div>
+                    <Badge
+                      variant={
+                        payment.status === 'completed'
+                          ? 'default'
+                          : payment.status === 'pending'
+                          ? 'secondary'
+                          : 'destructive'
+                      }
+                    >
+                      {payment.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 } 

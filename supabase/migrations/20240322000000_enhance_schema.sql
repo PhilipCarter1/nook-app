@@ -153,7 +153,7 @@ create table if not exists late_fees (
 -- Enable RLS on all tables
 do $$ 
 begin
-    -- Enable RLS on tables if not already enabled
+    -- Enable RLS on all tables if not already enabled
     if not exists (select 1 from pg_tables where tablename = 'users' and rowsecurity = true) then
         alter table users enable row level security;
     end if;
@@ -162,48 +162,52 @@ begin
         alter table properties enable row level security;
     end if;
     
+    if not exists (select 1 from pg_tables where tablename = 'units' and rowsecurity = true) then
+        alter table units enable row level security;
+    end if;
+    
     if not exists (select 1 from pg_tables where tablename = 'leases' and rowsecurity = true) then
         alter table leases enable row level security;
     end if;
     
-    if not exists (select 1 from pg_tables where tablename = 'property_amenities' and rowsecurity = true) then
-        alter table property_amenities enable row level security;
+    if not exists (select 1 from pg_tables where tablename = 'maintenance_tickets' and rowsecurity = true) then
+        alter table maintenance_tickets enable row level security;
     end if;
     
-    if not exists (select 1 from pg_tables where tablename = 'property_media' and rowsecurity = true) then
-        alter table property_media enable row level security;
+    if not exists (select 1 from pg_tables where tablename = 'maintenance_comments' and rowsecurity = true) then
+        alter table maintenance_comments enable row level security;
     end if;
     
-    if not exists (select 1 from pg_tables where tablename = 'lease_documents' and rowsecurity = true) then
-        alter table lease_documents enable row level security;
-    end if;
-    
-    if not exists (select 1 from pg_tables where tablename = 'lease_renewals' and rowsecurity = true) then
-        alter table lease_renewals enable row level security;
-    end if;
-    
-    if not exists (select 1 from pg_tables where tablename = 'maintenance_schedule' and rowsecurity = true) then
-        alter table maintenance_schedule enable row level security;
-    end if;
-    
-    if not exists (select 1 from pg_tables where tablename = 'maintenance_history' and rowsecurity = true) then
-        alter table maintenance_history enable row level security;
+    if not exists (select 1 from pg_tables where tablename = 'documents' and rowsecurity = true) then
+        alter table documents enable row level security;
     end if;
     
     if not exists (select 1 from pg_tables where tablename = 'payments' and rowsecurity = true) then
         alter table payments enable row level security;
     end if;
     
-    if not exists (select 1 from pg_tables where tablename = 'payment_receipts' and rowsecurity = true) then
-        alter table payment_receipts enable row level security;
+    if not exists (select 1 from pg_tables where tablename = 'organizations' and rowsecurity = true) then
+        alter table organizations enable row level security;
     end if;
     
-    if not exists (select 1 from pg_tables where tablename = 'late_fees' and rowsecurity = true) then
-        alter table late_fees enable row level security;
+    if not exists (select 1 from pg_tables where tablename = 'organization_members' and rowsecurity = true) then
+        alter table organization_members enable row level security;
+    end if;
+    
+    if not exists (select 1 from pg_tables where tablename = 'vendors' and rowsecurity = true) then
+        alter table vendors enable row level security;
+    end if;
+    
+    if not exists (select 1 from pg_tables where tablename = 'rate_limits' and rowsecurity = true) then
+        alter table rate_limits enable row level security;
+    end if;
+    
+    if not exists (select 1 from pg_tables where tablename = 'audit_logs' and rowsecurity = true) then
+        alter table audit_logs enable row level security;
     end if;
 end $$;
 
--- Create policies if they don't exist
+-- Create policies for each table
 do $$ 
 begin
     -- Users policies
@@ -220,212 +224,256 @@ begin
     end if;
 
     -- Properties policies
-    if not exists (select 1 from pg_policies where tablename = 'properties' and policyname = 'Users can view properties they own or rent') then
-        create policy "Users can view properties they own or rent"
-            on properties for select
+    if not exists (select 1 from pg_policies where tablename = 'properties' and policyname = 'Property access based on role') then
+        create policy "Property access based on role"
+            on properties for all
             using (
-                landlord_id = auth.uid()
-                or exists (
+                -- Landlords can access their own properties
+                (landlord_id = auth.uid())
+                or
+                -- Tenants can view properties they rent
+                exists (
                     select 1 from leases
                     where property_id = properties.id
                     and tenant_id = auth.uid()
+                )
+                or
+                -- Vendors can view properties they service
+                exists (
+                    select 1 from maintenance_tickets
+                    where property_id = properties.id
+                    and vendor_id = auth.uid()
+                )
+                or
+                -- Organization members can access their org's properties
+                exists (
+                    select 1 from organization_members om
+                    join organizations o on o.id = om.organization_id
+                    where o.id = properties.organization_id
+                    and om.user_id = auth.uid()
+                )
+            );
+    end if;
+
+    -- Units policies
+    if not exists (select 1 from pg_policies where tablename = 'units' and policyname = 'Unit access based on role') then
+        create policy "Unit access based on role"
+            on units for all
+            using (
+                -- Landlords can access units in their properties
+                exists (
+                    select 1 from properties
+                    where id = units.property_id
+                    and landlord_id = auth.uid()
+                )
+                or
+                -- Tenants can view their units
+                exists (
+                    select 1 from leases
+                    where unit_id = units.id
+                    and tenant_id = auth.uid()
+                )
+                or
+                -- Organization members can access their org's units
+                exists (
+                    select 1 from properties p
+                    join organization_members om on om.organization_id = p.organization_id
+                    where p.id = units.property_id
+                    and om.user_id = auth.uid()
                 )
             );
     end if;
 
     -- Leases policies
-    if not exists (select 1 from pg_policies where tablename = 'leases' and policyname = 'Users can view their leases') then
-        create policy "Users can view their leases"
-            on leases for select
+    if not exists (select 1 from pg_policies where tablename = 'leases' and policyname = 'Lease access based on role') then
+        create policy "Lease access based on role"
+            on leases for all
             using (
+                -- Tenants can view their leases
                 tenant_id = auth.uid()
-                or exists (
+                or
+                -- Landlords can access leases for their properties
+                exists (
                     select 1 from properties
                     where id = leases.property_id
                     and landlord_id = auth.uid()
                 )
-            );
-    end if;
-
-    -- Property amenities policies
-    if not exists (select 1 from pg_policies where tablename = 'property_amenities' and policyname = 'Users can view property amenities') then
-        create policy "Users can view property amenities"
-            on property_amenities for select
-            using (
+                or
+                -- Organization members can access their org's leases
                 exists (
                     select 1 from properties p
-                    where p.id = property_amenities.property_id
-                    and (
-                        p.landlord_id = auth.uid()
-                        or exists (
-                            select 1 from leases l
-                            where l.property_id = p.id
-                            and l.tenant_id = auth.uid()
-                        )
-                    )
+                    join organization_members om on om.organization_id = p.organization_id
+                    where p.id = leases.property_id
+                    and om.user_id = auth.uid()
                 )
             );
     end if;
 
-    -- Property media policies
-    if not exists (select 1 from pg_policies where tablename = 'property_media' and policyname = 'Users can view property media') then
-        create policy "Users can view property media"
-            on property_media for select
+    -- Maintenance tickets policies
+    if not exists (select 1 from pg_policies where tablename = 'maintenance_tickets' and policyname = 'Maintenance ticket access based on role') then
+        create policy "Maintenance ticket access based on role"
+            on maintenance_tickets for all
             using (
+                -- Tenants can view and create their tickets
+                tenant_id = auth.uid()
+                or
+                -- Landlords can access tickets for their properties
+                exists (
+                    select 1 from properties
+                    where id = maintenance_tickets.property_id
+                    and landlord_id = auth.uid()
+                )
+                or
+                -- Vendors can access assigned tickets
+                vendor_id = auth.uid()
+                or
+                -- Organization members can access their org's tickets
                 exists (
                     select 1 from properties p
-                    where p.id = property_media.property_id
-                    and (
-                        p.landlord_id = auth.uid()
-                        or exists (
-                            select 1 from leases l
-                            where l.property_id = p.id
-                            and l.tenant_id = auth.uid()
-                        )
-                    )
+                    join organization_members om on om.organization_id = p.organization_id
+                    where p.id = maintenance_tickets.property_id
+                    and om.user_id = auth.uid()
                 )
             );
     end if;
 
-    -- Lease documents policies
-    if not exists (select 1 from pg_policies where tablename = 'lease_documents' and policyname = 'Users can view lease documents') then
-        create policy "Users can view lease documents"
-            on lease_documents for select
+    -- Documents policies
+    if not exists (select 1 from pg_policies where tablename = 'documents' and policyname = 'Document access based on role') then
+        create policy "Document access based on role"
+            on documents for all
             using (
+                -- Users can access their own documents
+                user_id = auth.uid()
+                or
+                -- Landlords can access documents for their properties
                 exists (
-                    select 1 from leases l
-                    where l.id = lease_documents.lease_id
-                    and (
-                        l.tenant_id = auth.uid()
-                        or exists (
-                            select 1 from properties p
-                            where p.id = l.property_id
-                            and p.landlord_id = auth.uid()
-                        )
-                    )
+                    select 1 from properties
+                    where id = documents.property_id
+                    and landlord_id = auth.uid()
                 )
-            );
-    end if;
-
-    -- Lease renewals policies
-    if not exists (select 1 from pg_policies where tablename = 'lease_renewals' and policyname = 'Users can view lease renewals') then
-        create policy "Users can view lease renewals"
-            on lease_renewals for select
-            using (
+                or
+                -- Tenants can access documents for their units
                 exists (
-                    select 1 from leases l
-                    where l.id = lease_renewals.lease_id
-                    and (
-                        l.tenant_id = auth.uid()
-                        or exists (
-                            select 1 from properties p
-                            where p.id = l.property_id
-                            and p.landlord_id = auth.uid()
-                        )
-                    )
+                    select 1 from leases
+                    where unit_id = documents.unit_id
+                    and tenant_id = auth.uid()
                 )
-            );
-    end if;
-
-    -- Maintenance schedule policies
-    if not exists (select 1 from pg_policies where tablename = 'maintenance_schedule' and policyname = 'Users can view maintenance schedule') then
-        create policy "Users can view maintenance schedule"
-            on maintenance_schedule for select
-            using (
+                or
+                -- Organization members can access their org's documents
                 exists (
                     select 1 from properties p
-                    where p.id = maintenance_schedule.property_id
-                    and (
-                        p.landlord_id = auth.uid()
-                        or exists (
-                            select 1 from leases l
-                            where l.property_id = p.id
-                            and l.tenant_id = auth.uid()
-                        )
-                    )
-                )
-            );
-    end if;
-
-    -- Maintenance history policies
-    if not exists (select 1 from pg_policies where tablename = 'maintenance_history' and policyname = 'Users can view maintenance history') then
-        create policy "Users can view maintenance history"
-            on maintenance_history for select
-            using (
-                exists (
-                    select 1 from maintenance_schedule ms
-                    join properties p on p.id = ms.property_id
-                    where ms.id = maintenance_history.schedule_id
-                    and (
-                        p.landlord_id = auth.uid()
-                        or exists (
-                            select 1 from leases l
-                            where l.property_id = p.id
-                            and l.tenant_id = auth.uid()
-                        )
-                    )
+                    join organization_members om on om.organization_id = p.organization_id
+                    where p.id = documents.property_id
+                    and om.user_id = auth.uid()
                 )
             );
     end if;
 
     -- Payments policies
-    if not exists (select 1 from pg_policies where tablename = 'payments' and policyname = 'Users can view their payments') then
-        create policy "Users can view their payments"
-            on payments for select
+    if not exists (select 1 from pg_policies where tablename = 'payments' and policyname = 'Payment access based on role') then
+        create policy "Payment access based on role"
+            on payments for all
             using (
+                -- Tenants can view their payments
+                tenant_id = auth.uid()
+                or
+                -- Landlords can access payments for their properties
                 exists (
-                    select 1 from leases l
-                    where l.id = payments.lease_id
-                    and (
-                        l.tenant_id = auth.uid()
-                        or exists (
-                            select 1 from properties p
-                            where p.id = l.property_id
-                            and p.landlord_id = auth.uid()
-                        )
-                    )
+                    select 1 from properties
+                    where id = payments.property_id
+                    and landlord_id = auth.uid()
+                )
+                or
+                -- Organization members can access their org's payments
+                exists (
+                    select 1 from properties p
+                    join organization_members om on om.organization_id = p.organization_id
+                    where p.id = payments.property_id
+                    and om.user_id = auth.uid()
                 )
             );
     end if;
 
-    -- Payment receipts policies
-    if not exists (select 1 from pg_policies where tablename = 'payment_receipts' and policyname = 'Users can view payment receipts') then
-        create policy "Users can view payment receipts"
-            on payment_receipts for select
+    -- Organizations policies
+    if not exists (select 1 from pg_policies where tablename = 'organizations' and policyname = 'Organization access based on membership') then
+        create policy "Organization access based on membership"
+            on organizations for all
             using (
+                -- Organization members can access their org
                 exists (
-                    select 1 from payments p
-                    join leases l on l.id = p.lease_id
-                    where p.id = payment_receipts.payment_id
-                    and (
-                        l.tenant_id = auth.uid()
-                        or exists (
-                            select 1 from properties pr
-                            where pr.id = l.property_id
-                            and pr.landlord_id = auth.uid()
-                        )
-                    )
+                    select 1 from organization_members
+                    where organization_id = organizations.id
+                    and user_id = auth.uid()
                 )
             );
     end if;
 
-    -- Late fees policies
-    if not exists (select 1 from pg_policies where tablename = 'late_fees' and policyname = 'Users can view late fees') then
-        create policy "Users can view late fees"
-            on late_fees for select
+    -- Organization members policies
+    if not exists (select 1 from pg_policies where tablename = 'organization_members' and policyname = 'Organization member access based on role') then
+        create policy "Organization member access based on role"
+            on organization_members for all
             using (
+                -- Users can view their own memberships
+                user_id = auth.uid()
+                or
+                -- Organization admins can manage members
                 exists (
-                    select 1 from payments p
-                    join leases l on l.id = p.lease_id
-                    where p.id = late_fees.payment_id
-                    and (
-                        l.tenant_id = auth.uid()
-                        or exists (
-                            select 1 from properties pr
-                            where pr.id = l.property_id
-                            and pr.landlord_id = auth.uid()
-                        )
-                    )
+                    select 1 from organization_members om
+                    where om.organization_id = organization_members.organization_id
+                    and om.user_id = auth.uid()
+                    and om.role = 'admin'
+                )
+            );
+    end if;
+
+    -- Vendors policies
+    if not exists (select 1 from pg_policies where tablename = 'vendors' and policyname = 'Vendor access based on role') then
+        create policy "Vendor access based on role"
+            on vendors for all
+            using (
+                -- Vendors can view their own profile
+                id = auth.uid()
+                or
+                -- Landlords can view vendors
+                exists (
+                    select 1 from organization_members om
+                    join organizations o on o.id = om.organization_id
+                    where om.user_id = auth.uid()
+                    and om.role in ('admin', 'landlord')
+                )
+            );
+    end if;
+
+    -- Rate limits policies
+    if not exists (select 1 from pg_policies where tablename = 'rate_limits' and policyname = 'Rate limit access based on role') then
+        create policy "Rate limit access based on role"
+            on rate_limits for all
+            using (
+                -- Users can view their own rate limits
+                user_id = auth.uid()
+                or
+                -- Admins can view all rate limits
+                exists (
+                    select 1 from users
+                    where id = auth.uid()
+                    and role = 'admin'
+                )
+            );
+    end if;
+
+    -- Audit logs policies
+    if not exists (select 1 from pg_policies where tablename = 'audit_logs' and policyname = 'Audit log access based on role') then
+        create policy "Audit log access based on role"
+            on audit_logs for all
+            using (
+                -- Users can view their own audit logs
+                user_id = auth.uid()
+                or
+                -- Admins can view all audit logs
+                exists (
+                    select 1 from users
+                    where id = auth.uid()
+                    and role = 'admin'
                 )
             );
     end if;

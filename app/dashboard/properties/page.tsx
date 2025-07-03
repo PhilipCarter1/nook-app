@@ -13,112 +13,231 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PropertyCard } from "./property-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from '@/lib/hooks/use-toast';
+import { AddPropertyForm } from './add-property-form';
+
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  units: number;
+  status: 'active' | 'inactive';
+  created_at: string;
+}
 
 export default function PropertiesPage() {
   const { role } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [propertyType, setPropertyType] = React.useState<string>('all');
-  const [properties, setProperties] = React.useState<any[]>([]);
-
-  // Mock data for now - will be replaced with actual data fetching
-  const mockProperties = [
-    {
-      id: '1',
-      name: 'Sunset Apartments',
-      address: '123 Main St, San Francisco, CA',
-      type: 'apartment',
-      units: 12,
-      status: 'available',
-      monthly_rent: 2500,
-    },
-    {
-      id: '2',
-      name: 'Ocean View Condos',
-      address: '456 Beach Rd, San Francisco, CA',
-      type: 'condo',
-      units: 8,
-      status: 'leased',
-      monthly_rent: 3500,
-    },
-  ];
+  const [properties, setProperties] = React.useState<Property[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [showAddPropertyForm, setShowAddPropertyForm] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    name: '',
+    address: '',
+    units: '',
+  });
 
   React.useEffect(() => {
-    // TODO: Fetch properties based on role
-    setProperties(mockProperties);
-  }, [role]);
+    const fetchProperties = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/properties');
+        if (!response.ok) {
+          throw new Error('Failed to fetch properties');
+        }
+        const data = await response.json();
+        setProperties(data);
+      } catch (err) {
+        setError('Failed to load properties. Please try again later.');
+        toast({
+          title: "Error",
+          description: "Failed to load properties. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  const handleEditProperty = async (property: Property) => {
+    try {
+      const response = await fetch(`/api/properties/${property.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(property),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update property');
+      }
+
+      const updatedProperty = await response.json();
+      setProperties(properties.map(p => p.id === property.id ? updatedProperty : p));
+      
+      toast({
+        title: "Success",
+        description: "Property updated successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update property. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteProperty = async (property: Property) => {
+    try {
+      const response = await fetch(`/api/properties/${property.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete property');
+      }
+
+      setProperties(properties.filter(p => p.id !== property.id));
+      
+      toast({
+        title: "Success",
+        description: "Property deleted successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete property. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddProperty = async (data: any) => {
+    try {
+      const response = await fetch('/api/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add property');
+      }
+
+      const newProperty = await response.json();
+      setProperties([...properties, newProperty]);
+      setShowAddPropertyForm(false);
+      
+      toast({
+        title: "Success",
+        description: "Property added successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to add property. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredProperties = properties.filter(property => {
     const matchesSearch = property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          property.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = propertyType === 'all' || property.type === propertyType;
+    const matchesType = propertyType === 'all' || property.status === propertyType;
     return matchesSearch && matchesType;
   });
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Properties</h1>
-        {role === 'landlord' && (
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Property
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600">Error</h2>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <Button
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
           </Button>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Properties</h1>
+          <p className="text-muted-foreground mt-1">Manage your properties and units</p>
+        </div>
+        <Button onClick={() => setShowAddPropertyForm(true)}>
+          Add Property
+        </Button>
       </div>
 
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search properties..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-          />
-        </div>
-        <Select value={propertyType} onValueChange={setPropertyType}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Property Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="apartment">Apartment</SelectItem>
-            <SelectItem value="house">House</SelectItem>
-            <SelectItem value="condo">Condo</SelectItem>
-            <SelectItem value="commercial">Commercial</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {showAddPropertyForm && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Add New Property</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AddPropertyForm
+              onSubmit={handleAddProperty}
+              onCancel={() => setShowAddPropertyForm(false)}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredProperties.map((property) => (
-          <Card key={property.id}>
-            <CardHeader>
-              <CardTitle>{property.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">{property.address}</p>
-                <div className="flex justify-between text-sm">
-                  <span>Type: {property.type}</span>
-                  <span>Units: {property.units}</span>
+        {isLoading ? (
+          // Loading skeletons
+          Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardHeader className="pb-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-1/3" />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Status: {property.status}</span>
-                  <span>${property.monthly_rent}/month</span>
-                </div>
-                {role === 'tenant' && property.status === 'available' && (
-                  <Button className="w-full">Apply Now</Button>
-                )}
-                {role === 'landlord' && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1">Edit</Button>
-                    <Button variant="outline" className="flex-1">View Details</Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : filteredProperties.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <h3 className="text-lg font-medium">No properties found</h3>
+            <p className="text-muted-foreground mt-1">
+              {searchQuery ? 'Try adjusting your search' : 'Add your first property to get started'}
+            </p>
+          </div>
+        ) : (
+          filteredProperties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              property={property}
+              onEdit={handleEditProperty}
+              onDelete={handleDeleteProperty}
+            />
+          ))
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,16 @@ create type maintenance_status as enum ('open', 'in_progress', 'resolved', 'clos
 create type payment_status as enum ('pending', 'completed', 'failed');
 create type subscription_tier as enum ('free', 'premium', 'enterprise');
 
+-- Enable feature flags
+insert into feature_flags (name, description, enabled) values
+  ('maintenance_tickets', 'Enable the maintenance ticket system for tenants and landlords', true),
+  ('split_payments', 'Enable split payment functionality for rent and deposits', true),
+  ('pre_lease_flow', 'Enable pre-lease application and approval process', true),
+  ('document_upload', 'Allow users to upload and manage documents', true),
+  ('ai_assistant', 'Enable AI-powered document review and agreement generation', true),
+  ('dark_mode', 'Enable dark mode for all users', true)
+on conflict (name) do update set enabled = true;
+
 -- Create maintenance_tickets table
 create table maintenance_tickets (
     id uuid primary key default uuid_generate_v4(),

@@ -1,141 +1,119 @@
 'use client';
 
 import React from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/components/providers/auth-provider';
-import { motion } from 'framer-motion';
-
-const MotionDiv = motion.div;
+import Link from 'next/link';
 
 export default function PrivacyPolicy() {
-  const { role } = useAuth();
-
-  // Map the role to the correct type for MainLayout
-  const mappedRole = role === 'builder_super' ? 'landlord' : (role || 'tenant');
-
   return (
-    <MainLayout userRole={mappedRole}>
-      <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-        <div className="container mx-auto px-4 py-16">
-          <MotionDiv
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto"
-          >
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-                  Privacy Policy
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    1. Information We Collect
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    We collect information that you provide directly to us, including:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Name and contact information</li>
-                    <li>Account credentials</li>
-                    <li>Property information</li>
-                    <li>Payment information</li>
-                  </ul>
-                </MotionDiv>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
+          
+          <div className="prose prose-gray max-w-none">
+            <p className="text-gray-600 mb-6">
+              <strong>Last updated:</strong> {new Date().toLocaleDateString()}
+            </p>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    2. How We Use Your Information
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">We use the information we collect to:</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Provide and maintain our services</li>
-                    <li>Process your transactions</li>
-                    <li>Send you technical notices and support messages</li>
-                    <li>Communicate with you about products, services, and events</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Information We Collect</h2>
+              <p className="text-gray-700 mb-4">
+                We collect information you provide directly to us, such as when you create an account, 
+                submit a maintenance request, or contact us for support.
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Account information (name, email, phone number)</li>
+                <li>Property and tenant information</li>
+                <li>Payment information (processed securely through Stripe)</li>
+                <li>Communication records and support tickets</li>
+                <li>Usage data and analytics</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    3. Information Sharing
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    We do not sell or rent your personal information to third parties. We may share your information with:
-                  </p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Service providers who assist in our operations</li>
-                    <li>Professional advisors</li>
-                    <li>Law enforcement when required by law</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. How We Use Your Information</h2>
+              <p className="text-gray-700 mb-4">
+                We use the information we collect to:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Provide and maintain our property management services</li>
+                <li>Process payments and manage subscriptions</li>
+                <li>Send important notifications and updates</li>
+                <li>Provide customer support</li>
+                <li>Improve our services and user experience</li>
+                <li>Comply with legal obligations</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    4. Data Security
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
-                  </p>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Information Sharing</h2>
+              <p className="text-gray-700 mb-4">
+                We do not sell, trade, or otherwise transfer your personal information to third parties 
+                except as described in this policy or with your consent.
+              </p>
+              <p className="text-gray-700 mb-4">
+                We may share information with:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Service providers who assist in our operations</li>
+                <li>Payment processors (Stripe) for payment processing</li>
+                <li>Legal authorities when required by law</li>
+                <li>Other users as necessary for property management functions</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    5. Your Rights
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">You have the right to:</p>
-                  <ul className="list-disc pl-6 mt-4 space-y-2 text-gray-600 dark:text-gray-300">
-                    <li>Access your personal information</li>
-                    <li>Correct inaccurate information</li>
-                    <li>Request deletion of your information</li>
-                    <li>Object to processing of your information</li>
-                  </ul>
-                </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. Data Security</h2>
+              <p className="text-gray-700 mb-4">
+                We implement appropriate security measures to protect your personal information, including:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Encryption of data in transit and at rest</li>
+                <li>Regular security assessments and updates</li>
+                <li>Access controls and authentication</li>
+                <li>Secure hosting infrastructure</li>
+              </ul>
+            </section>
 
-                <MotionDiv
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">
-                    6. Contact Us
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    If you have any questions about this Privacy Policy, please contact us at:
-                    <br />
-                    <a href="mailto:privacy@rentwithnook.com" className="text-nook-purple-600 hover:text-nook-purple-500">
-                      privacy@rentwithnook.com
-                    </a>
-                  </p>
-                </MotionDiv>
-              </CardContent>
-            </Card>
-          </MotionDiv>
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Your Rights</h2>
+              <p className="text-gray-700 mb-4">
+                You have the right to:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-2">
+                <li>Access your personal information</li>
+                <li>Correct inaccurate information</li>
+                <li>Request deletion of your information</li>
+                <li>Opt out of marketing communications</li>
+                <li>Export your data</li>
+              </ul>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Contact Us</h2>
+              <p className="text-gray-700 mb-4">
+                If you have any questions about this Privacy Policy, please contact us at:
+              </p>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-700">
+                  <strong>Email:</strong> privacy@nook.app<br />
+                  <strong>Address:</strong> [Your Business Address]<br />
+                  <strong>Phone:</strong> [Your Phone Number]
+                </p>
+              </div>
+            </section>
+
+            <div className="border-t pt-6 mt-8">
+              <Link 
+                href="/"
+                className="text-nook-purple-600 hover:text-nook-purple-700 font-medium"
+              >
+                ← Back to Home
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 } 
