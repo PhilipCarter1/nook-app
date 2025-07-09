@@ -73,7 +73,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatPercentage(latestMetric.occupancyRate)}
+              {formatPercentage(latestMetric.occupancyRate || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.occupancyRate, previousMetric?.occupancyRate) > 0 ? '+' : ''}
@@ -88,7 +88,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatPercentage(latestMetric.rentalYield)}
+              {formatPercentage(latestMetric.rentalYield || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.rentalYield, previousMetric?.rentalYield) > 0 ? '+' : ''}
@@ -103,7 +103,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatPercentage(latestMetric.capRate)}
+              {formatPercentage(latestMetric.capRate || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.capRate, previousMetric?.capRate) > 0 ? '+' : ''}
@@ -118,7 +118,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(latestMetric.netOperatingIncome)}
+              {formatCurrency(latestMetric.netOperatingIncome || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.netOperatingIncome, previousMetric?.netOperatingIncome) > 0 ? '+' : ''}
@@ -133,7 +133,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(latestMetric.maintenanceCosts)}
+              {formatCurrency(latestMetric.maintenanceCosts || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.maintenanceCosts, previousMetric?.maintenanceCosts) > 0 ? '+' : ''}
@@ -148,7 +148,7 @@ export function PropertyMetrics({ metrics, isLoading }: PropertyMetricsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(latestMetric.marketValue)}
+              {formatCurrency(latestMetric.marketValue || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               {calculateChange(latestMetric.marketValue, previousMetric?.marketValue) > 0 ? '+' : ''}

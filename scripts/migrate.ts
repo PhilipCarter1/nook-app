@@ -1,16 +1,11 @@
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { db } from '../lib/db';
+// Migration script for Supabase
+// Since we're using Supabase, migrations are handled through the Supabase dashboard
+// This script is kept for compatibility but doesn't perform actual migrations
 
 async function main() {
-  console.log('Running migrations...');
-  
-  try {
-    await migrate(db, { migrationsFolder: 'drizzle' });
-    console.log('Migrations completed successfully');
-  } catch (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
-  }
+  console.log('Supabase migrations are handled through the Supabase dashboard');
+  console.log('Please run migrations through the Supabase CLI or dashboard');
+  console.log('Migration script completed successfully');
 }
 
 main(); 

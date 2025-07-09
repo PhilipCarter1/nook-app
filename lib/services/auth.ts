@@ -89,7 +89,7 @@ export async function validatePasswordStrength(password: string): Promise<void> 
   }
   
   if (errors.length > 0) {
-    throw new AppError('Password validation failed', 400, errors);
+    throw new AppError('Password validation failed', 400, { password: errors });
   }
 }
 
@@ -114,7 +114,7 @@ export async function createUser(
   });
   
   if (error) {
-    throw new AppError('Failed to create user', 500, [error.message]);
+    throw new AppError('Failed to create user', 500, { database: [error.message] });
   }
 }
 
@@ -195,7 +195,7 @@ export async function changePassword(
     .eq('id', userId);
   
   if (updateError) {
-    throw new AppError('Failed to update password', 500, [updateError.message]);
+    throw new AppError('Failed to update password', 500, { database: [updateError.message] });
   }
 }
 
@@ -244,6 +244,6 @@ export async function resetPassword(
     .eq('id', user.id);
   
   if (updateError) {
-    throw new AppError('Failed to reset password', 500, [updateError.message]);
+    throw new AppError('Failed to reset password', 500, { database: [updateError.message] });
   }
 } 

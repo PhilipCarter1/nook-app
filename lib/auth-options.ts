@@ -1,7 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
 import { db } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 
@@ -38,14 +36,17 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email));
+        const { data: users, error } = await db
+          .from('users')
+          .select('*')
+          .eq('email', credentials.email)
+          .limit(1);
 
-        if (!user) {
+        if (error || !users || users.length === 0) {
           return null;
         }
+
+        const user = users[0];
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,

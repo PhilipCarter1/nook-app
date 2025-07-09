@@ -1,7 +1,5 @@
 import Stripe from 'stripe';
-import { db } from '../db';
-import { payments, leases, tenants } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from '../supabase';
 import { sendPaymentReceipt } from './email';
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -39,21 +37,25 @@ export async function createPaymentIntent({
   dueDate,
 }: CreatePaymentIntentParams) {
   // Get lease details
-  const [lease] = await db
-    .select()
-    .from(leases)
-    .where(eq(leases.id, leaseId));
-
+  const { data: leaseData, error: leaseError } = await supabase
+    .from('leases')
+    .select('*')
+    .eq('id', leaseId)
+    .limit(1);
+  if (leaseError) throw leaseError;
+  const lease = leaseData?.[0];
   if (!lease) {
     throw new Error('Lease not found');
   }
 
   // Get tenant details
-  const [tenant] = await db
-    .select()
-    .from(tenants)
-    .where(eq(tenants.id, lease.tenantId));
-
+  const { data: tenantData, error: tenantError } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('id', lease.tenantId)
+    .limit(1);
+  if (tenantError) throw tenantError;
+  const tenant = tenantData?.[0];
   if (!tenant) {
     throw new Error('Tenant not found');
   }
@@ -71,10 +73,11 @@ export async function createPaymentIntent({
     customerId = customer.id;
 
     // Update lease with Stripe customer ID
-    await db
-      .update(leases)
-      .set({ stripeCustomerId: customerId })
-      .where(eq(leases.id, leaseId));
+    const { error: updateError } = await supabase
+      .from('leases')
+      .update({ stripeCustomerId: customerId })
+      .eq('id', leaseId);
+    if (updateError) throw updateError;
   }
 
   // Create payment intent
@@ -89,9 +92,9 @@ export async function createPaymentIntent({
   });
 
   // Create payment record
-  const [payment] = await db
-    .insert(payments)
-    .values({
+  const { data: paymentData, error: paymentError } = await supabase
+    .from('payments')
+    .insert([{
       leaseId,
       amount,
       type,
@@ -99,8 +102,11 @@ export async function createPaymentIntent({
       stripePaymentId: paymentIntent.id,
       stripeCustomerId: customerId,
       dueDate,
-    })
-    .returning();
+    }])
+    .select('*')
+    .limit(1);
+  if (paymentError) throw paymentError;
+  const payment = paymentData?.[0];
 
   return {
     payment,
@@ -115,29 +121,32 @@ export async function handlePaymentWebhook(data: PaymentWebhookData) {
     const { id, amount, customer } = eventData.object;
 
     // Update payment status
-    await db
-      .update(payments)
-      .set({
+    const { error: updateError } = await supabase
+      .from('payments')
+      .update({
         status: 'paid',
         paidAt: new Date(),
       })
-      .where(eq(payments.stripePaymentId, id));
+      .eq('stripePaymentId', id);
+    if (updateError) throw updateError;
 
     // Get payment details
-    const [payment] = await db
-      .select()
-      .from(payments)
-      .where(eq(payments.stripePaymentId, id));
+    const { data: paymentData, error: paymentError } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('stripePaymentId', id)
+      .limit(1);
+    if (paymentError) throw paymentError;
+    const payment = paymentData?.[0];
 
     if (payment) {
       // Send payment receipt
-      await sendPaymentReceipt({
-        email: payment.email,
-        amount: payment.amount,
-        type: payment.type,
-        date: new Date(),
-        paymentId: payment.id,
-      });
+      await sendPaymentReceipt(
+        payment.email,
+        payment.amount,
+        'Property', // TODO: Get actual property name
+        `${process.env.NEXT_PUBLIC_APP_URL}/payments/${payment.id}`
+      );
     }
   }
 }
@@ -148,11 +157,13 @@ export async function scheduleRecurringPayment(
   startDate: Date,
   frequency: 'monthly' | 'weekly' | 'biweekly'
 ) {
-  const [lease] = await db
-    .select()
-    .from(leases)
-    .where(eq(leases.id, leaseId));
-
+  const { data: leaseData, error: leaseError } = await supabase
+    .from('leases')
+    .select('*')
+    .eq('id', leaseId)
+    .limit(1);
+  if (leaseError) throw leaseError;
+  const lease = leaseData?.[0];
   if (!lease) {
     throw new Error('Lease not found');
   }
@@ -172,28 +183,35 @@ export async function scheduleRecurringPayment(
   }
 
   // Create scheduled payment
-  await db.insert(payments).values({
-    leaseId,
-    amount,
-    type: 'rent',
-    status: 'scheduled',
-    dueDate: nextPaymentDate,
-  });
+  const { error: insertError } = await supabase
+    .from('payments')
+    .insert([{
+      leaseId,
+      amount,
+      type: 'rent',
+      status: 'scheduled',
+      dueDate: nextPaymentDate,
+    }]);
+  if (insertError) throw insertError;
 }
 
 export async function getPaymentHistory(leaseId: string) {
-  return db
-    .select()
-    .from(payments)
-    .where(eq(payments.leaseId, leaseId))
-    .orderBy(payments.dueDate);
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('lease_id', leaseId)
+    .order('due_date', { ascending: true });
+  if (error) throw error;
+  return data;
 }
 
 export async function getUpcomingPayments(leaseId: string) {
-  return db
-    .select()
-    .from(payments)
-    .where(eq(payments.leaseId, leaseId))
-    .where(eq(payments.status, 'scheduled'))
-    .orderBy(payments.dueDate);
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('lease_id', leaseId)
+    .eq('status', 'scheduled')
+    .order('due_date', { ascending: true });
+  if (error) throw error;
+  return data;
 } 

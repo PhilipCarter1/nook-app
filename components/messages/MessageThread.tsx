@@ -80,12 +80,12 @@ export function MessageThread({
           <div
             key={message.id}
             className={`flex ${
-              message.senderId === otherParticipant.id ? 'justify-start' : 'justify-end'
+              message.sender_id === otherParticipant.id ? 'justify-start' : 'justify-end'
             }`}
           >
             <div
               className={`max-w-[70%] rounded-lg p-3 ${
-                message.senderId === otherParticipant.id
+                message.sender_id === otherParticipant.id
                   ? 'bg-gray-100'
                   : 'bg-blue-600 text-white'
               }`}
@@ -93,12 +93,12 @@ export function MessageThread({
               <p className="whitespace-pre-wrap">{message.content}</p>
               <p
                 className={`text-xs mt-1 ${
-                  message.senderId === otherParticipant.id
+                  message.sender_id === otherParticipant.id
                     ? 'text-gray-500'
                     : 'text-blue-100'
                 }`}
               >
-                {formatDateTime(message.createdAt)}
+                {formatDateTime(new Date(message.created_at))}
               </p>
             </div>
           </div>

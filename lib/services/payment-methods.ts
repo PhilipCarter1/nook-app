@@ -1,6 +1,4 @@
-import { db } from '@/lib/db';
-import { paymentMethods } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 
 export interface PaymentMethod {
   id: string;
@@ -60,15 +58,16 @@ export async function createPaymentMethod({
 }: CreatePaymentMethodParams): Promise<PaymentMethod> {
   // If this is set as default, unset any existing default
   if (isDefault) {
-    await db
-      .update(paymentMethods)
-      .set({ isDefault: false })
-      .where(eq(paymentMethods.propertyId, id));
+    const { error } = await supabase
+      .from('payment_methods')
+      .update({ isDefault: false })
+      .eq('propertyId', id);
+    if (error) throw error;
   }
 
-  const [paymentMethod] = await db
-    .insert(paymentMethods)
-    .values({
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .insert([{
       propertyId: id,
       type,
       name,
@@ -77,18 +76,21 @@ export async function createPaymentMethod({
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
-    .returning();
-
-  return paymentMethod;
+    }])
+    .select('*')
+    .limit(1);
+  if (error || !data || data.length === 0) throw error;
+  return data[0] as PaymentMethod;
 }
 
 export async function getPaymentMethods(id: string): Promise<PaymentMethod[]> {
-  return db
-    .select()
-    .from(paymentMethods)
-    .where(eq(paymentMethods.propertyId, id))
-    .orderBy(paymentMethods.isDefault, 'desc');
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .eq('propertyId', id)
+    .order('isDefault', { ascending: false });
+  if (error) throw error;
+  return data as PaymentMethod[];
 }
 
 export async function updatePaymentMethod(
@@ -97,33 +99,40 @@ export async function updatePaymentMethod(
 ): Promise<PaymentMethod> {
   // If setting as default, unset any existing default
   if (updates.isDefault) {
-    const [paymentMethod] = await db
-      .select()
-      .from(paymentMethods)
-      .where(eq(paymentMethods.id, id));
-
-    if (paymentMethod) {
-      await db
-        .update(paymentMethods)
-        .set({ isDefault: false })
-        .where(eq(paymentMethods.propertyId, paymentMethod.propertyId));
+    const { data: paymentMethod, error: selectError } = await supabase
+      .from('payment_methods')
+      .select('*')
+      .eq('id', id)
+      .limit(1);
+    if (selectError) throw selectError;
+    if (paymentMethod && paymentMethod.length > 0) {
+      const { error: updateError } = await supabase
+        .from('payment_methods')
+        .update({ isDefault: false })
+        .eq('propertyId', paymentMethod[0].propertyId);
+      if (updateError) throw updateError;
     }
   }
 
-  const [updated] = await db
-    .update(paymentMethods)
-    .set({
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .update({
       ...updates,
       updatedAt: new Date(),
     })
-    .where(eq(paymentMethods.id, id))
-    .returning();
-
-  return updated;
+    .eq('id', id)
+    .select('*')
+    .limit(1);
+  if (error || !data || data.length === 0) throw error;
+  return data[0] as PaymentMethod;
 }
 
 export async function deletePaymentMethod(id: string): Promise<void> {
-  await db.delete(paymentMethods).where(eq(paymentMethods.id, id));
+  const { error } = await supabase
+    .from('payment_methods')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
 }
 
 export async function setDefaultPaymentMethod(
@@ -131,30 +140,29 @@ export async function setDefaultPaymentMethod(
   paymentMethodId: string
 ): Promise<void> {
   // Unset all defaults
-  await db
-    .update(paymentMethods)
-    .set({ isDefault: false })
-    .where(eq(paymentMethods.propertyId, id));
+  const { error: unsetError } = await supabase
+    .from('payment_methods')
+    .update({ isDefault: false })
+    .eq('propertyId', id);
+  if (unsetError) throw unsetError;
 
   // Set new default
-  await db
-    .update(paymentMethods)
-    .set({ isDefault: true })
-    .where(eq(paymentMethods.id, paymentMethodId));
+  const { error: setError } = await supabase
+    .from('payment_methods')
+    .update({ isDefault: true })
+    .eq('id', paymentMethodId);
+  if (setError) throw setError;
 }
 
 export async function getDefaultPaymentMethod(
   id: string
 ): Promise<PaymentMethod | null> {
-  const [paymentMethod] = await db
-    .select()
-    .from(paymentMethods)
-    .where(
-      and(
-        eq(paymentMethods.propertyId, id),
-        eq(paymentMethods.isDefault, true)
-      )
-    );
-
-  return paymentMethod || null;
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .eq('propertyId', id)
+    .eq('isDefault', true)
+    .limit(1);
+  if (error) throw error;
+  return data && data.length > 0 ? data[0] as PaymentMethod : null;
 } 

@@ -67,7 +67,7 @@ export default async function PropertySettingsPage({
 
           <TabsContent value="payments">
             <PaymentMethodConfig
-              propertyId={params.id}
+              id={params.id}
               initialMethods={paymentMethods}
             />
           </TabsContent>

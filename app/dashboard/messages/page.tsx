@@ -26,7 +26,7 @@ export default async function MessagesPage() {
   const conversations = await getConversations(organization.id);
 
   return (
-    <MainLayout userRole={organization.role}>
+    <MainLayout>
       <div className="h-[calc(100vh-4rem)]">
         <MessagesClient
           initialConversations={conversations}

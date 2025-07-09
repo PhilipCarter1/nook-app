@@ -1,6 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { payments } from '@/lib/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
@@ -16,47 +14,39 @@ export async function PaymentStats({ leaseIds }: PaymentStatsProps) {
   const endOfLastMonth = endOfMonth(subMonths(now, 1));
 
   // Get current month's payments
-  const currentMonthPayments = await db.select({
-    total: sql<number>`sum(${payments.amount})`,
-    count: sql<number>`count(*)`,
-  })
-    .from(payments)
-    .where(
-      and(
-        eq(payments.leaseId, leaseIds[0]), // For now, just get stats from first lease
-        eq(payments.status, 'completed'),
-        gte(payments.paidAt, startOfCurrentMonth),
-        lte(payments.paidAt, endOfCurrentMonth)
-      )
-    );
+  const { data: currentMonthPayments, error: currentMonthError } = await db
+    .from('payments')
+    .select('amount, status, paid_at')
+    .eq('lease_id', leaseIds[0])
+    .eq('status', 'completed')
+    .gte('paid_at', startOfCurrentMonth.toISOString())
+    .lte('paid_at', endOfCurrentMonth.toISOString());
 
   // Get last month's payments
-  const lastMonthPayments = await db.select({
-    total: sql<number>`sum(${payments.amount})`,
-    count: sql<number>`count(*)`,
-  })
-    .from(payments)
-    .where(
-      and(
-        eq(payments.leaseId, leaseIds[0]), // For now, just get stats from first lease
-        eq(payments.status, 'completed'),
-        gte(payments.paidAt, startOfLastMonth),
-        lte(payments.paidAt, endOfLastMonth)
-      )
-    );
+  const { data: lastMonthPayments, error: lastMonthError } = await db
+    .from('payments')
+    .select('amount, status, paid_at')
+    .eq('lease_id', leaseIds[0])
+    .eq('status', 'completed')
+    .gte('paid_at', startOfLastMonth.toISOString())
+    .lte('paid_at', endOfLastMonth.toISOString());
 
   // Get pending payments
-  const pendingPayments = await db.select({
-    total: sql<number>`sum(${payments.amount})`,
-    count: sql<number>`count(*)`,
-  })
-    .from(payments)
-    .where(
-      and(
-        eq(payments.leaseId, leaseIds[0]), // For now, just get stats from first lease
-        eq(payments.status, 'pending')
-      )
-    );
+  const { data: pendingPayments, error: pendingError } = await db
+    .from('payments')
+    .select('amount, status')
+    .eq('lease_id', leaseIds[0])
+    .eq('status', 'pending');
+
+  // Calculate totals
+  const currentMonthTotal = currentMonthPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
+  const currentMonthCount = currentMonthPayments?.length || 0;
+  
+  const lastMonthTotal = lastMonthPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
+  const lastMonthCount = lastMonthPayments?.length || 0;
+  
+  const pendingTotal = pendingPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
+  const pendingCount = pendingPayments?.length || 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -68,10 +58,10 @@ export async function PaymentStats({ leaseIds }: PaymentStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${currentMonthPayments[0]?.total?.toFixed(2) || '0.00'}
+            ${currentMonthTotal.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {currentMonthPayments[0]?.count || 0} payments
+            {currentMonthCount} payments
           </p>
         </CardContent>
       </Card>
@@ -83,10 +73,10 @@ export async function PaymentStats({ leaseIds }: PaymentStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${lastMonthPayments[0]?.total?.toFixed(2) || '0.00'}
+            ${lastMonthTotal.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {lastMonthPayments[0]?.count || 0} payments
+            {lastMonthCount} payments
           </p>
         </CardContent>
       </Card>
@@ -98,10 +88,10 @@ export async function PaymentStats({ leaseIds }: PaymentStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${pendingPayments[0]?.total?.toFixed(2) || '0.00'}
+            ${pendingTotal.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {pendingPayments[0]?.count || 0} payments
+            {pendingCount} payments
           </p>
         </CardContent>
       </Card>

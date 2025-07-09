@@ -25,6 +25,7 @@ type NavItems = {
   admin: NavItem[];
   landlord: NavItem[];
   tenant: NavItem[];
+  super: NavItem[];
 };
 
 export function RoleBasedNav() {
@@ -51,9 +52,14 @@ export function RoleBasedNav() {
       { href: '/tenant/payments', label: 'Payments', icon: CreditCard },
       { href: '/tenant/documents', label: 'Documents', icon: FileText },
     ],
+    super: [
+      { href: '/super/dashboard', label: 'Dashboard', icon: Building2 },
+      { href: '/super/users', label: 'Users', icon: Users },
+      { href: '/super/settings', label: 'Settings', icon: Settings },
+    ],
   };
 
-  const currentNavItems = role && role !== 'builder_super' ? navItems[role] : [];
+  const currentNavItems = role ? navItems[role] : [];
 
   return (
     <nav className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">

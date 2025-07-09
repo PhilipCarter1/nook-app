@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Link, Grid } from '@mui/material';
+import { Box, Container, Typography, Link } from '@mui/material';
 import NextLink from 'next/link';
 
 const Footer: React.FC = () => {
@@ -16,17 +16,23 @@ const Footer: React.FC = () => {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid xs={12} sm={4}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+            gap: 4,
+          }}
+        >
+          <Box>
             <Typography variant="h6" color="text.primary" gutterBottom>
               Nook
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Modern property management for the digital age.
             </Typography>
-          </Grid>
+          </Box>
           
-          <Grid xs={12} sm={4}>
+          <Box>
             <Typography variant="h6" color="text.primary" gutterBottom>
               Legal
             </Typography>
@@ -48,9 +54,9 @@ const Footer: React.FC = () => {
                 Terms of Service
               </Link>
             </Box>
-          </Grid>
+          </Box>
           
-          <Grid xs={12} sm={4}>
+          <Box>
             <Typography variant="h6" color="text.primary" gutterBottom>
               Contact
             </Typography>
@@ -60,8 +66,8 @@ const Footer: React.FC = () => {
             <Typography variant="body2" color="text.secondary">
               Phone: (555) 123-4567
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
         
         <Box sx={{ mt: 3, borderTop: 1, borderColor: 'divider', pt: 2 }}>
           <Typography variant="body2" color="text.secondary" align="center">

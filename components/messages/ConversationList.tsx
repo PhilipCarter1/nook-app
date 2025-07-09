@@ -61,7 +61,7 @@ export function ConversationList({
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
                     {conversation.lastMessage
-                      ? formatDateTime(conversation.lastMessage.createdAt)
+                      ? formatDateTime(new Date(conversation.lastMessage.created_at))
                       : ''}
                   </p>
                   {conversation.unreadCount > 0 && (

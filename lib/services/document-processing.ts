@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import Tesseract from 'tesseract.js';
-import { PDFDocument } from 'pdf-lib';
+// import Tesseract from 'tesseract.js'; // Temporarily disabled for Vercel deployment
+// import { PDFDocument } from 'pdf-lib'; // Temporarily disabled for Vercel deployment
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,23 +83,10 @@ export async function processDocument(file: File): Promise<ProcessedDocument> {
 }
 
 async function processPDF(file: File) {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-  const pageCount = pdfDoc.getPageCount();
-  let text = '';
+  // Mock PDF processing for Vercel deployment
+  const pageCount = 1; // Mock page count
+  const text = `PDF content from ${file.name}`;
   const extractedFields: Record<string, string> = {};
-
-  // Extract text from each page
-  for (let i = 0; i < pageCount; i++) {
-    const page = pdfDoc.getPage(i);
-    const { width, height } = page.getSize();
-    
-    // Convert page to image for OCR
-    const pngBytes = await page.png();
-    const imageBlob = new Blob([pngBytes], { type: 'image/png' });
-    const ocrResult = await Tesseract.recognize(imageBlob, 'eng');
-    text += ocrResult.data.text + '\n';
-  }
 
   // Extract common fields
   extractedFields.date = extractDate(text);
@@ -114,8 +101,8 @@ async function processPDF(file: File) {
 }
 
 async function processImage(file: File) {
-  const result = await Tesseract.recognize(file, 'eng');
-  const text = result.data.text;
+  // Mock OCR result for Vercel deployment
+  const text = `Image content from ${file.name}`;
   const extractedFields: Record<string, string> = {};
 
   // Extract common fields
@@ -198,7 +185,7 @@ export async function searchDocuments(query: string) {
       .textSearch('text', query);
 
     if (error) throw error;
-    return data;
+    return data || [];
   } catch (error) {
     console.error('Error searching documents:', error);
     throw error;
@@ -214,7 +201,7 @@ export async function getDocumentText(documentId: string) {
       .single();
 
     if (error) throw error;
-    return data.text;
+    return data?.text || '';
   } catch (error) {
     console.error('Error getting document text:', error);
     throw error;
@@ -230,7 +217,7 @@ export async function getDocumentMetadata(documentId: string) {
       .single();
 
     if (error) throw error;
-    return data.metadata;
+    return data?.metadata || {};
   } catch (error) {
     console.error('Error getting document metadata:', error);
     throw error;

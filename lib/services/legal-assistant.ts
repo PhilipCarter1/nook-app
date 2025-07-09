@@ -120,6 +120,7 @@ export async function validateDocument(
     });
 
     const analysis = completion.choices[0].message.content;
+    if (!analysis) throw new Error('No analysis content returned');
     const parsedAnalysis = JSON.parse(analysis);
 
     // Store validation result
@@ -170,7 +171,8 @@ export async function getLegalRecommendations(
     });
 
     const recommendations = completion.choices[0].message.content;
-    return JSON.parse(recommendations);
+    if (!recommendations) throw new Error('No recommendations content returned');
+    return JSON.parse(recommendations as string);
   } catch (error) {
     console.error('Error getting legal recommendations:', error);
     throw error;
@@ -223,7 +225,8 @@ export async function checkCompliance(
     });
 
     const complianceCheck = completion.choices[0].message.content;
-    return JSON.parse(complianceCheck);
+    if (!complianceCheck) throw new Error('No compliance check content returned');
+    return JSON.parse(complianceCheck as string);
   } catch (error) {
     console.error('Error checking compliance:', error);
     throw error;

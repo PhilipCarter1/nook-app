@@ -6,11 +6,12 @@ import { toast } from 'sonner';
 
 interface StripePaymentProps {
   amount: number;
+  leaseId: string;
   onSuccess: () => void;
   onError: (error: Error) => void;
 }
 
-export default function StripePayment({ amount, onSuccess, onError }: StripePaymentProps) {
+export default function StripePayment({ amount, leaseId, onSuccess, onError }: StripePaymentProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = React.useState(false);
@@ -26,7 +27,7 @@ export default function StripePayment({ amount, onSuccess, onError }: StripePaym
 
     try {
       // Create payment intent
-      const { clientSecret, paymentIntentId } = await createPaymentIntent(amount);
+      const { clientSecret, paymentIntentId } = await createPaymentIntent(amount, leaseId);
 
       if (!clientSecret) {
         throw new Error('Failed to create payment intent');

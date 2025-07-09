@@ -13,7 +13,7 @@ import { UserRole } from '@/lib/types';
 const roleLabels: Record<UserRole, string> = {
   tenant: 'Tenant',
   landlord: 'Landlord',
-  builder_super: 'Builder/Super',
+  super: 'Builder/Super',
   admin: 'Admin',
 };
 

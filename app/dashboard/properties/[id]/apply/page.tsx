@@ -55,7 +55,7 @@ export default function PropertyApplicationPage({ params }: { params: { id: stri
                 <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
-                  value={user?.name || ''}
+                  value={`${user?.first_name || ''} ${user?.last_name || ''}`.trim()}
                   disabled
                 />
               </div>

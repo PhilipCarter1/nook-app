@@ -4,13 +4,13 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { UserRole } from '@/lib/types';
 import { Bell } from 'lucide-react';
 
 export function Navbar() {
   const { user, role, signOut } = useAuth();
 
-  const navigation = {
+  const navigation: Record<UserRole, { name: string; href: string }[]> = {
     tenant: [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Payments', href: '/payments' },
@@ -25,7 +25,7 @@ export function Navbar() {
       { name: 'Maintenance', href: '/maintenance' },
       { name: 'Documents', href: '/documents' },
     ],
-    builder_super: [
+    super: [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Properties', href: '/properties' },
       { name: 'Maintenance', href: '/maintenance' },
@@ -75,11 +75,12 @@ export function Navbar() {
                   <Bell className="h-5 w-5" />
                 </Button>
                 <Avatar>
-                  <AvatarImage src={user.avatar_url || undefined} alt={user.name} />
+                  <AvatarImage src={user.avatar_url || undefined} alt={user.email} />
                   <AvatarFallback>
-                    {user.name
-                      .split(' ')
-                      .map((n) => n[0])
+                    {user.email
+                      .split('@')[0]
+                      .split('')
+                      .map((n: string) => n[0])
                       .join('')
                       .toUpperCase()}
                   </AvatarFallback>

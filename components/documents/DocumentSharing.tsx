@@ -76,9 +76,9 @@ export function DocumentSharing({
 
   const getPermissionBadge = (permission: string) => {
     const variants = {
-      view: 'secondary',
-      edit: 'default',
-      sign: 'primary',
+      view: 'default',
+      edit: 'secondary',
+      sign: 'destructive',
     } as const;
 
     return (

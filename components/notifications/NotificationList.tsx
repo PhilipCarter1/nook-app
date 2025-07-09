@@ -11,6 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { NotificationBadge } from './NotificationBadge';
 import { useNotifications } from '@/lib/contexts/NotificationContext';
+import type { Notification } from '@/lib/services/notifications';
 
 export function NotificationList() {
   const [open, setOpen] = useState(false);

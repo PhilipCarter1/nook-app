@@ -106,7 +106,7 @@ export function MessagesClient({
             messages={messages}
             otherParticipant={otherParticipant}
             onSendMessage={handleSendMessage}
-            onLoadMore={() => loadMessages(messages[0]?.createdAt)}
+            onLoadMore={() => loadMessages(messages[0]?.created_at ? new Date(messages[0].created_at) : undefined)}
             hasMore={hasMore}
           />
         ) : (

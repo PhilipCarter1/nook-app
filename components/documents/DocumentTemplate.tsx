@@ -45,7 +45,7 @@ interface DocumentTemplateProps {
   className?: string;
 }
 
-const RENTAL_TEMPLATES = [
+const RENTAL_TEMPLATES: Omit<DocumentTemplate, 'id'>[] = [
   {
     name: 'Standard Lease Agreement',
     type: 'lease',
@@ -87,18 +87,18 @@ Date: _____________________
 Tenant: _____________________
 Date: _____________________`,
     variables: [
-      { name: 'START_DATE', type: 'date', required: true },
-      { name: 'END_DATE', type: 'date', required: true },
-      { name: 'LANDLORD_NAME', type: 'text', required: true },
-      { name: 'LANDLORD_ADDRESS', type: 'text', required: true },
-      { name: 'TENANT_NAME', type: 'text', required: true },
-      { name: 'TENANT_ADDRESS', type: 'text', required: true },
-      { name: 'PROPERTY_ADDRESS', type: 'text', required: true },
-      { name: 'RENT_AMOUNT', type: 'number', required: true },
-      { name: 'DUE_DATE', type: 'number', required: true },
-      { name: 'DEPOSIT_AMOUNT', type: 'number', required: true },
-      { name: 'UTILITIES_INCLUDED', type: 'select', required: true, options: ['All utilities included', 'Tenant pays all utilities', 'Some utilities included'] },
-      { name: 'PET_POLICY', type: 'select', required: true, options: ['No pets allowed', 'Pets allowed with approval', 'Pets allowed with restrictions'] },
+      { name: 'START_DATE', type: 'date' as const, required: true },
+      { name: 'END_DATE', type: 'date' as const, required: true },
+      { name: 'LANDLORD_NAME', type: 'text' as const, required: true },
+      { name: 'LANDLORD_ADDRESS', type: 'text' as const, required: true },
+      { name: 'TENANT_NAME', type: 'text' as const, required: true },
+      { name: 'TENANT_ADDRESS', type: 'text' as const, required: true },
+      { name: 'PROPERTY_ADDRESS', type: 'text' as const, required: true },
+      { name: 'RENT_AMOUNT', type: 'number' as const, required: true },
+      { name: 'DUE_DATE', type: 'number' as const, required: true },
+      { name: 'DEPOSIT_AMOUNT', type: 'number' as const, required: true },
+      { name: 'UTILITIES_INCLUDED', type: 'select' as const, required: true, options: ['All utilities included', 'Tenant pays all utilities', 'Some utilities included'] },
+      { name: 'PET_POLICY', type: 'select' as const, required: true, options: ['No pets allowed', 'Pets allowed with approval', 'Pets allowed with restrictions'] },
     ],
     metadata: {
       category: 'Lease',
@@ -136,13 +136,13 @@ Date: _____________________
 Tenant: _____________________
 Date: _____________________`,
     variables: [
-      { name: 'PROPERTY_ADDRESS', type: 'text', required: true },
-      { name: 'INSPECTION_DATE', type: 'date', required: true },
-      { name: 'TENANT_NAME', type: 'text', required: true },
-      { name: 'ROOMS', type: 'text', required: true },
-      { name: 'CONDITION_NOTES', type: 'text', required: true },
-      { name: 'DAMAGES', type: 'text', required: false },
-      { name: 'UTILITIES_STATUS', type: 'select', required: true, options: ['All utilities working', 'Some issues noted', 'Major issues present'] },
+      { name: 'PROPERTY_ADDRESS', type: 'text' as const, required: true },
+      { name: 'INSPECTION_DATE', type: 'date' as const, required: true },
+      { name: 'TENANT_NAME', type: 'text' as const, required: true },
+      { name: 'ROOMS', type: 'text' as const, required: true },
+      { name: 'CONDITION_NOTES', type: 'text' as const, required: true },
+      { name: 'DAMAGES', type: 'text' as const, required: false },
+      { name: 'UTILITIES_STATUS', type: 'select' as const, required: true, options: ['All utilities working', 'Some issues noted', 'Major issues present'] },
     ],
     metadata: {
       category: 'Inspection',
@@ -170,16 +170,16 @@ Notes: [NOTES]
 Received by: [RECEIVED_BY]
 Date: [RECEIPT_DATE]`,
     variables: [
-      { name: 'RECEIPT_NUMBER', type: 'text', required: true },
-      { name: 'PAYMENT_DATE', type: 'date', required: true },
-      { name: 'PROPERTY_ADDRESS', type: 'text', required: true },
-      { name: 'TENANT_NAME', type: 'text', required: true },
-      { name: 'PAYMENT_AMOUNT', type: 'number', required: true },
-      { name: 'PAYMENT_METHOD', type: 'select', required: true, options: ['Bank Transfer', 'Credit Card', 'Cash', 'Check'] },
-      { name: 'PAYMENT_PERIOD', type: 'text', required: true },
-      { name: 'NOTES', type: 'text', required: false },
-      { name: 'RECEIVED_BY', type: 'text', required: true },
-      { name: 'RECEIPT_DATE', type: 'date', required: true },
+      { name: 'RECEIPT_NUMBER', type: 'text' as const, required: true },
+      { name: 'PAYMENT_DATE', type: 'date' as const, required: true },
+      { name: 'PROPERTY_ADDRESS', type: 'text' as const, required: true },
+      { name: 'TENANT_NAME', type: 'text' as const, required: true },
+      { name: 'PAYMENT_AMOUNT', type: 'number' as const, required: true },
+      { name: 'PAYMENT_METHOD', type: 'select' as const, required: true, options: ['Bank Transfer', 'Credit Card', 'Cash', 'Check'] },
+      { name: 'PAYMENT_PERIOD', type: 'text' as const, required: true },
+      { name: 'NOTES', type: 'text' as const, required: false },
+      { name: 'RECEIVED_BY', type: 'text' as const, required: true },
+      { name: 'RECEIPT_DATE', type: 'date' as const, required: true },
     ],
     metadata: {
       category: 'Payment',

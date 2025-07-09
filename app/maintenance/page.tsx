@@ -29,7 +29,7 @@ export default function MaintenancePage() {
 
   const { data: tickets, isLoading: isLoadingTickets } = useQuery({
     queryKey: ['maintenance-tickets'],
-    queryFn: () => getMaintenanceTickets({}),
+    queryFn: () => getMaintenanceTickets(),
   });
 
   const { data: selectedTicket, isLoading: isLoadingTicket } = useQuery({
@@ -67,7 +67,12 @@ export default function MaintenancePage() {
 
   const commentMutation = useMutation({
     mutationFn: ({ ticketId, content }: { ticketId: string; content: string }) =>
-      addMaintenanceComment(ticketId, user?.id || '', content),
+      addMaintenanceComment({
+        ticket_id: ticketId,
+        user_id: user?.id || '',
+        content,
+        is_internal: false,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-ticket', ticketId] });
       toast.success('Comment added successfully');
@@ -104,10 +109,16 @@ export default function MaintenancePage() {
     }
 
     await createMutation.mutateAsync({
-      ...data,
-      propertyId: 'current-property-id', // Replace with actual property ID
-      unitId: 'current-unit-id', // Replace with actual unit ID
-      tenantId: user.id,
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      status: 'open',
+      tenant_id: user.id,
+      property_id: 'current-property-id', // Replace with actual property ID
+      unit_id: 'current-unit-id', // Replace with actual unit ID
+      category: 'other',
+      is_urgent: false,
+      is_premium: false,
     });
   };
 
@@ -146,8 +157,6 @@ export default function MaintenancePage() {
   if (isCreating) {
     return (
       <MaintenanceTicketForm
-        propertyId="current-property-id" // Replace with actual property ID
-        unitId="current-unit-id" // Replace with actual unit ID
         onSubmit={handleCreateTicket}
         onCancel={() => router.push('/maintenance')}
       />
@@ -180,12 +189,6 @@ export default function MaintenancePage() {
   }
 
   return (
-    <MaintenanceTicketList
-      tickets={tickets || []}
-      onStatusChange={handleStatusChange}
-      onPriorityChange={handlePriorityChange}
-      onAssign={handleAssign}
-      onCreateTicket={() => router.push('/maintenance?create=true')}
-    />
+    <MaintenanceTicketList />
   );
 } 

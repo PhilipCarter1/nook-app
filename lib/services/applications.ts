@@ -1,6 +1,4 @@
-import { db } from '@/lib/db';
-import { applications, applicationDocuments, applicationReviews } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from '@/lib/supabase';
 import { sendEmail } from './email';
 import { auth } from '@/lib/auth';
 
@@ -41,21 +39,26 @@ export async function createApplication(data: {
   property_id: string;
   documents: { type: string; url: string }[];
 }) {
-  const [application] = await db
-    .insert(applications)
-    .values({
+  const { data: application, error } = await supabase
+    .from('applications')
+    .insert({
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
       phone: data.phone,
-      move_in_date: new Date(data.move_in_date),
+      move_in_date: new Date(data.move_in_date).toISOString(),
       property_id: data.property_id,
       status: 'pending',
     })
-    .returning();
+    .select()
+    .single();
+
+  if (error || !application) {
+    throw new Error('Failed to create application');
+  }
 
   if (data.documents.length > 0) {
-    await db.insert(applicationDocuments).values(
+    await supabase.from('application_documents').insert(
       data.documents.map((doc) => ({
         application_id: application.id,
         type: doc.type,
@@ -67,54 +70,61 @@ export async function createApplication(data: {
   // Notify landlord about new application
   await sendEmail({
     to: 'landlord@example.com', // Replace with actual landlord email
-    template: 'newApplication',
-    data: {
-      applicationId: application.id,
-      applicantName: `${data.first_name} ${data.last_name}`,
-      applicationLink: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/applications/${application.id}`,
-    },
+    subject: 'New Application Received',
+    html: `
+      <h1>New Application Received</h1>
+      <p>A new application has been submitted by ${data.first_name} ${data.last_name}.</p>
+      <p>Application ID: ${application.id}</p>
+      <p>Click the link below to view the application:</p>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/applications/${application.id}">View Application</a>
+    `,
   });
 
   return application;
 }
 
 export async function getApplication(id: string) {
-  const [application] = await db
-    .select()
-    .from(applications)
-    .where(eq(applications.id, id));
+  const { data: application, error } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-  if (!application) {
+  if (error || !application) {
     return null;
   }
 
-  const documents = await db
-    .select()
-    .from(applicationDocuments)
-    .where(eq(applicationDocuments.application_id, id));
+  const { data: documents } = await supabase
+    .from('application_documents')
+    .select('*')
+    .eq('application_id', id);
 
   return {
     ...application,
-    documents,
+    documents: documents || [],
   };
 }
 
 export async function getApplicationsByProperty(id: string) {
-  const applicationsList = await db
-    .select()
-    .from(applications)
-    .where(eq(applications.property_id, id));
+  const { data: applicationsList, error } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('property_id', id);
+
+  if (error || !applicationsList) {
+    return [];
+  }
 
   const applicationsWithDocuments = await Promise.all(
     applicationsList.map(async (application) => {
-      const documents = await db
-        .select()
-        .from(applicationDocuments)
-        .where(eq(applicationDocuments.application_id, application.id));
+      const { data: documents } = await supabase
+        .from('application_documents')
+        .select('*')
+        .eq('application_id', application.id);
 
       return {
         ...application,
-        documents,
+        documents: documents || [],
       };
     })
   );
@@ -132,31 +142,37 @@ export async function reviewApplication(
     throw new Error('User not authenticated');
   }
 
-  const [review] = await db
-    .insert(applicationReviews)
-    .values({
+  const { data: review, error: reviewError } = await supabase
+    .from('application_reviews')
+    .insert({
       application_id: applicationId,
       reviewer_id: session.user.id,
       status,
       notes,
     })
-    .returning();
+    .select()
+    .single();
 
-  await db
-    .update(applications)
-    .set({ status })
-    .where(eq(applications.id, applicationId));
+  if (reviewError) {
+    throw new Error('Failed to create review');
+  }
+
+  await supabase
+    .from('applications')
+    .update({ status })
+    .eq('id', applicationId);
 
   // Notify applicant about application status
   const application = await getApplication(applicationId);
   if (application) {
     await sendEmail({
       to: application.email,
-      template: 'applicationStatus',
-      data: {
-        status,
-        notes,
-      },
+      subject: `Application ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      html: `
+        <h1>Application ${status.charAt(0).toUpperCase() + status.slice(1)}</h1>
+        <p>Your application has been ${status}.</p>
+        ${notes ? `<p>Notes: ${notes}</p>` : ''}
+      `,
     });
   }
 
@@ -164,8 +180,14 @@ export async function reviewApplication(
 }
 
 export async function getApplicationReviews(applicationId: string) {
-  return db
-    .select()
-    .from(applicationReviews)
-    .where(eq(applicationReviews.application_id, applicationId));
+  const { data: reviews, error } = await supabase
+    .from('application_reviews')
+    .select('*')
+    .eq('application_id', applicationId);
+
+  if (error) {
+    return [];
+  }
+
+  return reviews || [];
 } 

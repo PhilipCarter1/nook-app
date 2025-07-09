@@ -1,6 +1,4 @@
-import { db } from '../lib/db';
-import { users, properties, units, applications, applicationDocuments, applicationReviews } from '../lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from '../lib/supabase';
 
 async function testEndToEnd() {
   try {
@@ -8,87 +6,151 @@ async function testEndToEnd() {
 
     // 1. Create test users
     console.log('\n1. Creating test users...');
-    const [landlord, tenant] = await Promise.all([
-      db.insert(users).values({
+    const { data: landlord, error: landlordError } = await supabase
+      .from('users')
+      .insert({
         email: 'test-landlord@example.com',
-        name: 'Test Landlord',
-        password: 'hashed_password',
+        first_name: 'Test',
+        last_name: 'Landlord',
         role: 'landlord',
-      }).returning(),
-      db.insert(users).values({
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (landlordError) throw landlordError;
+
+    const { data: tenant, error: tenantError } = await supabase
+      .from('users')
+      .insert({
         email: 'test-tenant@example.com',
-        name: 'Test Tenant',
-        password: 'hashed_password',
+        first_name: 'Test',
+        last_name: 'Tenant',
         role: 'tenant',
-      }).returning(),
-    ]);
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (tenantError) throw tenantError;
 
     // 2. Create test property
     console.log('\n2. Creating test property...');
-    const [property] = await db.insert(properties).values({
-      name: 'Test Property',
-      address: '123 Test St',
-      city: 'Test City',
-      state: 'TS',
-      zip: '12345',
-      owner_id: landlord[0].id,
-    }).returning();
+    const { data: property, error: propertyError } = await supabase
+      .from('properties')
+      .insert({
+        name: 'Test Property',
+        address: '123 Test St',
+        city: 'Test City',
+        state: 'TS',
+        zip_code: '12345',
+        owner_id: landlord.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (propertyError) throw propertyError;
 
     // 3. Create test unit
     console.log('\n3. Creating test unit...');
-    const [unit] = await db.insert(units).values({
-      property_id: property.id,
-      number: '101',
-      type: 'apartment',
-      status: 'available',
-      rent_amount: 1000,
-    }).returning();
+    const { data: unit, error: unitError } = await supabase
+      .from('units')
+      .insert({
+        property_id: property.id,
+        unit_number: '101',
+        type: 'apartment',
+        status: 'available',
+        rent: 1000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (unitError) throw unitError;
 
     // 4. Create test application
     console.log('\n4. Creating test application...');
-    const [application] = await db.insert(applications).values({
-      first_name: 'Test',
-      last_name: 'Tenant',
-      email: 'test-tenant@example.com',
-      phone: '123-456-7890',
-      move_in_date: '2024-04-01',
-      property_id: property.id,
-      status: 'pending',
-    }).returning();
+    const { data: application, error: applicationError } = await supabase
+      .from('applications')
+      .insert({
+        first_name: 'Test',
+        last_name: 'Tenant',
+        email: 'test-tenant@example.com',
+        phone: '123-456-7890',
+        move_in_date: '2024-04-01',
+        property_id: property.id,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (applicationError) throw applicationError;
 
     // 5. Add test document
     console.log('\n5. Adding test document...');
-    const [document] = await db.insert(applicationDocuments).values({
-      application_id: application.id,
-      type: 'id',
-      url: 'https://example.com/test-doc.pdf',
-    }).returning();
+    const { data: document, error: documentError } = await supabase
+      .from('application_documents')
+      .insert({
+        application_id: application.id,
+        type: 'id',
+        url: 'https://example.com/test-doc.pdf',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (documentError) throw documentError;
 
     // 6. Add test review
     console.log('\n6. Adding test review...');
-    const [review] = await db.insert(applicationReviews).values({
-      application_id: application.id,
-      reviewer_id: landlord[0].id,
-      status: 'approved',
-      notes: 'Test review notes',
-    }).returning();
+    const { data: review, error: reviewError } = await supabase
+      .from('application_reviews')
+      .insert({
+        application_id: application.id,
+        reviewer_id: landlord.id,
+        status: 'approved',
+        notes: 'Test review notes',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (reviewError) throw reviewError;
 
     // 7. Verify all records
     console.log('\n7. Verifying records...');
-    const [verifiedApplication] = await db
+    const { data: verifiedApplication, error: verifyAppError } = await supabase
+      .from('applications')
       .select()
-      .from(applications)
-      .where(eq(applications.id, application.id));
+      .eq('id', application.id)
+      .single();
 
-    const [verifiedDocument] = await db
-      .select()
-      .from(applicationDocuments)
-      .where(eq(applicationDocuments.id, document.id));
+    if (verifyAppError) throw verifyAppError;
 
-    const [verifiedReview] = await db
+    const { data: verifiedDocument, error: verifyDocError } = await supabase
+      .from('application_documents')
       .select()
-      .from(applicationReviews)
-      .where(eq(applicationReviews.id, review.id));
+      .eq('id', document.id)
+      .single();
+
+    if (verifyDocError) throw verifyDocError;
+
+    const { data: verifiedReview, error: verifyReviewError } = await supabase
+      .from('application_reviews')
+      .select()
+      .eq('id', review.id)
+      .single();
+
+    if (verifyReviewError) throw verifyReviewError;
 
     console.log('\nTest Results:');
     console.log('Application:', verifiedApplication);

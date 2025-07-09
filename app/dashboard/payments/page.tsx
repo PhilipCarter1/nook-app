@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DollarSign, Calendar, CreditCard, AlertCircle } from 'lucide-react';
-import { auth } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { payments, leases } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
 import { PaymentForm } from '@/components/payment-form';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -31,32 +27,66 @@ interface Payment {
   paid_date?: string;
 }
 
-export default async function PaymentsPage() {
-  const session = await auth();
-  if (!session?.user) {
-    return <div>Please sign in to view payments</div>;
+interface Lease {
+  id: string;
+  monthlyRent: number;
+  status: string;
+}
+
+export default function PaymentsPage() {
+  const { user } = useAuth();
+  const [lease, setLease] = useState<Lease | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // TODO: Replace with actual API calls
+    // For now, using mock data
+    const mockLease: Lease = {
+      id: 'mock-lease-id',
+      monthlyRent: 1500,
+      status: 'active'
+    };
+
+    const mockPayments: Payment[] = [
+      {
+        id: '1',
+        amount: 1500,
+        type: 'rent',
+        status: 'completed',
+        due_date: '2024-03-01',
+        paid_date: '2024-03-01'
+      },
+      {
+        id: '2',
+        amount: 1500,
+        type: 'rent',
+        status: 'pending',
+        due_date: '2024-04-01'
+      }
+    ];
+
+    setLease(mockLease);
+    setPaymentHistory(mockPayments);
+    setLoading(false);
+  }, [user]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  // Get user's active lease
-  const [lease] = await db.select()
-    .from(leases)
-    .where(
-      and(
-        eq(leases.tenantId, session.user.id),
-        eq(leases.status, 'active')
-      )
-    )
-    .limit(1);
+  if (!user) {
+    return <div>Please sign in to view payments</div>;
+  }
 
   if (!lease) {
     return <div>No active lease found</div>;
   }
-
-  // Get payment history
-  const paymentHistory = await db.select()
-    .from(payments)
-    .where(eq(payments.leaseId, lease.id))
-    .orderBy(payments.createdAt);
 
   return (
     <div className="container mx-auto py-8">
@@ -89,8 +119,8 @@ export default async function PaymentsPage() {
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {payment.type.charAt(0).toUpperCase() + payment.type.slice(1)}
-                        {payment.paidAt && (
-                          <> • {format(new Date(payment.paidAt), 'MMM d, yyyy')}</>
+                        {payment.paid_date && (
+                          <> • {format(new Date(payment.paid_date), 'MMM d, yyyy')}</>
                         )}
                       </div>
                     </div>

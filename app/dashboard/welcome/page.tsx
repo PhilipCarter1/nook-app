@@ -53,7 +53,7 @@ export default async function WelcomePage() {
   ];
 
   return (
-    <MainLayout userRole={user.role}>
+    <MainLayout>
       <div className="container py-12">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">

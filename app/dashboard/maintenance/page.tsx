@@ -31,7 +31,7 @@ interface MaintenanceTicket {
 }
 
 export default function MaintenancePage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const [tickets, setTickets] = React.useState<MaintenanceTicket[]>([]);
   const [showForm, setShowForm] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -42,7 +42,7 @@ export default function MaintenancePage() {
 
   const { data: stats } = useQuery({
     queryKey: ['maintenance-stats'],
-    queryFn: () => getTicketStats({}),
+    queryFn: () => getTicketStats(user?.id || 'mock-user-id'),
   });
 
   // Mock data for now - will be replaced with actual data fetching
@@ -129,7 +129,7 @@ export default function MaintenancePage() {
             <CardTitle className="text-sm font-medium">Urgent Tickets</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.byPriority.high + stats?.byPriority.emergency || 0}</div>
+            <div className="text-2xl font-bold">{stats?.byPriority.high || 0}</div>
           </CardContent>
         </Card>
       </div>

@@ -58,11 +58,13 @@ const mockTickets: MaintenanceTicket[] = [
     status: 'open',
     priority: 'medium',
     category: 'plumbing',
-    location: 'Kitchen',
-    property_name: 'Sunset Apartments',
-    unit_number: '101',
+    property_id: 'prop-1',
+    unit_id: 'unit-1',
+    tenant_id: 'tenant-1',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    is_urgent: false,
+    is_premium: false,
   },
   {
     id: '2',
@@ -71,11 +73,13 @@ const mockTickets: MaintenanceTicket[] = [
     status: 'in_progress',
     priority: 'high',
     category: 'hvac',
-    location: 'Living Room',
-    property_name: 'Sunset Apartments',
-    unit_number: '203',
+    property_id: 'prop-1',
+    unit_id: 'unit-2',
+    tenant_id: 'tenant-2',
     created_at: new Date(Date.now() - 86400000).toISOString(),
     updated_at: new Date(Date.now() - 86400000).toISOString(),
+    is_urgent: true,
+    is_premium: false,
   },
   {
     id: '3',
@@ -84,11 +88,13 @@ const mockTickets: MaintenanceTicket[] = [
     status: 'resolved',
     priority: 'low',
     category: 'structural',
-    location: 'Bedroom',
-    property_name: 'Sunset Apartments',
-    unit_number: '105',
+    property_id: 'prop-1',
+    unit_id: 'unit-3',
+    tenant_id: 'tenant-3',
     created_at: new Date(Date.now() - 172800000).toISOString(),
     updated_at: new Date(Date.now() - 86400000).toISOString(),
+    is_urgent: false,
+    is_premium: false,
   },
 ];
 
@@ -218,8 +224,7 @@ export async function createTicket(ticketData: {
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';
-  category: string;
-  location?: string;
+  category: 'plumbing' | 'electrical' | 'hvac' | 'structural' | 'appliance' | 'other';
   propertyId?: string;
   unitId?: string;
   userId: string;
@@ -234,11 +239,13 @@ export async function createTicket(ticketData: {
     status: 'open',
     priority: ticketData.priority,
     category: ticketData.category,
-    location: ticketData.location,
-    property_name: 'Sunset Apartments',
-    unit_number: '101',
+    property_id: ticketData.propertyId || '',
+    unit_id: ticketData.unitId || '',
+    tenant_id: ticketData.userId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    is_urgent: false,
+    is_premium: false,
   };
   
   mockTickets.push(newTicket);

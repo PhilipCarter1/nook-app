@@ -16,7 +16,7 @@ export default async function TenantInvitationsPage() {
   }
 
   return (
-    <MainLayout userRole={user.role}>
+    <MainLayout>
       <div className="container py-6">
         <TenantInvitations
           organizationId={user.organization_id}

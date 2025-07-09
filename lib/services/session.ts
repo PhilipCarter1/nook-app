@@ -85,7 +85,7 @@ export async function createSession(
     .single();
   
   if (error || !session) {
-    throw new AppError('Failed to create session', 500, [error?.message]);
+    throw new AppError('Failed to create session', 500, { error: [error?.message || 'Unknown error'] });
   }
   
   return mapDatabaseSessionToSession(session);
@@ -177,7 +177,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
     .eq('id', sessionId);
   
   if (error) {
-    throw new AppError('Failed to invalidate session', 500, [error.message]);
+    throw new AppError('Failed to invalidate session', 500, { error: [error.message] });
   }
 }
 
@@ -188,7 +188,7 @@ export async function invalidateAllUserSessions(userId: string): Promise<void> {
     .eq('user_id', userId);
   
   if (error) {
-    throw new AppError('Failed to invalidate sessions', 500, [error.message]);
+    throw new AppError('Failed to invalidate sessions', 500, { error: [error.message] });
   }
 }
 
@@ -200,7 +200,7 @@ export async function getActiveSessions(userId: string): Promise<Session[]> {
     .gt('expires_at', new Date().toISOString());
   
   if (error) {
-    throw new AppError('Failed to get active sessions', 500, [error.message]);
+    throw new AppError('Failed to get active sessions', 500, { error: [error.message] });
   }
   
   return (sessions || []).map(mapDatabaseSessionToSession);

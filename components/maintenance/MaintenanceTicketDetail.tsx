@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Paperclip, Clock, User, Building, Home, Phone, Mail } from 'lucide-react';
+import { MessageSquare, Paperclip, Clock, User, Building, Home, Phone, Mail, AlertCircle } from 'lucide-react';
 import {
   PremiumLayout,
   PremiumCard,
@@ -16,7 +16,10 @@ import {
 } from '@/components/layout/PremiumLayout';
 import { premiumComponents, premiumAnimations } from '@/lib/theme';
 import { cn } from '@/lib/utils';
-import type { MaintenanceTicket, MaintenancePriority, MaintenanceStatus } from '@/lib/services/maintenance';
+import type { MaintenanceTicket } from '@/lib/services/maintenance';
+
+type MaintenancePriority = 'low' | 'medium' | 'high' | 'emergency';
+type MaintenanceStatus = 'open' | 'in_progress' | 'on_hold' | 'resolved' | 'closed' | 'scheduled';
 
 interface MaintenanceTicketDetailProps {
   ticket: MaintenanceTicket;
@@ -37,6 +40,7 @@ const priorityColors = {
 const statusColors = {
   open: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
   in_progress: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  on_hold: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
   scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   resolved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   closed: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
@@ -82,7 +86,7 @@ export function MaintenanceTicketDetail({
                 <h2 className="text-2xl font-semibold">{ticket.title}</h2>
                 <div className="flex items-center gap-2 text-sm text-neutral-500">
                   <Clock className="h-4 w-4" />
-                  <span>Created {format(new Date(ticket.createdAt), 'PPP')}</span>
+                  <span>Created {format(new Date(ticket.created_at), 'PPP')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -102,16 +106,6 @@ export function MaintenanceTicketDetail({
                 >
                   {ticket.priority} priority
                 </Badge>
-                {ticket.slaStatus && (
-                  <Badge
-                    className={cn(
-                      premiumComponents.badge.base,
-                      slaStatusColors[ticket.slaStatus]
-                    )}
-                  >
-                    SLA: {ticket.slaStatus.replace('_', ' ')}
-                  </Badge>
-                )}
               </div>
             </div>
           </PremiumCardHeader>
@@ -121,30 +115,30 @@ export function MaintenanceTicketDetail({
                 <div className="flex items-center gap-2">
                   <Building className="h-5 w-5 text-neutral-500" />
                   <div>
-                    <p className="text-sm font-medium">Property</p>
-                    <p className="text-sm text-neutral-500">{ticket.property?.name}</p>
+                    <p className="text-sm font-medium">Property ID</p>
+                    <p className="text-sm text-neutral-500">{ticket.property_id}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-5 w-5 text-neutral-500" />
                   <div>
-                    <p className="text-sm font-medium">Unit</p>
-                    <p className="text-sm text-neutral-500">{ticket.unit?.number}</p>
+                    <p className="text-sm font-medium">Unit ID</p>
+                    <p className="text-sm text-neutral-500">{ticket.unit_id}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="h-5 w-5 text-neutral-500" />
                   <div>
-                    <p className="text-sm font-medium">Reported by</p>
-                    <p className="text-sm text-neutral-500">{ticket.tenant?.name}</p>
+                    <p className="text-sm font-medium">Tenant ID</p>
+                    <p className="text-sm text-neutral-500">{ticket.tenant_id}</p>
                   </div>
                 </div>
-                {ticket.assignedTo && (
+                {ticket.assigned_to && (
                   <div className="flex items-center gap-2">
                     <User className="h-5 w-5 text-neutral-500" />
                     <div>
                       <p className="text-sm font-medium">Assigned to</p>
-                      <p className="text-sm text-neutral-500">{ticket.assignedTo.name}</p>
+                      <p className="text-sm text-neutral-500">{ticket.assigned_to}</p>
                     </div>
                   </div>
                 )}
@@ -155,76 +149,22 @@ export function MaintenanceTicketDetail({
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">{ticket.description}</p>
               </div>
 
-              {ticket.isEmergency && (
-                <div className="p-4 border rounded-lg bg-red-50 dark:bg-red-900/20">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
-                    <AlertCircle className="h-5 w-5" />
-                    <h3 className="font-medium">Emergency Information</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <p><strong>Type:</strong> {ticket.emergencyType?.replace('_', ' ')}</p>
-                    {ticket.emergencyContact && (
-                      <div className="space-y-1">
-                        <p><strong>Emergency Contact:</strong></p>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          <span>{ticket.emergencyContact.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          <span>{ticket.emergencyContact.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span>{ticket.emergencyContact.email}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              <div>
+                <h3 className="text-sm font-medium mb-2">Category</h3>
+                <Badge variant="outline">{ticket.category}</Badge>
+              </div>
+
+              {ticket.scheduled_date && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Scheduled Date</h3>
+                  <p className="text-sm text-neutral-600">{format(new Date(ticket.scheduled_date), 'PPP')}</p>
                 </div>
               )}
 
-              {ticket.vendor && (
+              {ticket.estimated_cost && (
                 <div>
-                  <h3 className="font-medium mb-2">Vendor Information</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-neutral-500" />
-                      <span>{ticket.vendor.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-neutral-500" />
-                      <span>{ticket.vendor.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-neutral-500" />
-                      <span>{ticket.vendor.contact.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-neutral-500" />
-                      <span>Response Time: {ticket.vendor.responseTime}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {ticket.mediaUrls && ticket.mediaUrls.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Attachments</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {ticket.mediaUrls.map((url, index) => (
-                      <div
-                        key={index}
-                        className="relative aspect-square rounded-lg overflow-hidden border"
-                      >
-                        <img
-                          src={url}
-                          alt={`Attachment ${index + 1}`}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <h3 className="text-sm font-medium mb-2">Estimated Cost</h3>
+                  <p className="text-sm text-neutral-600">${ticket.estimated_cost}</p>
                 </div>
               )}
 
@@ -245,6 +185,7 @@ export function MaintenanceTicketDetail({
                       <SelectContent>
                         <SelectItem value="open">Open</SelectItem>
                         <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="on_hold">On Hold</SelectItem>
                         <SelectItem value="scheduled">Scheduled</SelectItem>
                         <SelectItem value="resolved">Resolved</SelectItem>
                         <SelectItem value="closed">Closed</SelectItem>
@@ -312,7 +253,7 @@ export function MaintenanceTicketDetail({
               >
                 Close
               </Button>
-              {!ticket.assignedTo && (
+              {!ticket.assigned_to && (
                 <Button
                   onClick={() => onAssign?.(ticket.id)}
                   className={cn(
@@ -326,37 +267,6 @@ export function MaintenanceTicketDetail({
             </div>
           </PremiumCardFooter>
         </PremiumCard>
-
-        {ticket.comments && ticket.comments.length > 0 && (
-          <PremiumCard>
-            <PremiumCardHeader>
-              <h3 className="text-lg font-semibold">Comments</h3>
-            </PremiumCardHeader>
-            <PremiumCardContent>
-              <div className="space-y-4">
-                {ticket.comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-4">
-                    <Avatar>
-                      <AvatarImage src={comment.user?.avatarUrl} />
-                      <AvatarFallback>
-                        {comment.user?.name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{comment.user?.name}</p>
-                        <span className="text-sm text-neutral-500">
-                          {format(new Date(comment.createdAt), 'PPP')}
-                        </span>
-                      </div>
-                      <p className="text-sm text-neutral-600">{comment.content}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </PremiumCardContent>
-          </PremiumCard>
-        )}
       </PremiumGrid>
     </PremiumLayout>
   );

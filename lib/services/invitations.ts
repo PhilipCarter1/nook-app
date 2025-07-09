@@ -60,7 +60,7 @@ export async function createTenantInvitation(
 
   // Send invitation email
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${data.id}`;
-  await sendTenantInvitation(email, invitationLink);
+  await sendTenantInvitation(email, 'Property', 'Unit', invitationLink);
 
   return data;
 }

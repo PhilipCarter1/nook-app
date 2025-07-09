@@ -6,7 +6,6 @@ import { PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 const createMockUser = (user: typeof mockUsers[0]): User => ({
   ...user,
-  phone: user.phone === null ? undefined : user.phone,
   app_metadata: {},
   user_metadata: {},
   aud: 'authenticated',

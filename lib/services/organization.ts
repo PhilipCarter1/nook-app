@@ -1,6 +1,4 @@
-import { db } from '../db';
-import { organizations, users } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from '../supabase';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth-options';
 
@@ -26,28 +24,27 @@ export async function getOrganization(): Promise<Organization | null> {
     return null;
   }
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, session.user.email));
+  const { data: usersData, error: userError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', session.user.email)
+    .limit(1);
+  if (userError || !usersData || usersData.length === 0) return null;
+  const user = usersData[0];
+  if (!user.organizationId) return null;
 
-  if (!user?.organizationId) {
-    return null;
-  }
-
-  const [organization] = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.id, user.organizationId));
-
-  if (!organization) {
-    return null;
-  }
+  const { data: orgData, error: orgError } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('id', user.organizationId)
+    .limit(1);
+  if (orgError || !orgData || orgData.length === 0) return null;
+  const organization = orgData[0];
 
   return {
     ...organization,
     role: user.role,
-  };
+  } as Organization;
 }
 
 export async function createOrganization(data: {
@@ -61,65 +58,72 @@ export async function createOrganization(data: {
     zipCode: string;
   };
 }): Promise<Organization> {
-  const [organization] = await db
-    .insert(organizations)
-    .values(data)
-    .returning();
-
+  const { data: orgData, error } = await supabase
+    .from('organizations')
+    .insert([data])
+    .select('*')
+    .limit(1);
+  if (error || !orgData || orgData.length === 0) throw error;
   return {
-    ...organization,
+    ...orgData[0],
     role: 'admin',
-  };
+  } as Organization;
 }
 
 export async function updateOrganization(
   id: string,
   data: Partial<Organization>
 ): Promise<Organization> {
-  const [organization] = await db
-    .update(organizations)
-    .set(data)
-    .where(eq(organizations.id, id))
-    .returning();
-
+  const { data: orgData, error } = await supabase
+    .from('organizations')
+    .update(data)
+    .eq('id', id)
+    .select('*')
+    .limit(1);
+  if (error || !orgData || orgData.length === 0) throw error;
   return {
-    ...organization,
+    ...orgData[0],
     role: 'admin',
-  };
+  } as Organization;
 }
 
 export async function deleteOrganization(id: string): Promise<void> {
-  await db
-    .delete(organizations)
-    .where(eq(organizations.id, id));
+  const { error } = await supabase
+    .from('organizations')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
 }
 
 export async function getOrganizationUsers(organizationId: string) {
-  return db
-    .select()
-    .from(users)
-    .where(eq(users.organizationId, organizationId));
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('organizationId', organizationId);
+  if (error) throw error;
+  return data;
 }
 
 export async function addUserToOrganization(
   organizationId: string,
   userId: string
 ): Promise<void> {
-  await db
-    .update(users)
-    .set({ organizationId })
-    .where(eq(users.id, userId));
+  const { error } = await supabase
+    .from('users')
+    .update({ organizationId })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 export async function removeUserFromOrganization(userId: string): Promise<void> {
-  await db
-    .update(users)
-    .set({ organizationId: null })
-    .where(eq(users.id, userId));
+  const { error } = await supabase
+    .from('users')
+    .update({ organizationId: null })
+    .eq('id', userId);
+  if (error) throw error;
 }
 
 export async function getOrganizationTrialStatus(organizationId: string, userRole: string) {
-  // If user is not a landlord, they don't need to worry about trial status
   if (userRole !== 'landlord') {
     return {
       isInTrial: false,
@@ -128,19 +132,15 @@ export async function getOrganizationTrialStatus(organizationId: string, userRol
       requiresPayment: false,
     };
   }
-
-  const { data, error } = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.id, organizationId))
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('id', organizationId)
     .single();
-
   if (error) throw error;
-
   const now = new Date();
   const trialEnd = new Date(data.trial_end_date);
   const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
   return {
     isInTrial: data.status === 'trial',
     daysRemaining: Math.max(0, daysRemaining),
@@ -150,13 +150,11 @@ export async function getOrganizationTrialStatus(organizationId: string, userRol
 }
 
 export async function getOrganizationMembers(organizationId: string) {
-  const { data, error } = await db
-    .select()
-    .from(users)
-    .where(eq(users.organizationId, organizationId));
-
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('organizationId', organizationId);
   if (error) throw error;
-
   return data;
 }
 
@@ -165,19 +163,19 @@ export async function updateOrganizationMemberRole(
   userId: string,
   role: string
 ) {
-  const { error } = await db
-    .update(users)
-    .set({ role })
-    .where(eq(users.id, userId));
-
+  const { error } = await supabase
+    .from('users')
+    .update({ role })
+    .eq('id', userId)
+    .eq('organizationId', organizationId);
   if (error) throw error;
 }
 
 export async function removeOrganizationMember(organizationId: string, userId: string) {
-  const { error } = await db
-    .update(users)
-    .set({ organizationId: null })
-    .where(eq(users.id, userId));
-
+  const { error } = await supabase
+    .from('users')
+    .update({ organizationId: null })
+    .eq('id', userId)
+    .eq('organizationId', organizationId);
   if (error) throw error;
 } 

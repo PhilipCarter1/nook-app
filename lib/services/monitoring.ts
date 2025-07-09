@@ -100,7 +100,7 @@ export function withPerformanceMonitoring<T>(
 }
 
 // API route monitoring
-export function withApiMonitoring(handler: Function) {
+export function withApiMonitoring(handler: (req: any, res: any) => Promise<void> | void) {
   return async (req: any, res: any) => {
     const transaction = startTransaction(
       `${req.method} ${req.url}`,

@@ -24,7 +24,7 @@ export default function SettingsPage() {
     if (user) {
       setFormData((prev) => ({
         ...prev,
-        name: user.user_metadata?.name || '',
+        name: user.email?.split('@')[0] || '',
         email: user.email || '',
       }));
     }

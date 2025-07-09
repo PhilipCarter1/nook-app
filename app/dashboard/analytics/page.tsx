@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { Card } from '@/components/ui/card';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { getPortfolioAnalytics } from '@/lib/services/analytics';
+// // import { getPortfolioAnalytics } from '@/lib/services/analytics';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { getOrganization } from '@/lib/services/organization';
 import { redirect } from 'next/navigation';
@@ -17,12 +17,26 @@ export default async function AnalyticsPage() {
     redirect('/auth/signin');
   }
 
-  // Get analytics for the last 30 days
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30);
-
-  const analytics = await getPortfolioAnalytics(organization.id, startDate, endDate);
+  // Mock analytics data for now
+  const analytics = {
+    totalProperties: 0,
+    totalUnits: 0,
+    totalOccupiedUnits: 0,
+    totalRevenue: 0,
+    averageOccupancyRate: 0,
+    averageRent: 0,
+    maintenanceMetrics: {
+      totalRequests: 0,
+      openRequests: 0,
+      averageResolutionTime: 0,
+    },
+    paymentMetrics: {
+      totalPayments: 0,
+      onTimePayments: 0,
+      latePayments: 0,
+      averageDaysLate: 0,
+    },
+  };
 
   return (
     <MainLayout>

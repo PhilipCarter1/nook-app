@@ -6,5 +6,5 @@ export default function PaymentsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <MainLayout userRole="tenant">{children}</MainLayout>;
+  return <MainLayout>{children}</MainLayout>;
 } 

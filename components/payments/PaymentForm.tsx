@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 interface PaymentFormProps {
-  clientSecret: string;
+  clientSecret?: string;
   amount: number;
   onSuccess: () => void;
   onCancel: () => void;

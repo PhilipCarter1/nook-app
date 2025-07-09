@@ -11,18 +11,7 @@ import {
   markAllNotificationsAsRead,
   deleteNotification,
 } from '@/lib/services/notifications';
-
-interface Notification {
-  id: string;
-  type: 'maintenance' | 'payment' | 'lease' | 'message' | 'document';
-  title: string;
-  message: string;
-  link: string | null;
-  data: Record<string, any> | null;
-  read: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { Notification } from '@/lib/services/notifications';
 
 interface NotificationContextType {
   notifications: Notification[];

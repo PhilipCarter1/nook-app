@@ -103,17 +103,19 @@ export async function createUsageAlert(
 
   if (!organization?.stripe_customer_id) return;
 
-  // Create usage alert in Stripe
-  await stripe.usageRecords.create({
-    customer: organization.stripe_customer_id,
-    timestamp: Math.floor(Date.now() / 1000),
-    action: 'set',
-    value: current,
-    metadata: {
+  // Mock implementation - Stripe doesn't have usageRecords API
+  console.log(`Usage alert for ${type}: ${current}/${limit}`);
+  
+  // Store usage alert in database instead
+  await supabase
+    .from('usage_alerts')
+    .insert({
+      organization_id: organizationId,
       type,
+      current_usage: current,
       limit,
-    },
-  });
+      created_at: new Date().toISOString(),
+    });
 }
 
 export async function handleWebhookEvent(event: Stripe.Event) {
@@ -165,7 +167,7 @@ async function handleSubscriptionDeletion(subscription: Stripe.Subscription) {
 }
 
 async function handleSuccessfulPayment(invoice: Stripe.Invoice) {
-  const organizationId = invoice.subscription_details?.metadata.organizationId;
+  const organizationId = invoice.subscription_details?.metadata?.organizationId;
   if (!organizationId) return;
 
   await supabase
@@ -180,7 +182,7 @@ async function handleSuccessfulPayment(invoice: Stripe.Invoice) {
 }
 
 async function handleFailedPayment(invoice: Stripe.Invoice) {
-  const organizationId = invoice.subscription_details?.metadata.organizationId;
+  const organizationId = invoice.subscription_details?.metadata?.organizationId;
   if (!organizationId) return;
 
   await supabase

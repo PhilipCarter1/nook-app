@@ -436,6 +436,35 @@ export interface Database {
           created_at?: string
         }
       }
+      notifications: {
+        Row: {
+          id: string
+          title: string
+          message: string
+          recipient_id: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          message: string
+          recipient_id: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          message?: string
+          recipient_id?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -455,13 +484,5 @@ export type Lease = Database['public']['Tables']['leases']['Row'];
 export type MaintenanceTicket = Database['public']['Tables']['maintenance_tickets']['Row'];
 export type Payment = Database['public']['Tables']['payments']['Row'];
 export type Document = Database['public']['Tables']['documents']['Row'];
-export type Notification = Database['public']['Tables']['notifications']['Row'];
-export type PropertyAmenity = Database['public']['Tables']['property_amenities']['Row'];
-export type PropertyMedia = Database['public']['Tables']['property_media']['Row'];
-export type LeaseDocument = Database['public']['Tables']['lease_documents']['Row'];
-export type LeaseRenewal = Database['public']['Tables']['lease_renewals']['Row'];
-export type MaintenanceSchedule = Database['public']['Tables']['maintenance_schedule']['Row'];
-export type MaintenanceHistory = Database['public']['Tables']['maintenance_history']['Row'];
-export type PaymentReceipt = Database['public']['Tables']['payment_receipts']['Row'];
-export type LateFee = Database['public']['Tables']['late_fees']['Row'];
+export type SupabaseNotification = Database['public']['Tables']['notifications']['Row'];
 export type UserWithAuth = User & SupabaseUser; 

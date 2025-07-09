@@ -1,7 +1,5 @@
 import Stripe from 'stripe';
-import { db } from './db';
-import { payments } from './db/schema';
-import { eq } from 'drizzle-orm';
+import { supabase } from './supabase';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set');
@@ -43,14 +41,15 @@ export async function handleStripeWebhook(event: Stripe.Event) {
         const { leaseId } = paymentIntent.metadata;
 
         // Update payment record
-        await db.update(payments)
-          .set({
+        await supabase
+          .from('payments')
+          .update({
             status: 'completed',
-            stripePaymentId: paymentIntent.id,
-            paidAt: new Date(),
-            updatedAt: new Date(),
+            stripe_payment_id: paymentIntent.id,
+            paid_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
-          .where(eq(payments.leaseId, leaseId));
+          .eq('lease_id', leaseId);
 
         // TODO: Send email notification
         break;
@@ -61,13 +60,14 @@ export async function handleStripeWebhook(event: Stripe.Event) {
         const { leaseId } = paymentIntent.metadata;
 
         // Update payment record
-        await db.update(payments)
-          .set({
+        await supabase
+          .from('payments')
+          .update({
             status: 'failed',
-            stripePaymentId: paymentIntent.id,
-            updatedAt: new Date(),
+            stripe_payment_id: paymentIntent.id,
+            updated_at: new Date().toISOString(),
           })
-          .where(eq(payments.leaseId, leaseId));
+          .eq('lease_id', leaseId);
 
         // TODO: Send email notification
         break;

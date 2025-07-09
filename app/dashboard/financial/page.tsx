@@ -4,18 +4,14 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useQuery } from '@tanstack/react-query';
 import { getFinancialSummary, getTransactions, getPropertyMetrics, getFinancialMetrics } from '@/lib/services/financial';
 import { formatCurrency } from '@/lib/utils';
-import { ArrowUpRight, ArrowDownRight, DollarSign, TrendingUp, Building2, Calendar } from 'lucide-react';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { FinancialOverview } from '@/components/financial/FinancialOverview';
 import { TransactionList } from '@/components/financial/TransactionList';
 import { PropertyMetrics } from '@/components/financial/PropertyMetrics';
-import { FinancialReports } from '@/components/financial/FinancialReports';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -51,7 +47,7 @@ export default function FinancialDashboard() {
           <Card>
             <CardContent className="p-6">
               <p className="text-center text-muted-foreground">
-                You don't have permission to access this page.
+                You don&apos;t have permission to access this page.
               </p>
             </CardContent>
           </Card>
@@ -61,12 +57,12 @@ export default function FinancialDashboard() {
   }
 
   return (
-    <MainLayout userRole={user?.role || 'tenant'}>
+    <MainLayout>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Financial Dashboard</h2>
           <p className="text-muted-foreground">
-            Monitor your property's financial performance and transactions
+            Monitor your property&apos;s financial performance and transactions
           </p>
         </div>
 
@@ -143,7 +139,7 @@ export default function FinancialDashboard() {
 
           <TabsContent value="transactions">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-              <TransactionList />
+              <TransactionList transactions={transactions} isLoading={isLoadingTransactions} />
             </Suspense>
           </TabsContent>
 

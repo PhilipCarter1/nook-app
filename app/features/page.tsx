@@ -78,10 +78,10 @@ const features = [
 
 export default function FeaturesPage() {
   const { role } = useAuth();
-  const mappedRole = role === 'builder_super' ? 'landlord' : (role || 'tenant');
+  const mappedRole = role || 'tenant';
 
   return (
-    <MainLayout userRole={mappedRole}>
+    <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Platform Features</h1>

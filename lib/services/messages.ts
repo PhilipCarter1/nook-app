@@ -1,15 +1,13 @@
-import { db } from '../db';
-import { messages, users } from '../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { supabase } from '../supabase';
 import { sendEmail } from './email';
 
 export interface Message {
   id: string;
-  senderId: string;
-  recipientId: string;
+  sender_id: string;
+  recipient_id: string;
   content: string;
-  createdAt: Date;
-  readAt: Date | null;
+  created_at: string;
+  read_at: string | null;
   type: 'text' | 'system' | 'notification';
   metadata?: Record<string, any>;
 }
@@ -33,26 +31,33 @@ export async function sendMessage(data: {
   type?: 'text' | 'system' | 'notification';
   metadata?: Record<string, any>;
 }): Promise<Message> {
-  const [message] = await db
-    .insert(messages)
-    .values({
-      ...data,
+  const { data: message, error } = await supabase
+    .from('messages')
+    .insert({
+      sender_id: data.senderId,
+      recipient_id: data.recipientId,
+      content: data.content,
       type: data.type || 'text',
+      metadata: data.metadata,
+      created_at: new Date().toISOString(),
     })
-    .returning();
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
 
   // Get recipient details for email notification
-  const [recipient] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, data.recipientId));
+  const { data: recipient } = await supabase
+    .from('users')
+    .select('email')
+    .eq('id', data.recipientId)
+    .single();
 
   if (recipient) {
     // Send email notification
     await sendEmail({
       to: recipient.email,
       subject: 'New Message',
-      text: `You have received a new message: ${data.content}`,
       html: `
         <p>You have received a new message:</p>
         <p>${data.content}</p>
@@ -66,30 +71,28 @@ export async function sendMessage(data: {
 
 export async function getConversations(userId: string): Promise<Conversation[]> {
   // Get all messages where the user is either sender or recipient
-  const userMessages = await db
-    .select()
-    .from(messages)
-    .where(
-      and(
-        eq(messages.senderId, userId),
-        eq(messages.recipientId, userId)
-      )
-    )
-    .orderBy(desc(messages.createdAt));
+  const { data: userMessages, error } = await supabase
+    .from('messages')
+    .select('*')
+    .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
 
   // Group messages by conversation (unique pairs of sender and recipient)
   const conversations = new Map<string, Conversation>();
 
-  for (const message of userMessages) {
-    const otherUserId = message.senderId === userId ? message.recipientId : message.senderId;
+  for (const message of userMessages || []) {
+    const otherUserId = message.sender_id === userId ? message.recipient_id : message.sender_id;
     const conversationId = [userId, otherUserId].sort().join('-');
 
     if (!conversations.has(conversationId)) {
       // Get other user's details
-      const [otherUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, otherUserId));
+      const { data: otherUser } = await supabase
+        .from('users')
+        .select('id, name, email, role')
+        .eq('id', otherUserId)
+        .single();
 
       if (otherUser) {
         conversations.set(conversationId, {
@@ -116,7 +119,7 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
 
     // Update unread count
     const conversation = conversations.get(conversationId);
-    if (conversation && message.recipientId === userId && !message.readAt) {
+    if (conversation && message.recipient_id === userId && !message.read_at) {
       conversation.unreadCount++;
     }
   }
@@ -130,61 +133,58 @@ export async function getMessages(
   limit = 50,
   before?: Date
 ): Promise<Message[]> {
-  const query = db
-    .select()
-    .from(messages)
-    .where(
-      and(
-        eq(messages.senderId, userId),
-        eq(messages.recipientId, otherUserId)
-      )
-    )
-    .orderBy(desc(messages.createdAt))
+  let query = supabase
+    .from('messages')
+    .select('*')
+    .or(`and(sender_id.eq.${userId},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${userId})`)
+    .order('created_at', { ascending: false })
     .limit(limit);
 
   if (before) {
-    query.where(lte(messages.createdAt, before));
+    query = query.lte('created_at', before.toISOString());
   }
 
-  return query;
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data || [];
 }
 
 export async function markMessageAsRead(messageId: string): Promise<void> {
-  await db
-    .update(messages)
-    .set({ readAt: new Date() })
-    .where(eq(messages.id, messageId));
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('id', messageId);
+
+  if (error) throw new Error(error.message);
 }
 
 export async function markConversationAsRead(userId: string, otherUserId: string): Promise<void> {
-  await db
-    .update(messages)
-    .set({ readAt: new Date() })
-    .where(
-      and(
-        eq(messages.senderId, otherUserId),
-        eq(messages.recipientId, userId),
-        eq(messages.readAt, null)
-      )
-    );
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('sender_id', otherUserId)
+    .eq('recipient_id', userId)
+    .is('read_at', null);
+
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteMessage(messageId: string): Promise<void> {
-  await db
-    .delete(messages)
-    .where(eq(messages.id, messageId));
+  const { error } = await supabase
+    .from('messages')
+    .delete()
+    .eq('id', messageId);
+
+  if (error) throw new Error(error.message);
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  const [result] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(messages)
-    .where(
-      and(
-        eq(messages.recipientId, userId),
-        eq(messages.readAt, null)
-      )
-    );
+  const { count, error } = await supabase
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient_id', userId)
+    .is('read_at', null);
 
-  return result.count;
+  if (error) throw new Error(error.message);
+  return count || 0;
 } 

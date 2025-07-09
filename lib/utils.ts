@@ -89,4 +89,8 @@ export function formatCreditCardNumber(cardNumber: string): string {
     return match[1] + ' ' + match[2] + ' ' + match[3] + ' ' + match[4];
   }
   return cardNumber;
+}
+
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(value);
 } 

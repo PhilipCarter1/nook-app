@@ -78,7 +78,7 @@ export async function checkPermission(
   // Get user role and associated data
   const { data: userData, error: userError } = await supabase
     .from('users')
-    .select('role, property_id, vendor_id')
+    .select('id, role, property_id, vendor_id')
     .eq('id', userId)
     .single();
 

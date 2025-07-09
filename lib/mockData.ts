@@ -1,7 +1,6 @@
 import type { Database } from '@/types/supabase';
 
 type User = Database['public']['Tables']['users']['Row'];
-type Client = Database['public']['Tables']['clients']['Row'];
 type Property = Database['public']['Tables']['properties']['Row'];
 type Payment = Database['public']['Tables']['payments']['Row'];
 
@@ -9,65 +8,30 @@ export const mockUsers: User[] = [
   {
     id: '1',
     email: 'tenant@example.com',
-    name: 'John Tenant',
+    first_name: 'John',
+    last_name: 'Tenant',
     role: 'tenant',
-    property_id: '1',
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tenant',
-    phone: '+1234567890',
-    email_verified: true,
-    last_login: new Date().toISOString(),
-    password_reset_token: null,
-    password_reset_expires: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   },
   {
     id: '2',
     email: 'landlord@example.com',
-    name: 'Jane Landlord',
+    first_name: 'Jane',
+    last_name: 'Landlord',
     role: 'landlord',
-    property_id: null,
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=landlord',
-    phone: '+1234567891',
-    email_verified: true,
-    last_login: new Date().toISOString(),
-    password_reset_token: null,
-    password_reset_expires: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   },
   {
     id: '3',
     email: 'admin@example.com',
-    name: 'Admin User',
+    first_name: 'Admin',
+    last_name: 'User',
     role: 'admin',
-    property_id: null,
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-    phone: '+1234567892',
-    email_verified: true,
-    last_login: new Date().toISOString(),
-    password_reset_token: null,
-    password_reset_expires: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
-
-export const mockClients: Client[] = [
-  {
-    id: '1',
-    name: 'Acme Properties',
-    config: {
-      features: {
-        legalAssistant: true,
-        concierge: false,
-        customBranding: true
-      },
-      branding: {
-        primaryColor: '#8b5cf6',
-        logo: '/logos/acme.png'
-      }
-    },
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }
@@ -77,26 +41,22 @@ export const mockProperties: Property[] = [
   {
     id: '1',
     name: 'Downtown Apartments',
-    address: '123 Main St, New York, NY 10001',
-    landlord_id: '2',
-    type: 'apartment',
-    units: 20,
-    status: 'available',
-    monthly_rent: 2500,
-    security_deposit: 1000,
+    address: '123 Main St',
+    city: 'New York',
+    state: 'NY',
+    zip_code: '10001',
+    owner_id: '2',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   },
   {
     id: '2',
     name: 'Riverside Condos',
-    address: '456 River Rd, New York, NY 10002',
-    landlord_id: '2',
-    type: 'condo',
-    units: 10,
-    status: 'available',
-    monthly_rent: 3200,
-    security_deposit: 1200,
+    address: '456 River Rd',
+    city: 'New York',
+    state: 'NY',
+    zip_code: '10002',
+    owner_id: '2',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }

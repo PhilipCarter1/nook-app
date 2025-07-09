@@ -1,3 +1,5 @@
+"use client";
+
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/card';
@@ -7,6 +9,7 @@ import { createPaymentIntent } from '@/lib/services/payments';
 import { PaymentForm } from '@/components/payments/PaymentForm';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { useEffect, useState } from 'react';
 
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
   throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
@@ -14,30 +17,69 @@ if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-export const metadata: Metadata = {
-  title: 'Make Payment | Nook',
-  description: 'Make a payment for your lease',
-};
-
 interface PaymentPageProps {
   params: {
     id: string;
   };
 }
 
-export default async function PaymentPage({ params }: PaymentPageProps) {
-  const lease = await getLease(params.id);
+export default function PaymentPage({ params }: PaymentPageProps) {
+  const [lease, setLease] = useState<any>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!lease) {
-    redirect('/dashboard');
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const leaseData = await getLease(params.id);
+        if (!leaseData) {
+          redirect('/dashboard');
+          return;
+        }
+
+        const { clientSecret: secret } = await createPaymentIntent({
+          leaseId: leaseData.id,
+          amount: leaseData.monthlyRent,
+          type: 'rent',
+          dueDate: new Date(),
+        });
+
+        setLease(leaseData);
+        setClientSecret(secret);
+      } catch (error) {
+        console.error('Error fetching payment data:', error);
+        redirect('/dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-8">
+          <Card className="p-6">
+            <div>Loading...</div>
+          </Card>
+        </div>
+      </MainLayout>
+    );
   }
 
-  const { clientSecret } = await createPaymentIntent({
-    leaseId: lease.id,
-    amount: lease.monthlyRent,
-    type: 'rent',
-    dueDate: new Date(),
-  });
+  if (!lease || !clientSecret) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-8">
+          <Card className="p-6">
+            <div>Error loading payment information</div>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -60,7 +102,7 @@ export default async function PaymentPage({ params }: PaymentPageProps) {
             <Elements
               stripe={stripePromise}
               options={{
-                clientSecret,
+                clientSecret: clientSecret,
                 appearance: {
                   theme: 'stripe',
                 },

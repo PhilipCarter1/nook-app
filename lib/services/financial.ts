@@ -3,7 +3,6 @@ import { financialTransactions, financialReports, propertyMetrics, expenseCatego
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
-import { Database } from '@/lib/db/types';
 
 export interface FinancialTransaction {
   id: string;

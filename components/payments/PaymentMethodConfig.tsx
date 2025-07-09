@@ -25,12 +25,12 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Star, StarOff } from 'lucide-react';
 
 interface PaymentMethodConfigProps {
-  propertyId: string;
+  id: string;
   initialMethods?: PaymentMethod[];
 }
 
 export function PaymentMethodConfig({
-  propertyId,
+  id,
   initialMethods = [],
 }: PaymentMethodConfigProps) {
   const [methods, setMethods] = useState<PaymentMethod[]>(initialMethods);
@@ -68,7 +68,7 @@ export function PaymentMethodConfig({
     e.preventDefault();
     try {
       const newMethod = await createPaymentMethod({
-        propertyId,
+        id: id,
         ...formData,
       });
       setMethods([...methods, newMethod]);
@@ -121,7 +121,7 @@ export function PaymentMethodConfig({
 
   const handleSetDefault = async (id: string) => {
     try {
-      await setDefaultPaymentMethod(propertyId, id);
+      await setDefaultPaymentMethod(id, id);
       setMethods(
         methods.map((method) => ({
           ...method,
