@@ -68,10 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     router.push('/admin/dashboard');
                     break;
                   case 'landlord':
-                    router.push('/landlord/dashboard');
+                    router.push('/dashboard/landlord');
                     break;
                   case 'tenant':
-                    router.push('/tenant/dashboard');
+                    router.push('/dashboard/tenant');
                     break;
                   default:
                     router.push('/dashboard');
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
               setRole(newUserData.role as UserRole);
               setLoading(false);
-              router.push('/tenant/dashboard');
+              router.push('/dashboard/tenant');
             }
           }
         } else {
