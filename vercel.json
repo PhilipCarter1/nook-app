@@ -74,17 +74,5 @@
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/dashboard",
-      "permanent": false
-    }
-  ],
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_APP_URL": "https://rentwithnook.com"
-    }
-  }
+  ]
 } 
