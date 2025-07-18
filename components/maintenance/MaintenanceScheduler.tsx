@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { Calendar as CalendarIcon, Clock, Wrench, Plus } from 'lucide-react';
+import { log } from '@/lib/logger';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, addDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { CalendarIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-
 interface TimeSlot {
   start: string;
   end: string;
@@ -68,7 +71,7 @@ export function MaintenanceScheduler({
       toast.success('Maintenance visit scheduled successfully');
     } catch (error) {
       toast.error('Failed to schedule maintenance visit');
-      console.error('Schedule error:', error);
+      log.error('Schedule error:', error as Error);
     } finally {
       setIsSubmitting(false);
     }

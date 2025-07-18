@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Calendar, Clock, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Calendar, AlertTriangle, RefreshCw, CheckCircle, Clock } from 'lucide-react';
 import { format, isAfter, isBefore, addDays, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface DocumentExpirationProps {
   expirationDate: string | null;
   onRenew: () => Promise<void>;
@@ -69,7 +69,7 @@ export function DocumentExpiration({
       await onRenew();
       toast.success('Document renewed successfully');
     } catch (error) {
-      console.error('Error renewing document:', error);
+      log.error('Error renewing document:', error as Error);
       toast.error('Failed to renew document');
     }
   };
