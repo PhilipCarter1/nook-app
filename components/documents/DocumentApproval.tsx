@@ -9,7 +9,7 @@ import { Document, approveDocument, rejectDocument } from '@/lib/services/docume
 import { toast } from 'sonner';
 import { CheckCircle2, XCircle, FileText, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-
+import { log } from '@/lib/logger';
 interface DocumentApprovalProps {
   document: Document;
   onUpdate: () => void;
@@ -26,7 +26,7 @@ export function DocumentApproval({ document, onUpdate }: DocumentApprovalProps) 
       toast.success('Document approved successfully');
       onUpdate();
     } catch (error) {
-      console.error('Error approving document:', error);
+      log.error('Error approving document:', error);
       toast.error('Failed to approve document');
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ export function DocumentApproval({ document, onUpdate }: DocumentApprovalProps) 
       toast.success('Document rejected');
       onUpdate();
     } catch (error) {
-      console.error('Error rejecting document:', error);
+      log.error('Error rejecting document:', error);
       toast.error('Failed to reject document');
     } finally {
       setLoading(false);

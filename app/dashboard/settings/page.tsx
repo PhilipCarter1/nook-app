@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { getClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-
+import { log } from '@/lib/logger';
 export default function SettingsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = React.useState(false);
@@ -55,7 +55,7 @@ export default function SettingsPage() {
 
       toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
+      log.error('Error updating profile:', error as Error);
       toast.error('Failed to update profile');
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function SettingsPage() {
         confirmPassword: '',
       }));
     } catch (error) {
-      console.error('Error updating password:', error);
+      log.error('Error updating password:', error as Error);
       toast.error('Failed to update password');
     } finally {
       setLoading(false);

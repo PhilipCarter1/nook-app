@@ -10,7 +10,7 @@ import { PaymentForm } from '@/components/payments/PaymentForm';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
-
+import { log } from '@/lib/logger';
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
   throw new Error('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
 }
@@ -47,7 +47,7 @@ export default function PaymentPage({ params }: PaymentPageProps) {
         setLease(leaseData);
         setClientSecret(secret);
       } catch (error) {
-        console.error('Error fetching payment data:', error);
+        log.error('Error fetching payment data:', error as Error);
         redirect('/dashboard');
       } finally {
         setLoading(false);

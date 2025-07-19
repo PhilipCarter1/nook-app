@@ -31,7 +31,6 @@ test.describe('Property Management Feature Tests', () => {
       await page.goto('/dashboard/properties');
       await expect(page.locator('text=/property/i')).toBeVisible();
       await expect(page.locator('text=/Add New Property/i')).toBeVisible();
-      console.log('✅ Landlord property list view verified');
     });
 
     test('should add new property', async ({ page }) => {
@@ -49,7 +48,6 @@ test.describe('Property Management Feature Tests', () => {
       await page.getByRole('button', { name: /save/i }).click();
       
       await expect(page.locator('text=/Property added successfully/i')).toBeVisible();
-      console.log('✅ Property addition flow verified');
     });
 
     test('should edit existing property', async ({ page }) => {
@@ -60,7 +58,6 @@ test.describe('Property Management Feature Tests', () => {
       await page.getByRole('button', { name: /save/i }).click();
       
       await expect(page.locator('text=/Property updated successfully/i')).toBeVisible();
-      console.log('✅ Property editing flow verified');
     });
 
     test('should delete property', async ({ page }) => {
@@ -71,7 +68,6 @@ test.describe('Property Management Feature Tests', () => {
       await page.getByRole('button', { name: /confirm/i }).click();
       
       await expect(page.locator('text=/Property deleted successfully/i')).toBeVisible();
-      console.log('✅ Property deletion flow verified');
     });
 
     test('should view property details', async ({ page }) => {
@@ -81,7 +77,6 @@ test.describe('Property Management Feature Tests', () => {
       await expect(page.locator('text=/Property Details/i')).toBeVisible();
       await expect(page.locator('text=/Tenants/i')).toBeVisible();
       await expect(page.locator('text=/Maintenance/i')).toBeVisible();
-      console.log('✅ Property details view verified');
     });
   });
 
@@ -93,7 +88,6 @@ test.describe('Property Management Feature Tests', () => {
     test('should view assigned properties', async ({ page }) => {
       await page.goto('/dashboard/properties');
       await expect(page.locator('text=/My Properties/i')).toBeVisible();
-      console.log('✅ Tenant property view verified');
     });
 
     test('should view property details as tenant', async ({ page }) => {
@@ -102,7 +96,6 @@ test.describe('Property Management Feature Tests', () => {
       
       await expect(page.locator('text=/Property Details/i')).toBeVisible();
       await expect(page.locator('text=/Submit Maintenance Request/i')).toBeVisible();
-      console.log('✅ Tenant property details view verified');
     });
   });
 });
@@ -127,7 +120,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.getByRole('button', { name: /submit/i }).click();
       
       await expect(page.locator('text=/Request submitted successfully/i')).toBeVisible();
-      console.log('✅ Maintenance request submission verified');
     });
 
     test('should view maintenance history', async ({ page }) => {
@@ -135,7 +127,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.getByRole('tab', { name: /history/i }).click();
       
       await expect(page.locator('text=/Maintenance History/i')).toBeVisible();
-      console.log('✅ Tenant maintenance history view verified');
     });
 
     test('should update maintenance request', async ({ page }) => {
@@ -146,7 +137,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.getByRole('button', { name: /update/i }).click();
       
       await expect(page.locator('text=/Request updated successfully/i')).toBeVisible();
-      console.log('✅ Maintenance request update verified');
     });
   });
 
@@ -159,7 +149,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.goto('/dashboard/maintenance');
       await expect(page.locator('text=/Maintenance Requests/i')).toBeVisible();
       await expect(page.locator('text=/Filter/i')).toBeVisible();
-      console.log('✅ Landlord maintenance overview verified');
     });
 
     test('should assign maintenance to contractor', async ({ page }) => {
@@ -171,7 +160,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.getByRole('button', { name: /assign/i }).click();
       
       await expect(page.locator('text=/Assigned successfully/i')).toBeVisible();
-      console.log('✅ Maintenance assignment verified');
     });
 
     test('should update maintenance status', async ({ page }) => {
@@ -183,7 +171,6 @@ test.describe('Maintenance Management Feature Tests', () => {
       await page.getByRole('button', { name: /update/i }).click();
       
       await expect(page.locator('text=/Status updated successfully/i')).toBeVisible();
-      console.log('✅ Maintenance status update verified');
     });
   });
 });
@@ -199,7 +186,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.goto('/dashboard/payments');
       await expect(page.locator('text=/Payment History/i')).toBeVisible();
       await expect(page.locator('text=/Outstanding Balance/i')).toBeVisible();
-      console.log('✅ Tenant payment history view verified');
     });
 
     test('should make payment', async ({ page }) => {
@@ -216,7 +202,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.getByRole('button', { name: /process payment/i }).click();
       
       await expect(page.locator('text=/Payment processed successfully/i')).toBeVisible();
-      console.log('✅ Tenant payment processing verified');
     });
 
     test('should view payment receipts', async ({ page }) => {
@@ -224,7 +209,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.getByRole('button', { name: /view receipt/i }).first().click();
       
       await expect(page.locator('text=/Payment Receipt/i')).toBeVisible();
-      console.log('✅ Payment receipt view verified');
     });
   });
 
@@ -237,7 +221,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.goto('/dashboard/payments');
       await expect(page.locator('text=/Payment Overview/i')).toBeVisible();
       await expect(page.locator('text=/Total Collected/i')).toBeVisible();
-      console.log('✅ Landlord payment overview verified');
     });
 
     test('should generate payment reports', async ({ page }) => {
@@ -249,7 +232,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.getByRole('button', { name: /generate/i }).click();
       
       await expect(page.locator('text=/Report Generated/i')).toBeVisible();
-      console.log('✅ Payment report generation verified');
     });
 
     test('should send payment reminders', async ({ page }) => {
@@ -260,7 +242,6 @@ test.describe('Payment Management Feature Tests', () => {
       await page.getByRole('button', { name: /send/i }).click();
       
       await expect(page.locator('text=/Reminders sent successfully/i')).toBeVisible();
-      console.log('✅ Payment reminder sending verified');
     });
   });
 });
@@ -288,14 +269,12 @@ test.describe('Document Management Feature Tests', () => {
       await page.getByRole('button', { name: /upload/i }).click();
       
       await expect(page.locator('text=/Document uploaded successfully/i')).toBeVisible();
-      console.log('✅ Document upload verified');
     });
 
     test('should view document library', async ({ page }) => {
       await page.goto('/dashboard/documents');
       await expect(page.locator('text=/Document Library/i')).toBeVisible();
       await expect(page.locator('text=/Filter by Type/i')).toBeVisible();
-      console.log('✅ Document library view verified');
     });
 
     test('should share document with tenant', async ({ page }) => {
@@ -307,7 +286,6 @@ test.describe('Document Management Feature Tests', () => {
       await page.getByRole('button', { name: /share/i }).click();
       
       await expect(page.locator('text=/Document shared successfully/i')).toBeVisible();
-      console.log('✅ Document sharing verified');
     });
   });
 
@@ -319,7 +297,6 @@ test.describe('Document Management Feature Tests', () => {
     test('should view shared documents', async ({ page }) => {
       await page.goto('/dashboard/documents');
       await expect(page.locator('text=/Shared Documents/i')).toBeVisible();
-      console.log('✅ Tenant document access verified');
     });
 
     test('should download document', async ({ page }) => {
@@ -327,7 +304,6 @@ test.describe('Document Management Feature Tests', () => {
       await page.getByRole('button', { name: /download/i }).first().click();
       
       // Verify download started
-      console.log('✅ Document download verified');
     });
   });
 });
@@ -349,14 +325,12 @@ test.describe('Messaging System Feature Tests', () => {
       await page.getByRole('button', { name: /send/i }).click();
       
       await expect(page.locator('text=/Message sent successfully/i')).toBeVisible();
-      console.log('✅ Message composition and sending verified');
     });
 
     test('should view message inbox', async ({ page }) => {
       await page.goto('/dashboard/messages');
       await expect(page.locator('text=/Inbox/i')).toBeVisible();
       await expect(page.locator('text=/Sent/i')).toBeVisible();
-      console.log('✅ Message inbox view verified');
     });
 
     test('should reply to message', async ({ page }) => {
@@ -367,7 +341,6 @@ test.describe('Messaging System Feature Tests', () => {
       await page.getByRole('button', { name: /send/i }).click();
       
       await expect(page.locator('text=/Reply sent successfully/i')).toBeVisible();
-      console.log('✅ Message reply verified');
     });
   });
 
@@ -379,7 +352,6 @@ test.describe('Messaging System Feature Tests', () => {
     test('should view received messages', async ({ page }) => {
       await page.goto('/dashboard/messages');
       await expect(page.locator('text=/Inbox/i')).toBeVisible();
-      console.log('✅ Tenant message viewing verified');
     });
 
     test('should send message to landlord', async ({ page }) => {
@@ -392,7 +364,6 @@ test.describe('Messaging System Feature Tests', () => {
       await page.getByRole('button', { name: /send/i }).click();
       
       await expect(page.locator('text=/Message sent successfully/i')).toBeVisible();
-      console.log('✅ Tenant message sending verified');
     });
   });
 });
@@ -409,7 +380,6 @@ test.describe('Analytics and Reporting Feature Tests', () => {
       await expect(page.locator('text=/Financial Analytics/i')).toBeVisible();
       await expect(page.locator('text=/Revenue/i')).toBeVisible();
       await expect(page.locator('text=/Expenses/i')).toBeVisible();
-      console.log('✅ Financial analytics view verified');
     });
 
     test('should view property performance', async ({ page }) => {
@@ -418,7 +388,6 @@ test.describe('Analytics and Reporting Feature Tests', () => {
       
       await expect(page.locator('text=/Property Performance/i')).toBeVisible();
       await expect(page.locator('text=/Occupancy Rate/i')).toBeVisible();
-      console.log('✅ Property performance analytics verified');
     });
 
     test('should generate custom reports', async ({ page }) => {
@@ -430,7 +399,6 @@ test.describe('Analytics and Reporting Feature Tests', () => {
       await page.getByRole('button', { name: /generate/i }).click();
       
       await expect(page.locator('text=/Report Generated/i')).toBeVisible();
-      console.log('✅ Custom report generation verified');
     });
   });
 
@@ -444,7 +412,6 @@ test.describe('Analytics and Reporting Feature Tests', () => {
       await expect(page.locator('text=/System Analytics/i')).toBeVisible();
       await expect(page.locator('text=/Total Users/i')).toBeVisible();
       await expect(page.locator('text=/Total Properties/i')).toBeVisible();
-      console.log('✅ Admin system analytics verified');
     });
 
     test('should view user activity reports', async ({ page }) => {
@@ -453,7 +420,6 @@ test.describe('Analytics and Reporting Feature Tests', () => {
       
       await expect(page.locator('text=/User Activity/i')).toBeVisible();
       await expect(page.locator('text=/Login History/i')).toBeVisible();
-      console.log('✅ User activity reports verified');
     });
   });
 });
@@ -474,7 +440,6 @@ test.describe('Settings and Profile Feature Tests', () => {
       await page.getByRole('button', { name: /save/i }).click();
       
       await expect(page.locator('text=/Profile updated successfully/i')).toBeVisible();
-      console.log('✅ Profile update verified');
     });
 
     test('should change password', async ({ page }) => {
@@ -487,7 +452,6 @@ test.describe('Settings and Profile Feature Tests', () => {
       await page.getByRole('button', { name: /change password/i }).click();
       
       await expect(page.locator('text=/Password changed successfully/i')).toBeVisible();
-      console.log('✅ Password change verified');
     });
 
     test('should update notification preferences', async ({ page }) => {
@@ -499,7 +463,6 @@ test.describe('Settings and Profile Feature Tests', () => {
       await page.getByRole('button', { name: /save/i }).click();
       
       await expect(page.locator('text=/Preferences updated successfully/i')).toBeVisible();
-      console.log('✅ Notification preferences update verified');
     });
   });
 
@@ -512,7 +475,6 @@ test.describe('Settings and Profile Feature Tests', () => {
       await page.goto('/dashboard/settings');
       await expect(page.locator('text=/System Settings/i')).toBeVisible();
       await expect(page.locator('text=/General/i')).toBeVisible();
-      console.log('✅ Admin system settings access verified');
     });
 
     test('should manage user roles', async ({ page }) => {
@@ -521,7 +483,6 @@ test.describe('Settings and Profile Feature Tests', () => {
       
       await expect(page.locator('text=/User Roles/i')).toBeVisible();
       await expect(page.locator('text=/Assign Roles/i')).toBeVisible();
-      console.log('✅ User role management verified');
     });
   });
 }); 

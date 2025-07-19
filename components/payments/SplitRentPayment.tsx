@@ -1,4 +1,5 @@
 import React from 'react';
+import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -23,14 +24,10 @@ import {
 } from '@/components/ui/select';
 import {
   PremiumLayout,
-  PremiumCard,
-  PremiumCardHeader,
-  PremiumCardContent,
-  PremiumGrid,
 } from '@/components/layout/PremiumLayout';
+import { PremiumCard, PremiumCardHeader, PremiumCardContent } from '@/components/ui/PremiumCard';
 import { premiumComponents, premiumAnimations } from '@/lib/theme';
 import { cn } from '@/lib/utils';
-
 interface Tenant {
   id: string;
   name: string;
@@ -135,7 +132,7 @@ export default function SplitRentPayment({
       setPaymentMethods(settingsData.data.payment_methods || []);
       setIsSplitEnabled(settingsData.data.split_rent_enabled);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      log.error('Error fetching data:', error);
       setError('Failed to load information');
     } finally {
       setLoading(false);
@@ -205,7 +202,7 @@ export default function SplitRentPayment({
 
       window.location.href = session.url;
     } catch (error) {
-      console.error('Error creating payment session:', error);
+      log.error('Error creating payment session:', error);
       toast({
         title: 'Payment Error',
         description: 'Failed to process payment. Please try again.',
@@ -227,7 +224,7 @@ export default function SplitRentPayment({
         description: 'Share this link with the tenant to pay their share',
       });
     } catch (error) {
-      console.error('Error sharing payment link:', error);
+      log.error('Error sharing payment link:', error);
       toast({
         title: 'Error',
         description: 'Failed to copy payment link',
@@ -293,29 +290,16 @@ export default function SplitRentPayment({
 
   return (
     <PremiumLayout>
-      <PremiumCard>
-        <PremiumCardHeader>
-          <h2 className="text-xl font-semibold">Split Rent Payment</h2>
-        </PremiumCardHeader>
-        <PremiumCardContent>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-600">Total Amount</span>
-                <span className="font-medium">{formatCurrency(totalAmount)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-neutral-600">Due Date</span>
-                <span className="font-medium">{new Date(dueDate).toLocaleDateString()}</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-              <div className="flex justify-between text-sm text-neutral-500">
-                <span>Paid: {formatCurrency(totalPaid)}</span>
-                <span>Remaining: {formatCurrency(totalAmount - totalPaid)}</span>
-              </div>
-            </div>
-
-            <PremiumGrid cols={1} className="gap-4">
+      <div className="space-y-6">
+        <PremiumCard>
+          <PremiumCardHeader>
+            <h2 className="text-2xl font-semibold">Split Rent Payment</h2>
+            <p className="text-sm text-neutral-500">
+              Manage rent payments for multiple tenants
+            </p>
+          </PremiumCardHeader>
+          <PremiumCardContent>
+            <div className="grid grid-cols-1 gap-4">
               {tenants.map((tenant) => (
                 <PremiumCard key={tenant.id} className={premiumComponents.card.hover}>
                   <PremiumCardContent>
@@ -436,7 +420,7 @@ export default function SplitRentPayment({
                   </PremiumCardContent>
                 </PremiumCard>
               ))}
-            </PremiumGrid>
+            </div>
 
             {error && (
               <div className="flex items-center gap-2 text-sm text-error">
@@ -444,9 +428,9 @@ export default function SplitRentPayment({
                 <span>{error}</span>
               </div>
             )}
-          </div>
-        </PremiumCardContent>
-      </PremiumCard>
+          </PremiumCardContent>
+        </PremiumCard>
+      </div>
     </PremiumLayout>
   );
 } 

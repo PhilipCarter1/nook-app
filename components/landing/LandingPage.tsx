@@ -63,13 +63,12 @@ export default function LandingPage() {
           </div>
           <div className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-32">
             <div className="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
-              <img
-                src="/dashboard-preview.png"
-                alt="App screenshot"
-                width={2432}
-                height={1442}
-                className="w-[76rem] rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
-              />
+              <div className="w-[76rem] h-[40rem] rounded-md bg-gradient-to-br from-nook-purple-500 to-nook-purple-700 shadow-2xl ring-1 ring-white/10 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <h3 className="text-2xl font-bold mb-4">Nook Dashboard</h3>
+                  <p className="text-lg opacity-90">Modern Property Management Platform</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

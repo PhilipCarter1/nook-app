@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { MaintenanceSettings } from '@/components/settings/MaintenanceSettings';
 import { getMaintenanceSettings, updateMaintenanceSettings, type MaintenanceSettings as MaintenanceSettingsType } from '@/lib/services/settings';
 import { useAuth } from '@/lib/hooks/useAuth';
-
+import { log } from '@/lib/logger';
 export default function MaintenanceSettingsPage() {
   const params = useParams();
   const propertyId = params?.propertyId as string;
@@ -29,7 +29,7 @@ export default function MaintenanceSettingsPage() {
     },
     onError: (error) => {
       toast.error('Failed to update settings');
-      console.error('Settings update error:', error);
+      log.error('Settings update error:', error as Error);
     },
   });
 

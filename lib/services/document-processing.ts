@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-// import Tesseract from 'tesseract.js'; // Temporarily disabled for Vercel deployment
+import { log } from '@/lib/logger';// import Tesseract from 'tesseract.js'; // Temporarily disabled for Vercel deployment
 // import { PDFDocument } from 'pdf-lib'; // Temporarily disabled for Vercel deployment
 
 const supabase = createClient(
@@ -77,7 +77,7 @@ export async function processDocument(file: File): Promise<ProcessedDocument> {
 
     return processedDoc;
   } catch (error) {
-    console.error('Error processing document:', error);
+    log.error('Error processing document:', error as Error);
     throw error;
   }
 }
@@ -187,7 +187,7 @@ export async function searchDocuments(query: string) {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error searching documents:', error);
+    log.error('Error searching documents:', error as Error);
     throw error;
   }
 }
@@ -203,7 +203,7 @@ export async function getDocumentText(documentId: string) {
     if (error) throw error;
     return data?.text || '';
   } catch (error) {
-    console.error('Error getting document text:', error);
+    log.error('Error getting document text:', error as Error);
     throw error;
   }
 }
@@ -219,7 +219,7 @@ export async function getDocumentMetadata(documentId: string) {
     if (error) throw error;
     return data?.metadata || {};
   } catch (error) {
-    console.error('Error getting document metadata:', error);
+    log.error('Error getting document metadata:', error as Error);
     throw error;
   }
 } 

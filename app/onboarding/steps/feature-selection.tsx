@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { getClient } from '@/lib/supabase/client';
 import { Building2, Scale, Palette } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { log } from '@/lib/logger';
 // Define the OnboardingData type based on the structure in page.tsx
 export type OnboardingData = {
   company: {
@@ -80,7 +80,7 @@ export default function FeatureSelection({ onComplete, onBack, data }: FeatureSe
         features,
       });
     } catch (error) {
-      console.error('Error updating features:', error);
+      log.error('Error updating features:', error as Error);
       toast.error('Failed to update features');
     } finally {
       setLoading(false);

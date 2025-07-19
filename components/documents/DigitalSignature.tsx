@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Pen, Save, X, CheckCircle2 } from 'lucide-react';
 import SignaturePad from 'react-signature-canvas';
-
+import { log } from '@/lib/logger';
 interface DigitalSignatureProps {
   onSign: (signatureData: string) => Promise<void>;
   onCancel: () => void;
@@ -57,7 +57,7 @@ export function DigitalSignature({
       await onSign(signatureData);
       toast.success('Document signed successfully');
     } catch (error) {
-      console.error('Error signing document:', error);
+      log.error('Error signing document:', error as Error);
       toast.error('Failed to sign document');
     }
   };

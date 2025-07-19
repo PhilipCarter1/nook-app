@@ -5,25 +5,21 @@ test.describe('Smoke Tests', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Home page loads successfully');
   });
 
   test('should load login page', async ({ page }) => {
     await page.goto('/login');
     await expect(page).toHaveTitle(/Nook|Login/);
-    console.log('Login page loads successfully');
   });
 
   test('should load signup page', async ({ page }) => {
     await page.goto('/signup');
     await expect(page).toHaveTitle(/Nook|Signup/);
-    console.log('Signup page loads successfully');
   });
 
   test('should load forgot password page', async ({ page }) => {
     await page.goto('/forgot-password');
     await expect(page).toHaveTitle(/Nook|Reset/);
-    console.log('Forgot password page loads successfully');
   });
 
   test('should have working form inputs on login', async ({ page }) => {
@@ -40,7 +36,6 @@ test.describe('Smoke Tests', () => {
     await emailInput.fill('test@example.com');
     await passwordInput.fill('password123');
     
-    console.log('Login form inputs work correctly');
   });
 
   test('should have working form inputs on signup', async ({ page }) => {
@@ -48,7 +43,6 @@ test.describe('Smoke Tests', () => {
     await page.waitForLoadState('networkidle');
     
     // Debug: log page content
-    console.log('Signup page title:', await page.title());
     
     // Wait a bit more for any dynamic content
     await page.waitForTimeout(2000);
@@ -62,7 +56,6 @@ test.describe('Smoke Tests', () => {
     
     // Debug: check if inputs exist
     const inputCount = await page.locator('input').count();
-    console.log('Total inputs found:', inputCount);
     
     await expect(firstNameInput).toBeVisible({ timeout: 10000 });
     await expect(lastNameInput).toBeVisible({ timeout: 10000 });
@@ -76,7 +69,6 @@ test.describe('Smoke Tests', () => {
     await passwordInput.fill('password123');
     await confirmPasswordInput.fill('password123');
     
-    console.log('Signup form inputs work correctly');
   });
 
   test('should have working form inputs on forgot password', async ({ page }) => {
@@ -89,7 +81,6 @@ test.describe('Smoke Tests', () => {
     await expect(emailInput).toBeVisible();
     await emailInput.fill('test@example.com');
     
-    console.log('Forgot password form inputs work correctly');
   });
 });
 
@@ -109,7 +100,6 @@ test.describe('Authentication Flow', () => {
     // Wait for any response (success or error)
     await page.waitForTimeout(2000);
     
-    console.log('Login form submission handled correctly');
   });
 
   test('should handle signup form submission', async ({ page }) => {
@@ -129,7 +119,6 @@ test.describe('Authentication Flow', () => {
     // Wait for any response
     await page.waitForTimeout(2000);
     
-    console.log('Signup form submission handled correctly');
   });
 
   test('should handle forgot password form submission', async ({ page }) => {
@@ -145,7 +134,6 @@ test.describe('Authentication Flow', () => {
     // Wait for response
     await page.waitForTimeout(2000);
     
-    console.log('Forgot password form submission handled correctly');
   });
 
   test('should validate form inputs correctly', async ({ page }) => {
@@ -158,7 +146,6 @@ test.describe('Authentication Flow', () => {
     // Should show validation errors
     await page.waitForTimeout(1000);
     
-    console.log('Form validation working correctly');
   });
 
   test('should handle password mismatch validation', async ({ page }) => {
@@ -178,6 +165,5 @@ test.describe('Authentication Flow', () => {
     // Wait for validation
     await page.waitForTimeout(2000);
     
-    console.log('Password mismatch validation working correctly');
   });
 }); 

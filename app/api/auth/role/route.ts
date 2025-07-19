@@ -1,7 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { log } from '@/lib/logger';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-
 export async function POST(request: Request) {
   try {
     const { role } = await request.json();
@@ -22,13 +22,13 @@ export async function POST(request: Request) {
       .eq('id', session.user.id);
 
     if (error) {
-      console.error('Error updating role:', error);
+      log.error('Error updating role:', error as Error);
       return new NextResponse('Error updating role', { status: 500 });
     }
 
     return new NextResponse('Role updated successfully', { status: 200 });
   } catch (error) {
-    console.error('Error in role update:', error);
+    log.error('Error in role update:', error as Error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 } 

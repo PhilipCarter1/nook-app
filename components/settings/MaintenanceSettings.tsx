@@ -1,19 +1,20 @@
 import React from 'react';
-// If you see an import error here, ensure react-hook-form v7+ is installed.
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  PremiumLayout,
-  PremiumCard,
-  PremiumCardHeader,
-  PremiumCardContent,
-  PremiumCardFooter,
-} from '@/components/layout/PremiumLayout';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PremiumCard, PremiumCardHeader, PremiumCardContent, PremiumCardFooter } from '@/components/ui/PremiumCard';
+import { Settings, Bell, Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { PremiumLayout } from '@/components/layout/PremiumLayout';
 import { premiumComponents } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import type { MaintenanceSettings, SLASettings } from '@/lib/services/settings';

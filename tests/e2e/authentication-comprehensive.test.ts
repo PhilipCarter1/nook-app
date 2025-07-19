@@ -27,7 +27,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify successful registration
       await page.waitForURL(/\/dashboard/);
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Tenant registration successful');
     });
 
     test('should register new landlord user', async ({ page }) => {
@@ -48,7 +47,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify successful registration
       await page.waitForURL(/\/dashboard/);
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Landlord registration successful');
     });
 
     test('should validate registration form fields', async ({ page }) => {
@@ -63,7 +61,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await expect(page.getByLabel('Confirm Password')).toBeVisible();
       await expect(page.getByLabel('Role')).toBeVisible();
       
-      console.log('✅ Registration form fields validated');
     });
 
     test('should show validation errors for invalid registration', async ({ page }) => {
@@ -75,7 +72,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       
       // Verify validation errors
       await expect(page.locator('text=/required/i')).toBeVisible();
-      console.log('✅ Registration validation errors shown');
     });
   });
 
@@ -95,7 +91,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify successful login
       await page.waitForURL(/\/dashboard/);
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Tenant login successful');
     });
 
     test('should login as landlord user', async ({ page }) => {
@@ -112,7 +107,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify successful login
       await page.waitForURL(/\/dashboard/);
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Landlord login successful');
     });
 
     test('should login as admin user', async ({ page }) => {
@@ -129,7 +123,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify successful login
       await page.waitForURL(/\/dashboard/);
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Admin login successful');
     });
 
     test('should show validation errors for invalid login', async ({ page }) => {
@@ -143,7 +136,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       
       // Verify error message
       await expect(page.locator('text=/invalid/i')).toBeVisible();
-      console.log('✅ Login validation errors shown');
     });
 
     test('should validate login form fields', async ({ page }) => {
@@ -155,7 +147,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await expect(page.getByLabel('Password')).toBeVisible();
       await expect(page.getByRole('button', { name: /login/i })).toBeVisible();
       
-      console.log('✅ Login form fields validated');
     });
   });
 
@@ -175,7 +166,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify logout
       await page.waitForURL(/\/login/);
       await expect(page.locator('text=/login/i')).toBeVisible();
-      console.log('✅ Tenant logout successful');
     });
 
     test('should logout landlord user', async ({ page }) => {
@@ -192,7 +182,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify logout
       await page.waitForURL(/\/login/);
       await expect(page.locator('text=/login/i')).toBeVisible();
-      console.log('✅ Landlord logout successful');
     });
 
     test('should logout admin user', async ({ page }) => {
@@ -209,7 +198,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // Verify logout
       await page.waitForURL(/\/login/);
       await expect(page.locator('text=/login/i')).toBeVisible();
-      console.log('✅ Admin logout successful');
     });
   });
 
@@ -219,7 +207,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.goto('/dashboard');
       await page.waitForURL(/\/login/);
       await expect(page.locator('text=/login/i')).toBeVisible();
-      console.log('✅ Unauthenticated redirect working');
     });
 
     test('should allow tenant access to tenant-specific routes', async ({ page }) => {
@@ -237,7 +224,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.goto('/dashboard/maintenance');
       await expect(page.locator('text=/maintenance/i')).toBeVisible();
       
-      console.log('✅ Tenant role-based access verified');
     });
 
     test('should allow landlord access to landlord-specific routes', async ({ page }) => {
@@ -255,7 +241,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.goto('/dashboard/properties');
       await expect(page.locator('text=/property/i')).toBeVisible();
       
-      console.log('✅ Landlord role-based access verified');
     });
 
     test('should allow admin access to admin-specific routes', async ({ page }) => {
@@ -273,7 +258,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.goto('/dashboard/analytics');
       await expect(page).toHaveTitle(/Nook/);
       
-      console.log('✅ Admin role-based access verified');
     });
   });
 
@@ -293,7 +277,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       
       // Verify still logged in
       await expect(page.locator('text=/Welcome back/i')).toBeVisible();
-      console.log('✅ Session persistence verified');
     });
 
     test('should handle session expiration gracefully', async ({ page }) => {
@@ -301,7 +284,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       // For now, we'll test the basic flow
       await page.goto('/dashboard');
       await page.waitForURL(/\/login/);
-      console.log('✅ Session expiration handling verified');
     });
   });
 
@@ -312,7 +294,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.getByRole('link', { name: /forgot password/i }).click();
       
       await expect(page.locator('text=/reset password/i')).toBeVisible();
-      console.log('✅ Password reset page accessible');
     });
 
     test('should validate password reset form', async ({ page }) => {
@@ -323,7 +304,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await expect(page.getByLabel('Email')).toBeVisible();
       await expect(page.getByRole('button', { name: /reset/i })).toBeVisible();
       
-      console.log('✅ Password reset form validated');
     });
   });
 
@@ -339,7 +319,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.getByRole('link', { name: /login/i }).click();
       await expect(page.locator('text=/login/i')).toBeVisible();
       
-      console.log('✅ Auth page navigation working');
     });
 
     test('should handle direct URL access', async ({ page }) => {
@@ -350,7 +329,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       await page.goto('/dashboard/properties');
       await page.waitForURL(/\/login/);
       
-      console.log('✅ Direct URL access handling verified');
     });
   });
 
@@ -364,7 +342,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       
       // Verify page loads without errors
       await expect(page.locator('text=/login/i')).toBeVisible();
-      console.log('✅ Basic error handling verified');
     });
 
     test('should show appropriate error messages', async ({ page }) => {
@@ -378,7 +355,6 @@ test.describe('Comprehensive Authentication Tests', () => {
       
       // Should show some form of error message
       await expect(page.locator('[class*="error"]')).toBeVisible();
-      console.log('✅ Error message display verified');
     });
   });
 }); 

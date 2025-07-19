@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getClient } from '@/lib/supabase/client';
-
 interface FeatureFlags {
   legal_assistant: boolean;
   concierge_setup: boolean;
@@ -67,7 +66,7 @@ export function useFeatureFlags() {
           )
           .subscribe();
       } catch (error) {
-        console.error('Error fetching feature flags:', error);
+        log.error('Error fetching feature flags:', error as Error);
       } finally {
         setLoading(false);
       }

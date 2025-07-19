@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
+import { log } from '@/lib/logger';
 interface Unit {
   id: string;
   number: string;
@@ -91,7 +91,7 @@ export default function UnitPage() {
         });
       }
     } catch (error) {
-      console.error('Error fetching unit:', error);
+      log.error('Error fetching unit:', error as Error);
       toast.error('Failed to load unit details');
     } finally {
       setLoading(false);
@@ -144,7 +144,7 @@ export default function UnitPage() {
       form.reset();
       fetchUnit();
     } catch (error) {
-      console.error('Error inviting tenant:', error);
+      log.error('Error inviting tenant:', error as Error);
       toast.error('Failed to invite tenant');
     }
   };

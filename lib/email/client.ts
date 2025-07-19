@@ -1,7 +1,6 @@
 // Mock Resend for preview
 class MockResend {
   async sendEmail() {
-    console.log('Mock email sent');
     return { id: 'mock-email-id' };
   }
 }

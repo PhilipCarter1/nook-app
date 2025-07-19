@@ -3,7 +3,6 @@
 A premium SaaS web application for property management, built with Next.js, Tailwind CSS, and Supabase.
 
 ## Features
-
 - Role-based dashboards (Tenant, Landlord, Admin)
 - Secure payment processing with Stripe
 - Document management
@@ -16,7 +15,6 @@ A premium SaaS web application for property management, built with Next.js, Tail
 - Production-ready security headers
 
 ## Tech Stack
-
 - **Framework**: Next.js 14
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
@@ -31,126 +29,75 @@ A premium SaaS web application for property management, built with Next.js, Tail
 
 ## Getting Started
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/PhilipCarter1/nook-app.git
    cd nook-app
    ```
-
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
-
-3. Set up environment variables:
+3. **Set up environment variables:**
    - Copy `.env.example` to `.env.local`
-   - Fill in your Supabase and Stripe credentials:
-     ```
-     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-     STRIPE_SECRET_KEY=your_stripe_secret_key
-     STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-     NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
-     ```
-
-4. Run the development server:
+   - Fill in your Supabase, Stripe, and other credentials as needed.
+4. **Run the development server:**
    ```bash
    npm run dev
    ```
+5. **Open** [http://localhost:3000](http://localhost:3000) in your browser.
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Development Workflow
 
-## Deployment to Vercel
+- **Branching:** Use feature branches (`feature/your-feature`), keep `main` always deployable.
+- **Pull Requests:** All changes must go through PRs with code review, passing CI checks (lint, type, tests).
+- **Code Quality:**
+  - Lint: `npm run lint`
+  - Type check: `npx tsc --noEmit`
+  - Unit tests: `npm run test:unit`
+  - E2E tests: `npm run test:e2e`
+- **Technical Debt:** Track and address in `TECHNICAL_DEBT.md`.
 
-1. Push your code to a GitHub repository
+## Deployment
 
-2. Go to [Vercel](https://vercel.com) and sign in with your GitHub account
-
-3. Click "New Project" and import your repository
-
-4. Configure the project:
-   - Framework Preset: Next.js
-   - Root Directory: ./
-   - Build Command: npm run build
-   - Install Command: npm install
-   - Output Directory: .next
-
-5. Add Environment Variables:
-   - NEXT_PUBLIC_SUPABASE_URL
-   - NEXT_PUBLIC_SUPABASE_ANON_KEY
-   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-   - STRIPE_SECRET_KEY
-   - STRIPE_WEBHOOK_SECRET
-   - NEXT_PUBLIC_SENTRY_DSN
-   - NEXT_PUBLIC_APP_URL
-   - NEXT_PUBLIC_APP_NAME
-   - NEXT_PUBLIC_APP_DESCRIPTION
-   - NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT
-   - NEXT_PUBLIC_ENABLE_CONCIERGE
-   - NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING
-
-6. Click "Deploy"
-
-7. After deployment, configure your custom domain:
-   - Go to Project Settings > Domains
-   - Add your domain: rentwithnook.com
-   - Follow the DNS configuration instructions
-
-8. Set up Stripe webhook:
-   - Go to Stripe Dashboard > Developers > Webhooks
-   - Add endpoint: https://rentwithnook.com/api/webhooks/stripe
-   - Select events: payment_intent.succeeded, payment_intent.payment_failed
-   - Copy webhook signing secret to STRIPE_WEBHOOK_SECRET
-
-9. Set up Sentry:
-   - Create a new project in Sentry
-   - Copy DSN to NEXT_PUBLIC_SENTRY_DSN
-   - Configure error tracking in sentry.client.config.ts and sentry.server.config.ts
-
-## Production Checklist
-
-Before deploying to production, ensure:
-
-1. All environment variables are set in Vercel
-2. Database migrations are run in Supabase
-3. Stripe webhook is configured
-4. Sentry error tracking is set up
-5. Custom domain is configured
-6. SSL certificate is valid
-7. Security headers are properly configured
-8. SEO meta tags are set
-9. Analytics is configured
-10. Backup strategy is in place
-
-## Project Structure
-
-```
-nook-app/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── (auth)/            # Authentication pages
-│   ├── dashboard/         # Dashboard pages
-│   ├── payments/          # Payment pages
-│   └── layout.tsx         # Root layout
-├── components/            # React components
-│   ├── ui/               # UI components
-│   ├── layout/           # Layout components
-│   └── providers/        # Context providers
-├── lib/                  # Utility functions
-├── styles/               # Global styles
-├── types/                # TypeScript types
-└── supabase/            # Supabase migrations
-```
+- **CI/CD:**
+  - All deployments are managed by a single GitHub Actions workflow (`.github/workflows/deploy.yml`).
+  - Only the `main` branch deploys to production.
+  - All environment variables are managed in Vercel and GitHub secrets.
+- **Pre-deployment:**
+  - Run `./scripts/pre-deploy.sh` to verify build, lint, type, and tests.
+- **Post-deployment:**
+  - Monitor Vercel dashboard, Sentry, and Supabase for errors and performance.
 
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+5. Open a Pull Request and request review
+6. Ensure all CI checks pass before merging
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+
+## Product Roadmap & Backlog
+
+- The product roadmap and backlog are managed in [Notion/Linear/Jira] (choose your tool).
+- All features, bugs, and improvements are tracked as issues or tickets.
+- Prioritize work based on user value, business goals, and technical feasibility.
+- Regularly review and update the roadmap with stakeholders. 
+
+## Pull Request & Code Review Requirements
+
+- All changes must be submitted via Pull Request (PR).
+- PRs require at least one approving review.
+- All CI checks (lint, type, tests) must pass before merging.
+- No direct commits to main. 
+
+## Technical Debt Review
+
+- Technical debt is tracked in `TECHNICAL_DEBT.md`.
+- Schedule regular reviews to prioritize and address debt.
+- Include debt reduction as part of each sprint or release cycle. 

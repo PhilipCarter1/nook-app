@@ -1,13 +1,6 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { log } from '@/lib/logger';
 import { Database } from '@/types/supabase';
-
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
-}
-
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
-}
 
 const supabase = createClientComponentClient<Database>();
 
@@ -17,7 +10,7 @@ export async function getUser() {
     const { data: { user } } = await supabase.auth.getUser();
     return user;
   } catch (error) {
-    console.error('Error getting user:', error);
+    log.error('Error getting user:', error as Error);
     return null;
   }
 }
@@ -35,7 +28,7 @@ export async function getUserRole() {
 
     return data?.role || null;
   } catch (error) {
-    console.error('Error getting user role:', error);
+    log.error('Error getting user role:', error as Error);
     return null;
   }
 }
@@ -51,7 +44,7 @@ export async function getProperties() {
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error getting properties:', error);
+    log.error('Error getting properties:', error as Error);
     return [];
   }
 }
@@ -67,7 +60,7 @@ export async function getPropertyById(id: string) {
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error getting property:', error);
+    log.error('Error getting property:', error as Error);
     return null;
   }
 }
@@ -88,7 +81,7 @@ export async function getTicketsByProperty(propertyId: string) {
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error getting tickets:', error);
+    log.error('Error getting tickets:', error as Error);
     return [];
   }
 }
@@ -104,7 +97,7 @@ export async function createTicket(ticket: Database['public']['Tables']['mainten
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error creating ticket:', error);
+    log.error('Error creating ticket:', error as Error);
     throw error;
   }
 }
@@ -121,7 +114,7 @@ export async function updateTicketStatus(id: string, status: 'open' | 'in_progre
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error updating ticket status:', error);
+    log.error('Error updating ticket status:', error as Error);
     throw error;
   }
 }
@@ -141,7 +134,7 @@ export async function getPaymentsByProperty(propertyId: string) {
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error getting payments:', error);
+    log.error('Error getting payments:', error as Error);
     return [];
   }
 }

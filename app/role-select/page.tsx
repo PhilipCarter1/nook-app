@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
 import { Building2, User, Shield, Wrench } from 'lucide-react';
-
+import { log } from '@/lib/logger';
 const MotionDiv = motion.div;
 
 const roles = [
@@ -107,7 +108,7 @@ export default function RoleSelect() {
           break;
       }
     } catch (error: any) {
-      console.error('Error selecting role:', error);
+      log.error('Error selecting role:', error as Error);
       toast.error(error.message || 'Failed to select role');
     } finally {
       setLoading(false);

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Upload } from 'lucide-react';
+import { getClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-
+import { log } from '@/lib/logger';
 interface MaintenanceTicketFormProps {
   onSubmit?: (ticket: any) => void;
   onCancel?: () => void;
@@ -37,7 +38,6 @@ export function MaintenanceTicketForm({ onSubmit, onCancel }: MaintenanceTicketF
 
     try {
       // Mock submission for launch readiness
-      console.log('Submitting maintenance ticket:', formData);
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -62,7 +62,7 @@ export function MaintenanceTicketForm({ onSubmit, onCancel }: MaintenanceTicketF
         location: '',
       });
     } catch (error) {
-      console.error('Error submitting ticket:', error);
+      log.error('Error submitting ticket:', error);
       toast.error('Failed to submit maintenance ticket');
     } finally {
       setLoading(false);

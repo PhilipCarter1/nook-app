@@ -41,7 +41,6 @@ export async function getOrganizationUsage(organizationId: string): Promise<Usag
 
 export async function checkUsageLimits(organizationId: string): Promise<UsageData> {
   // Mock implementation for now
-  console.log('Checking usage limits for organization:', organizationId);
   return {
     propertyCount: 5,
     unitCount: 25,
@@ -68,5 +67,4 @@ export async function getUsageAlerts(organizationId: string): Promise<UsageAlert
 
 export async function dismissAlert(alertId: string): Promise<void> {
   // Mock implementation for now
-  console.log('Dismissing alert:', alertId);
 } 

@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Share2, UserPlus, X, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface SharedUser {
   userId: string;
   name: string;
@@ -57,7 +57,7 @@ export function DocumentSharing({
       setEmail('');
       toast.success('Document shared successfully');
     } catch (error) {
-      console.error('Error sharing document:', error);
+      log.error('Error sharing document:', error);
       toast.error('Failed to share document');
     } finally {
       setIsSharing(false);
@@ -69,7 +69,7 @@ export function DocumentSharing({
       await onRemoveShare(userId);
       toast.success('Access removed successfully');
     } catch (error) {
-      console.error('Error removing access:', error);
+      log.error('Error removing access:', error);
       toast.error('Failed to remove access');
     }
   };

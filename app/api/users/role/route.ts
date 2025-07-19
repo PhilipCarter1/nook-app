@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-
+import { log } from '@/lib/logger';
 export async function POST(request: Request) {
   try {
     const { userId, role } = await request.json();
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Error updating user role:', error);
+    log.error('Error updating user role:', error as Error);
     return NextResponse.json(
       { error: error.message || 'Failed to update user role' },
       { status: 500 }

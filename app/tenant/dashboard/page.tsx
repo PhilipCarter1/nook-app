@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/types/supabase';
-
+import { log } from '@/lib/logger';
 const MotionDiv = motion.div;
 
 export default function TenantDashboard() {
@@ -43,7 +43,7 @@ export default function TenantDashboard() {
           setPropertyData(property);
         }
       } catch (error) {
-        console.error('Error fetching tenant data:', error);
+        log.error('Error fetching tenant data:', error as Error);
       } finally {
         setLoading(false);
       }

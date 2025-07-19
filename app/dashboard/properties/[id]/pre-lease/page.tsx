@@ -12,7 +12,7 @@ import LeaseAgreement from '@/components/LeaseAgreement';
 import { AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-
+import { log } from '@/lib/logger';
 const MotionDiv = motion.div;
 
 interface Property {
@@ -90,7 +90,7 @@ export default function PreLeasePage() {
         if (leaseError && leaseError.code !== 'PGRST116') throw leaseError;
         setLease(leaseData);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        log.error('Error fetching data:', error as Error);
         setError('Failed to load property details');
       } finally {
         setLoading(false);
@@ -122,7 +122,7 @@ export default function PreLeasePage() {
         setCurrentStep(2);
       }
     } catch (error) {
-      console.error('Error uploading document:', error);
+      log.error('Error uploading document:', error as Error);
       toast.error('Failed to upload document');
     }
   };

@@ -9,7 +9,7 @@ import { Database } from '@/types/supabase';
 import { toast } from 'sonner';
 import { Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { LoadingPage } from '@/components/ui/loading';
-
+import { log } from '@/lib/logger';
 interface MaintenanceRequest {
   id: string;
   title: string;
@@ -62,7 +62,7 @@ export default function SuperDashboard() {
 
       setMaintenanceRequests(data || []);
     } catch (error: any) {
-      console.error('Error fetching maintenance requests:', error);
+      log.error('Error fetching maintenance requests:', error as Error);
       toast.error('Failed to fetch maintenance requests');
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ export default function SuperDashboard() {
       toast.success('Request status updated');
       fetchMaintenanceRequests();
     } catch (error: any) {
-      console.error('Error updating request status:', error);
+      log.error('Error updating request status:', error);
       toast.error('Failed to update request status');
     }
   };

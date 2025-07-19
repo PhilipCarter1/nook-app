@@ -1,17 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getClient } from '@/lib/supabase/client';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { getClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
+import { motion } from 'framer-motion';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
 const companySchema = z.object({
   name: z.string().min(2, 'Company name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -41,7 +43,7 @@ interface CompanyInfoProps {
 }
 
 export default function CompanyInfo({ data, onComplete, onBack }: CompanyInfoProps) {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const supabase = getClient();
 
   const {
@@ -96,7 +98,7 @@ export default function CompanyInfo({ data, onComplete, onBack }: CompanyInfoPro
         },
       });
     } catch (error) {
-      console.error('Error creating company:', error);
+      log.error('Error creating company:', error as Error);
       toast.error('Failed to save company information');
     } finally {
       setLoading(false);

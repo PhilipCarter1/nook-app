@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,8 @@ import { getClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { sendEmail } from '@/lib/email';
 import { emailService } from '../lib/email-service';
-
+import { log } from '@/lib/logger';
+import { Wrench, Clock, CheckCircle, AlertTriangle, User } from 'lucide-react';
 interface MaintenanceTicket {
   id: string;
   title: string;
@@ -102,7 +103,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       if (error) throw error;
       setTickets(data || []);
     } catch (error) {
-      console.error('Error fetching tickets:', error);
+      log.error('Error fetching tickets:', error);
       toast.error('Failed to fetch maintenance tickets');
     } finally {
       setLoading(false);
@@ -151,7 +152,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Ticket status updated');
       fetchTickets();
     } catch (error) {
-      console.error('Error updating ticket status:', error);
+      log.error('Error updating ticket status:', error);
       toast.error('Failed to update ticket status');
     }
   };
@@ -174,7 +175,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Ticket assigned');
       fetchTickets();
     } catch (error) {
-      console.error('Error assigning ticket:', error);
+      log.error('Error assigning ticket:', error);
       toast.error('Failed to assign ticket');
     }
   };
@@ -197,7 +198,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Comment added');
       fetchTickets();
     } catch (error) {
-      console.error('Error adding comment:', error);
+      log.error('Error adding comment:', error);
       toast.error('Failed to add comment');
     }
   };

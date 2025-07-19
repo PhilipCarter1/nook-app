@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Mail, Calendar, DollarSign } from 'lucide-react';
 import { getClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-
+import { log } from '@/lib/logger';
 interface Property {
   id: string;
   name: string;
@@ -68,7 +68,7 @@ export default function PropertyManagePage() {
           setProperty(data);
         }
       } catch (error) {
-        console.error('Error fetching property:', error);
+        log.error('Error fetching property:', error as Error);
         toast.error('Failed to load property details');
       } finally {
         setLoading(false);

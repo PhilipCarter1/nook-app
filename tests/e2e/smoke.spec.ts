@@ -5,25 +5,21 @@ test.describe('Smoke Tests', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Home page loads successfully');
   });
 
   test('should load login page', async ({ page }) => {
     await page.goto('/login');
     await expect(page).toHaveTitle(/Nook|Login/);
-    console.log('Login page loads successfully');
   });
 
   test('should load signup page', async ({ page }) => {
     await page.goto('/signup');
     await expect(page).toHaveTitle(/Nook|Signup/);
-    console.log('Signup page loads successfully');
   });
 
   test('should load forgot password page', async ({ page }) => {
     await page.goto('/forgot-password');
     await expect(page).toHaveTitle(/Nook|Reset/);
-    console.log('Forgot password page loads successfully');
   });
 
   test('should have working navigation links', async ({ page }) => {
@@ -45,7 +41,6 @@ test.describe('Smoke Tests', () => {
     await forgotPasswordLink.click();
     await expect(page).toHaveURL(/.*forgot-password/);
     
-    console.log('Navigation links work correctly');
   });
 
   test('should have working form inputs', async ({ page }) => {
@@ -62,7 +57,6 @@ test.describe('Smoke Tests', () => {
     await emailInput.fill('test@example.com');
     await passwordInput.fill('password123');
     
-    console.log('Form inputs work correctly');
   });
 });
 
@@ -82,7 +76,6 @@ test.describe('Authentication Flow', () => {
     // Wait for response
     await page.waitForTimeout(2000);
     
-    console.log('Login form submission handled correctly');
   });
 
   test('should handle signup form', async ({ page }) => {
@@ -102,7 +95,6 @@ test.describe('Authentication Flow', () => {
     // Wait for response
     await page.waitForTimeout(2000);
     
-    console.log('Signup form submission handled correctly');
   });
 
   test('should handle form validation', async ({ page }) => {
@@ -115,7 +107,6 @@ test.describe('Authentication Flow', () => {
     // Wait for validation errors
     await page.waitForTimeout(1000);
     
-    console.log('Form validation working correctly');
   });
 
   test('should handle password confirmation validation', async ({ page }) => {
@@ -135,6 +126,5 @@ test.describe('Authentication Flow', () => {
     // Wait for validation
     await page.waitForTimeout(2000);
     
-    console.log('Password confirmation validation working correctly');
   });
 }); 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
-
+import { log } from '@/lib/logger';
 export default function PropertyApplicationPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -28,8 +28,8 @@ export default function PropertyApplicationPage({ params }: { params: { id: stri
       // TODO: Submit application to backend
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
       router.push('/dashboard/applications');
-    } catch (error) {
-      console.error('Error submitting application:', error);
+    } catch (error: unknown) {
+      log.error('Error submitting application:', error as Error);
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
-import { MaintenanceTicketList } from '@/components/maintenance/MaintenanceTicketList';
-import { MaintenanceTicketForm } from '@/components/maintenance/MaintenanceTicketForm';
+import React, { useState } from 'react';
+import { log } from '@/lib/logger';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { MaintenanceTicketDetail } from '@/components/maintenance/MaintenanceTicketDetail';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -18,6 +19,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { PremiumLayout } from '@/components/layout/PremiumLayout';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MaintenanceTicketList } from '@/components/maintenance/MaintenanceTicketList';
+import { MaintenanceTicketForm } from '@/components/maintenance/MaintenanceTicketForm';
 
 export default function MaintenancePage() {
   const router = useRouter();
@@ -47,7 +50,7 @@ export default function MaintenancePage() {
     },
     onError: (error) => {
       toast.error('Failed to create maintenance ticket');
-      console.error('Create ticket error:', error);
+      log.error('Create ticket error:', error);
     },
   });
 
@@ -61,7 +64,7 @@ export default function MaintenancePage() {
     },
     onError: (error) => {
       toast.error('Failed to update maintenance ticket');
-      console.error('Update ticket error:', error);
+      log.error('Update ticket error:', error);
     },
   });
 
@@ -79,7 +82,7 @@ export default function MaintenancePage() {
     },
     onError: (error) => {
       toast.error('Failed to add comment');
-      console.error('Add comment error:', error);
+      log.error('Add comment error:', error);
     },
   });
 
@@ -93,7 +96,7 @@ export default function MaintenancePage() {
     },
     onError: (error) => {
       toast.error('Failed to assign vendor');
-      console.error('Assign vendor error:', error);
+      log.error('Assign vendor error:', error);
     },
   });
 

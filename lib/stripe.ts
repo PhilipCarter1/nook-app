@@ -1,6 +1,5 @@
 import Stripe from 'stripe';
 import { supabase } from './supabase';
-
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set');
 }
@@ -28,7 +27,7 @@ export async function createPaymentIntent(amount: number, leaseId: string) {
       paymentIntentId: paymentIntent.id,
     };
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    log.error('Error creating payment intent:', error as Error);
     throw error;
   }
 }
@@ -74,7 +73,7 @@ export async function handleStripeWebhook(event: Stripe.Event) {
       }
     }
   } catch (error) {
-    console.error('Error handling webhook:', error);
+    log.error('Error handling webhook:', error as Error);
     throw error;
   }
 }
@@ -84,7 +83,7 @@ export async function confirmPayment(paymentIntentId: string) {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     return paymentIntent.status === 'succeeded';
   } catch (error) {
-    console.error('Error confirming payment:', error);
+    log.error('Error confirming payment:', error as Error);
     throw error;
   }
 }

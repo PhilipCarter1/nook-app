@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { log } from '@/lib/logger';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, Settings, Shield } from 'lucide-react';
@@ -8,7 +9,6 @@ import { motion } from 'framer-motion';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/types/supabase';
-
 const MotionDiv = motion.div;
 
 export default function AdminDashboard() {
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
           systemStatus: 'Healthy'
         });
       } catch (error) {
-        console.error('Error fetching admin stats:', error);
+        log.error('Error fetching admin stats:', error as Error);
       } finally {
         setLoading(false);
       }

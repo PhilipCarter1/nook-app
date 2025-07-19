@@ -37,7 +37,6 @@ test.describe('Responsive Design Tests', () => {
       const sidebar = page.locator('[class*="sidebar"]');
       await expect(sidebar).toBeVisible();
       
-      console.log('✅ Desktop layout verified');
     });
 
     test('should have proper navigation on desktop', async ({ page }) => {
@@ -50,7 +49,6 @@ test.describe('Responsive Design Tests', () => {
       await expect(page.locator('text=/Tenants/i')).toBeVisible();
       await expect(page.locator('text=/Maintenance/i')).toBeVisible();
       
-      console.log('✅ Desktop navigation verified');
     });
   });
 
@@ -67,10 +65,8 @@ test.describe('Responsive Design Tests', () => {
       // Check for responsive elements
       const mobileMenu = page.locator('[class*="mobile-menu"]');
       if (await mobileMenu.isVisible()) {
-        console.log('✅ Tablet responsive menu detected');
       }
       
-      console.log('✅ Tablet layout verified');
     });
 
     test('should have collapsible navigation on tablet', async ({ page }) => {
@@ -82,7 +78,6 @@ test.describe('Responsive Design Tests', () => {
       if (await menuButton.isVisible()) {
         await menuButton.click();
         await expect(page.locator('text=/Dashboard/i')).toBeVisible();
-        console.log('✅ Tablet navigation menu verified');
       }
     });
   });
@@ -100,10 +95,8 @@ test.describe('Responsive Design Tests', () => {
       // Check for mobile-specific elements
       const mobileMenu = page.locator('[class*="mobile-menu"]');
       if (await mobileMenu.isVisible()) {
-        console.log('✅ Mobile responsive menu detected');
       }
       
-      console.log('✅ Mobile layout verified');
     });
 
     test('should have mobile-friendly navigation', async ({ page }) => {
@@ -115,7 +108,6 @@ test.describe('Responsive Design Tests', () => {
       if (await menuButton.isVisible()) {
         await menuButton.click();
         await expect(page.locator('text=/Dashboard/i')).toBeVisible();
-        console.log('✅ Mobile navigation menu verified');
       }
     });
 
@@ -127,7 +119,6 @@ test.describe('Responsive Design Tests', () => {
       const buttonBox = await loginButton.boundingBox();
       
       if (buttonBox && buttonBox.height >= 44) {
-        console.log('✅ Touch-friendly button size verified');
       }
     });
   });
@@ -146,7 +137,6 @@ test.describe('Accessibility Tests', () => {
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
     
-    console.log('✅ ARIA labels verified');
   });
 
   test('should have proper heading structure', async ({ page }) => {
@@ -159,7 +149,6 @@ test.describe('Accessibility Tests', () => {
     
     await expect(h1Elements.first()).toBeVisible();
     
-    console.log('✅ Heading structure verified');
   });
 
   test('should have proper color contrast', async ({ page }) => {
@@ -171,7 +160,6 @@ test.describe('Accessibility Tests', () => {
     await expect(page.locator('text=/login/i')).toBeVisible();
     await expect(page.getByLabel('Email')).toBeVisible();
     
-    console.log('✅ Basic color contrast verified');
   });
 
   test('should be keyboard navigable', async ({ page }) => {
@@ -187,7 +175,6 @@ test.describe('Accessibility Tests', () => {
     const loginButton = page.getByRole('button', { name: /login/i });
     await expect(loginButton).toBeFocused();
     
-    console.log('✅ Keyboard navigation verified');
   });
 
   test('should have proper focus indicators', async ({ page }) => {
@@ -202,7 +189,6 @@ test.describe('Accessibility Tests', () => {
     const focusedElement = page.locator(':focus');
     await expect(focusedElement).toBeVisible();
     
-    console.log('✅ Focus indicators verified');
   });
 });
 
@@ -231,7 +217,6 @@ test.describe('Navigation Tests', () => {
     await page.getByRole('link', { name: /payments/i }).click();
     await expect(page.locator('text=/payment/i')).toBeVisible();
     
-    console.log('✅ Dashboard navigation verified');
   });
 
   test('should have breadcrumb navigation', async ({ page }) => {
@@ -242,7 +227,6 @@ test.describe('Navigation Tests', () => {
     if (await breadcrumbs.isVisible()) {
       await expect(breadcrumbs).toContainText('Dashboard');
       await expect(breadcrumbs).toContainText('Properties');
-      console.log('✅ Breadcrumb navigation verified');
     }
   });
 
@@ -254,7 +238,6 @@ test.describe('Navigation Tests', () => {
     await page.goBack();
     await expect(page.locator('text=/property/i')).toBeVisible();
     
-    console.log('✅ Back navigation verified');
   });
 
   test('should have proper page titles', async ({ page }) => {
@@ -272,7 +255,6 @@ test.describe('Navigation Tests', () => {
       await expect(page).toHaveTitle(pageInfo.expectedTitle);
     }
     
-    console.log('✅ Page titles verified');
   });
 });
 
@@ -288,7 +270,6 @@ test.describe('Form Validation Tests', () => {
     // Should show validation errors
     await expect(page.locator('[class*="error"]')).toBeVisible();
     
-    console.log('✅ Login form validation verified');
   });
 
   test('should validate registration form', async ({ page }) => {
@@ -301,7 +282,6 @@ test.describe('Form Validation Tests', () => {
     // Should show validation errors
     await expect(page.locator('[class*="error"]')).toBeVisible();
     
-    console.log('✅ Registration form validation verified');
   });
 
   test('should validate email format', async ({ page }) => {
@@ -316,7 +296,6 @@ test.describe('Form Validation Tests', () => {
     // Should show email validation error
     await expect(page.locator('text=/invalid email/i')).toBeVisible();
     
-    console.log('✅ Email format validation verified');
   });
 
   test('should validate password requirements', async ({ page }) => {
@@ -330,7 +309,6 @@ test.describe('Form Validation Tests', () => {
     // Should show password strength error
     await expect(page.locator('text=/password/i')).toBeVisible();
     
-    console.log('✅ Password validation verified');
   });
 });
 
@@ -353,7 +331,6 @@ test.describe('Premium Theme Validation Tests', () => {
     await expect(page.locator('[class*="card"]')).toBeVisible();
     await expect(page.locator('[class*="shadow"]')).toBeVisible();
     
-    console.log('✅ Premium dashboard design verified');
   });
 
   test('should have premium color scheme', async ({ page }) => {
@@ -362,13 +339,11 @@ test.describe('Premium Theme Validation Tests', () => {
     // Check for premium color classes
     const premiumElements = page.locator('[class*="bg-gradient"]');
     if (await premiumElements.count() > 0) {
-      console.log('✅ Premium color scheme detected');
     }
     
     // Check for modern styling
     const modernElements = page.locator('[class*="rounded-lg"]');
     if (await modernElements.count() > 0) {
-      console.log('✅ Modern styling verified');
     }
   });
 
@@ -378,13 +353,11 @@ test.describe('Premium Theme Validation Tests', () => {
     // Check for animation classes
     const animatedElements = page.locator('[class*="animate"]');
     if (await animatedElements.count() > 0) {
-      console.log('✅ Premium animations detected');
     }
     
     // Check for hover effects
     const hoverElements = page.locator('[class*="hover"]');
     if (await hoverElements.count() > 0) {
-      console.log('✅ Hover effects verified');
     }
   });
 
@@ -394,14 +367,12 @@ test.describe('Premium Theme Validation Tests', () => {
     // Check for premium font classes
     const typographyElements = page.locator('[class*="font-"]');
     if (await typographyElements.count() > 0) {
-      console.log('✅ Premium typography verified');
     }
     
     // Verify text hierarchy
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.locator('h2')).toBeVisible();
     
-    console.log('✅ Typography hierarchy verified');
   });
 });
 
@@ -419,7 +390,6 @@ test.describe('Loading States Tests', () => {
     // Check for loading state
     const loadingButton = page.getByRole('button', { name: /loading/i });
     if (await loadingButton.isVisible()) {
-      console.log('✅ Loading state during login verified');
     }
   });
 
@@ -430,7 +400,6 @@ test.describe('Loading States Tests', () => {
     // Check for loading indicators
     const loadingElements = page.locator('[class*="loading"]');
     if (await loadingElements.count() > 0) {
-      console.log('✅ Loading states during data fetch verified');
     }
   });
 
@@ -441,7 +410,6 @@ test.describe('Loading States Tests', () => {
     // For now, verify page loads without errors
     await expect(page.locator('text=/login/i')).toBeVisible();
     
-    console.log('✅ Basic error handling verified');
   });
 });
 
@@ -459,7 +427,6 @@ test.describe('Interaction Tests', () => {
     const buttonCount = await buttons.count();
     
     if (buttonCount > 0) {
-      console.log(`✅ Found ${buttonCount} interactive buttons`);
     }
   });
 
@@ -470,7 +437,6 @@ test.describe('Interaction Tests', () => {
     // Verify form opens
     await expect(page.locator('text=/maintenance/i')).toBeVisible();
     
-    console.log('✅ Form submission handling verified');
   });
 
   test('should handle modal dialogs', async ({ page }) => {
@@ -480,7 +446,6 @@ test.describe('Interaction Tests', () => {
     // Check for modal
     const modal = page.locator('[class*="modal"]');
     if (await modal.isVisible()) {
-      console.log('✅ Modal dialog handling verified');
     }
   });
 
@@ -492,7 +457,6 @@ test.describe('Interaction Tests', () => {
     if (await userMenu.isVisible()) {
       await userMenu.click();
       await expect(page.locator('text=/logout/i')).toBeVisible();
-      console.log('✅ Dropdown menu handling verified');
     }
   });
 });
@@ -508,9 +472,7 @@ test.describe('Performance Tests', () => {
     const loadTime = Date.now() - startTime;
     
     if (loadTime < 5000) {
-      console.log(`✅ Page loaded in ${loadTime}ms`);
     } else {
-      console.log(`⚠️ Page loaded slowly in ${loadTime}ms`);
     }
   });
 
@@ -521,7 +483,6 @@ test.describe('Performance Tests', () => {
     // Check for pagination or virtual scrolling
     const pagination = page.locator('[class*="pagination"]');
     if (await pagination.isVisible()) {
-      console.log('✅ Pagination for large datasets verified');
     }
   });
 
@@ -533,7 +494,6 @@ test.describe('Performance Tests', () => {
     const imageCount = await images.count();
     
     if (imageCount > 0) {
-      console.log(`✅ Found ${imageCount} images to optimize`);
     }
   });
 }); 

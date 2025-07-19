@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import { getClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
+import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +35,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
+      const supabase = getClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -43,7 +46,7 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch (err) {
-      console.error('Password reset error:', err);
+      log.error('Password reset error:', err as Error);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

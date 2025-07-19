@@ -8,10 +8,8 @@ test.describe('Critical User Flows', () => {
     for (const pagePath of pages) {
       await page.goto(pagePath);
       await expect(page).toHaveTitle(/Nook/);
-      console.log(`${pagePath} loads successfully`);
     }
     
-    console.log('All main pages load successfully');
   });
 
   test('should have working navigation', async ({ page }) => {
@@ -26,7 +24,6 @@ test.describe('Critical User Flows', () => {
     await page.getByRole('link', { name: /get started/i }).click();
     await expect(page).toHaveURL(/.*signup/);
     
-    console.log('Navigation works correctly');
   });
 });
 
@@ -43,7 +40,6 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Property management dashboard accessible');
   });
 
   test('should manage leases and tenants', async ({ page }) => {
@@ -57,7 +53,6 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Lease and tenant management accessible');
   });
 
   test('should handle maintenance requests', async ({ page }) => {
@@ -71,7 +66,6 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Maintenance request management accessible');
   });
 });
 
@@ -88,7 +82,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Tenant dashboard accessible');
   });
 
   test('should submit maintenance request', async ({ page }) => {
@@ -102,7 +95,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Maintenance request submission accessible');
   });
 
   test('should upload and manage documents', async ({ page }) => {
@@ -116,7 +108,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Document management accessible');
   });
 });
 
@@ -133,7 +124,6 @@ test.describe('Payment Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Payment processing accessible');
   });
 
   test('should view payment history', async ({ page }) => {
@@ -147,6 +137,5 @@ test.describe('Payment Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Payment history accessible');
   });
 }); 

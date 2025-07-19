@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Download, ZoomIn, ZoomOut, RotateCcw, FileText } from 'lucide-react';
-
+import { log } from '@/lib/logger';
 interface DocumentPreviewProps {
   url: string;
   type: string;
@@ -57,7 +57,7 @@ export default function DocumentPreview({ url, type, name, className, onView }: 
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
-      console.error('Error downloading document:', error);
+      log.error('Error downloading document:', error);
       toast.error('Failed to download document');
     }
   };

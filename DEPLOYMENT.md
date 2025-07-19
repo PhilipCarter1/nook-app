@@ -2,114 +2,35 @@
 
 ## Pre-deployment Checklist
 
-### Environment Variables
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
-- [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
-- [ ] `STRIPE_SECRET_KEY` - Stripe secret key
-- [ ] `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret
-- [ ] `RESEND_API_KEY` - Resend API key for email
-- [ ] `SENDGRID_API_KEY` - SendGrid API key for email
-- [ ] `NEXT_PUBLIC_SENTRY_DSN` - Sentry DSN for error tracking
-- [ ] `NEXT_PUBLIC_APP_URL` - Production app URL
-- [ ] `NEXT_PUBLIC_APP_NAME` - Application name
-- [ ] `NEXT_PUBLIC_APP_DESCRIPTION` - Application description
-- [ ] `NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT` - Feature flag for legal assistant
-- [ ] `NEXT_PUBLIC_ENABLE_CONCIERGE` - Feature flag for concierge service
-- [ ] `NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING` - Feature flag for custom branding
+- [ ] All environment variables are set in Vercel and GitHub secrets
+- [ ] Database migrations are up to date
+- [ ] All tests, lint, and type checks pass (`./scripts/pre-deploy.sh`)
+- [ ] Code reviewed and merged via Pull Request
 
-### Database
-- [ ] All migrations are up to date
-- [ ] Database schema matches the application's expectations
-- [ ] Backup strategy is in place
-- [ ] Database indexes are optimized
-- [ ] Row Level Security (RLS) policies are properly configured
+## Deployment Process
 
-### Security
-- [ ] Security headers are properly configured in `vercel.json`
-- [ ] SSL certificate is valid
-- [ ] API routes are properly protected
-- [ ] Authentication flows are tested
-- [ ] Rate limiting is implemented
-- [ ] CORS policies are properly configured
+1. All deployments are managed by `.github/workflows/deploy.yml` (GitHub Actions)
+2. Only the `main` branch deploys to production (Vercel)
+3. Pre-deployment checks are automated via `./scripts/pre-deploy.sh`
+4. Monitor deployment in Vercel dashboard
+5. Post-deployment: verify all critical user flows, monitor Sentry and Supabase
 
-### Third-party Services
-- [ ] Stripe webhook is configured and tested
-- [ ] Sentry error tracking is set up
-- [ ] Email service (Resend/SendGrid) is configured
-- [ ] Analytics is configured (if applicable)
-- [ ] CDN is configured (if applicable)
-
-### Application
-- [ ] All tests are passing
-- [ ] No type errors
-- [ ] No linting errors
-- [ ] Build succeeds locally
-- [ ] SEO meta tags are set
-- [ ] Performance metrics are acceptable
-- [ ] Mobile responsiveness is verified
-- [ ] Accessibility requirements are met
-
-### Deployment Process
-1. Run the pre-deployment script:
-   ```bash
-   ./scripts/pre-deploy.sh
-   ```
-
-2. Verify all checks pass
-
-3. Push to main branch:
-   ```bash
-   git push origin main
-   ```
-
-4. Monitor Vercel deployment:
-   - Check build logs
-   - Verify environment variables
-   - Confirm successful deployment
-
-5. Post-deployment verification:
-   - Test authentication flows
-   - Verify email functionality
-   - Check payment processing
-   - Monitor error tracking
-   - Verify analytics
-
-### Rollback Plan
-1. Keep track of the last known good deployment
-2. Document any database changes
-3. Have a rollback script ready
-4. Test rollback procedure
+## Rollback Plan
+- Use Vercel's rollback feature to revert to a previous deployment
+- Restore database from backup if needed
+- Document and test rollback steps regularly
 
 ## Monitoring
-
-### Key Metrics to Monitor
-- Application performance
-- Error rates
-- API response times
-- Database performance
-- Payment success rates
-- Email delivery rates
-
-### Alerts
-- Set up alerts for:
-  - High error rates
-  - Failed payments
-  - Database connection issues
-  - API endpoint failures
-  - SSL certificate expiration
+- Use Sentry for error tracking
+- Monitor Vercel and Supabase dashboards for performance and errors
+- Set up alerts for high error rates, failed payments, and downtime
 
 ## Maintenance
+- Regularly update dependencies
+- Review and address technical debt
+- Run post-deployment QA and smoke tests
 
-### Regular Tasks
-- [ ] Monitor error logs
-- [ ] Check database performance
-- [ ] Verify backup integrity
-- [ ] Update dependencies
-- [ ] Review security headers
-- [ ] Check SSL certificate status
-
-### Emergency Contacts
+## Emergency Contacts
 - Database administrator
 - DevOps team
 - Security team

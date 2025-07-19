@@ -1,7 +1,5 @@
 import { supabase } from '../lib/supabase';
-
 async function main() {
-  console.log('Setting up database...');
 
   try {
     // Create a test landlord
@@ -76,9 +74,8 @@ async function main() {
       throw unitsError;
     }
 
-    console.log('Database setup completed successfully');
   } catch (error) {
-    console.error('Database setup failed:', error);
+    log.error('Database setup failed:', error as Error);
     process.exit(1);
   }
 }

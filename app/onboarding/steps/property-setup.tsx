@@ -12,6 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getClient } from '@/lib/supabase/client';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { log } from '@/lib/logger';
 
 interface PropertySetupProps {
   data: {
@@ -62,7 +69,8 @@ export default function PropertySetup({ data, onComplete, onBack }: PropertySetu
         },
       });
     } catch (error) {
-      console.error('Error creating property:', error);
+      log.error('Error creating property:', error as Error);
+      toast.error('Failed to create property');
     } finally {
       setLoading(false);
     }

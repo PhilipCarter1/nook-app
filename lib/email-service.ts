@@ -1,6 +1,5 @@
 import sgMail from '@sendgrid/mail';
 import { emailTemplates } from './email-templates';
-
 if (!process.env.SENDGRID_API_KEY) {
   throw new Error('Missing SENDGRID_API_KEY environment variable');
 }
@@ -69,7 +68,7 @@ export async function sendEmail(config: EmailConfig) {
     await sgMail.send(msg);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    log.error('Error sending email:', error as Error);
     throw error;
   }
 }

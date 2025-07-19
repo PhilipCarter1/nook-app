@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs';
 import { db } from '@/lib/db';
 import { z } from 'zod';
-
+import { log } from '@/lib/logger';
 const propertySchema = z.object({
   name: z.string().min(2),
   address: z.string().min(5),
@@ -43,7 +43,7 @@ export async function PATCH(
     if (error instanceof z.ZodError) {
       return new NextResponse('Invalid request data', { status: 422 });
     }
-    console.error('[PROPERTY_PATCH]', error);
+    log.error('[PROPERTY_PATCH]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
@@ -70,7 +70,7 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('[PROPERTY_DELETE]', error);
+    log.error('[PROPERTY_DELETE]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
@@ -98,7 +98,7 @@ export async function GET(
 
     return NextResponse.json(property);
   } catch (error) {
-    console.error('[PROPERTY_GET]', error);
+    log.error('[PROPERTY_GET]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
@@ -136,7 +136,7 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return new NextResponse('Invalid request data', { status: 422 });
     }
-    console.error('[PROPERTY_PUT]', error);
+    log.error('[PROPERTY_PUT]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 } 

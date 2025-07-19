@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
-
+import { log } from '@/lib/logger';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 });
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    log.error('Error creating payment intent:', error as Error);
     return new NextResponse('Error creating payment intent', { status: 500 });
   }
 } 

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { getClient } from '@/lib/supabase/client';
 import { AlertCircle, Wrench, DollarSign, FileText } from 'lucide-react';
-
+import { log } from '@/lib/logger';
 interface Property {
   id: string;
   name: string;
@@ -112,7 +112,7 @@ export default function PostLeasePage() {
         if (paymentsError) throw paymentsError;
         setPayments(paymentsData);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        log.error('Error fetching data:', error as Error);
         setError('Failed to load property details');
       } finally {
         setLoading(false);
@@ -156,7 +156,7 @@ export default function PostLeasePage() {
       });
       setShowMaintenanceForm(false);
     } catch (error) {
-      console.error('Error submitting maintenance ticket:', error);
+      log.error('Error submitting maintenance ticket:', error as Error);
       setError('Failed to submit maintenance ticket');
     }
   };

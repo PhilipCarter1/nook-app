@@ -1,11 +1,8 @@
 import { supabase } from '../lib/supabase';
-
 async function testEndToEnd() {
   try {
-    console.log('Starting end-to-end test...');
 
     // 1. Create test users
-    console.log('\n1. Creating test users...');
     const { data: landlord, error: landlordError } = await supabase
       .from('users')
       .insert({
@@ -37,7 +34,6 @@ async function testEndToEnd() {
     if (tenantError) throw tenantError;
 
     // 2. Create test property
-    console.log('\n2. Creating test property...');
     const { data: property, error: propertyError } = await supabase
       .from('properties')
       .insert({
@@ -56,7 +52,6 @@ async function testEndToEnd() {
     if (propertyError) throw propertyError;
 
     // 3. Create test unit
-    console.log('\n3. Creating test unit...');
     const { data: unit, error: unitError } = await supabase
       .from('units')
       .insert({
@@ -74,7 +69,6 @@ async function testEndToEnd() {
     if (unitError) throw unitError;
 
     // 4. Create test application
-    console.log('\n4. Creating test application...');
     const { data: application, error: applicationError } = await supabase
       .from('applications')
       .insert({
@@ -94,7 +88,6 @@ async function testEndToEnd() {
     if (applicationError) throw applicationError;
 
     // 5. Add test document
-    console.log('\n5. Adding test document...');
     const { data: document, error: documentError } = await supabase
       .from('application_documents')
       .insert({
@@ -110,7 +103,6 @@ async function testEndToEnd() {
     if (documentError) throw documentError;
 
     // 6. Add test review
-    console.log('\n6. Adding test review...');
     const { data: review, error: reviewError } = await supabase
       .from('application_reviews')
       .insert({
@@ -127,7 +119,6 @@ async function testEndToEnd() {
     if (reviewError) throw reviewError;
 
     // 7. Verify all records
-    console.log('\n7. Verifying records...');
     const { data: verifiedApplication, error: verifyAppError } = await supabase
       .from('applications')
       .select()
@@ -152,14 +143,9 @@ async function testEndToEnd() {
 
     if (verifyReviewError) throw verifyReviewError;
 
-    console.log('\nTest Results:');
-    console.log('Application:', verifiedApplication);
-    console.log('Document:', verifiedDocument);
-    console.log('Review:', verifiedReview);
 
-    console.log('\nEnd-to-end test completed successfully!');
   } catch (error) {
-    console.error('Test failed:', error);
+    log.error('Test failed:', error as Error);
     process.exit(1);
   }
 }

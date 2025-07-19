@@ -10,6 +10,7 @@ import {
   Wrench,
   DollarSign,
   BarChart,
+  Shield,
 } from 'lucide-react';
 
 interface MainNavProps {
@@ -44,8 +45,8 @@ const navigation = {
       icon: FileText,
     },
     {
-      name: 'Billing',
-      href: '/dashboard/billing',
+      name: 'Payments',
+      href: '/dashboard/payments',
       icon: DollarSign,
     },
     {
@@ -62,69 +63,64 @@ const navigation = {
   admin: [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/admin/dashboard',
       icon: Home,
     },
     {
-      name: 'Properties',
-      href: '/dashboard/properties',
-      icon: Building2,
-    },
-    {
-      name: 'Tenants',
-      href: '/dashboard/tenants',
+      name: 'Users',
+      href: '/admin/users',
       icon: Users,
     },
     {
+      name: 'Properties',
+      href: '/admin/properties',
+      icon: Building2,
+    },
+    {
       name: 'Maintenance',
-      href: '/dashboard/maintenance',
+      href: '/admin/maintenance',
       icon: Wrench,
     },
     {
       name: 'Documents',
-      href: '/dashboard/documents',
+      href: '/admin/documents',
       icon: FileText,
     },
     {
-      name: 'Billing',
-      href: '/dashboard/billing',
-      icon: DollarSign,
-    },
-    {
       name: 'Analytics',
-      href: '/dashboard/analytics',
+      href: '/admin/analytics',
       icon: BarChart,
     },
     {
       name: 'Settings',
-      href: '/dashboard/settings',
+      href: '/admin/settings',
       icon: Settings,
     },
   ],
   super: [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/super/dashboard',
       icon: Home,
     },
     {
       name: 'Properties',
-      href: '/dashboard/properties',
+      href: '/super/properties',
       icon: Building2,
     },
     {
       name: 'Maintenance',
-      href: '/dashboard/maintenance',
+      href: '/super/maintenance',
       icon: Wrench,
     },
     {
       name: 'Documents',
-      href: '/dashboard/documents',
+      href: '/super/documents',
       icon: FileText,
     },
     {
       name: 'Settings',
-      href: '/dashboard/settings',
+      href: '/super/settings',
       icon: Settings,
     },
   ],
@@ -145,6 +141,11 @@ const navigation = {
       icon: FileText,
     },
     {
+      name: 'Payments',
+      href: '/dashboard/payments',
+      icon: DollarSign,
+    },
+    {
       name: 'Settings',
       href: '/dashboard/settings',
       icon: Settings,
@@ -154,7 +155,7 @@ const navigation = {
 
 export function MainNav({ userRole }: MainNavProps) {
   const pathname = usePathname();
-  const items = navigation[userRole];
+  const items = navigation[userRole] || [];
 
   return (
     <nav className="flex items-center space-x-4 lg:space-x-6">

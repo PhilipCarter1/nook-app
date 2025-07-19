@@ -5,7 +5,6 @@ import { test as base } from '@playwright/test';
 async function globalSetup() {
   // Start the Next.js server
   const server = execSync('npm run dev', { stdio: 'inherit' });
-  console.log('Started Next.js server');
 
   // Wait for the server to be ready
   await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -15,7 +14,6 @@ async function globalSetup() {
 async function globalTeardown() {
   // Kill the Next.js server
   execSync('pkill -f "next dev"', { stdio: 'inherit' });
-  console.log('Stopped Next.js server');
 }
 
 // Extend the base test with our custom setup

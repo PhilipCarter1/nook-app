@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { MessageSquare, Plus, User, Clock, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface Comment {
   id: string;
   userId: string;
@@ -66,7 +66,7 @@ export function DocumentComments({
       setPosition(undefined);
       toast.success('Comment added successfully');
     } catch (error) {
-      console.error('Error adding comment:', error);
+      log.error('Error adding comment:', error);
       toast.error('Failed to add comment');
     } finally {
       setIsAddingComment(false);
@@ -78,7 +78,7 @@ export function DocumentComments({
       await onDeleteComment(commentId);
       toast.success('Comment deleted successfully');
     } catch (error) {
-      console.error('Error deleting comment:', error);
+      log.error('Error deleting comment:', error);
       toast.error('Failed to delete comment');
     }
   };

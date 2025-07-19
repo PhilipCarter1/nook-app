@@ -1,4 +1,5 @@
 import React from 'react';
+import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -9,14 +10,10 @@ import { getClient } from '@/lib/supabase/client';
 import { Settings, CreditCard, Building2, Wallet } from 'lucide-react';
 import {
   PremiumLayout,
-  PremiumCard,
-  PremiumCardHeader,
-  PremiumCardContent,
-  PremiumGrid,
 } from '@/components/layout/PremiumLayout';
+import { PremiumCard, PremiumCardHeader, PremiumCardContent } from '@/components/ui/PremiumCard';
 import { premiumComponents, premiumAnimations } from '@/lib/theme';
 import { cn } from '@/lib/utils';
-
 interface SplitRentSettingsProps {
   id: string;
   onUpdate: () => void;
@@ -64,7 +61,7 @@ export default function SplitRentSettings({
       setIsSplitEnabled(data.split_rent_enabled);
       setPaymentMethods(data.payment_methods || []);
     } catch (error) {
-      console.error('Error fetching settings:', error);
+      log.error('Error fetching settings:', error);
       toast({
         title: 'Error',
         description: 'Failed to load settings',
@@ -91,7 +88,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      console.error('Error updating split rent setting:', error);
+      log.error('Error updating split rent setting:', error);
       toast({
         title: 'Error',
         description: 'Failed to update settings',
@@ -120,7 +117,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      console.error('Error updating payment method:', error);
+      log.error('Error updating payment method:', error);
       toast({
         title: 'Error',
         description: 'Failed to update payment method',
@@ -151,7 +148,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      console.error('Error updating payment method details:', error);
+      log.error('Error updating payment method details:', error);
       toast({
         title: 'Error',
         description: 'Failed to update payment method details',
@@ -193,102 +190,101 @@ export default function SplitRentSettings({
 
             <div className="space-y-4">
               <h3 className="font-medium">Payment Methods</h3>
-              <PremiumGrid cols={1} className="gap-4">
-                {paymentMethods.map((method) => (
-                  <PremiumCard key={method.id} className={premiumComponents.card.hover}>
-                    <PremiumCardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {method.type === 'bank_transfer' && <Building2 className="h-4 w-4" />}
-                            {method.type === 'credit_card' && <CreditCard className="h-4 w-4" />}
-                            {method.type === 'cash' && <Wallet className="h-4 w-4" />}
-                            <Label className="capitalize">{method.type.replace('_', ' ')}</Label>
-                          </div>
-                          <Switch
-                            checked={method.isEnabled}
-                            onCheckedChange={(enabled) => handlePaymentMethodToggle(method.id, enabled)}
-                          />
+              {/* PremiumGrid is removed, so we'll render cards directly */}
+              {paymentMethods.map((method) => (
+                <PremiumCard key={method.id} className={premiumComponents.card.hover}>
+                  <PremiumCardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {method.type === 'bank_transfer' && <Building2 className="h-4 w-4" />}
+                          {method.type === 'credit_card' && <CreditCard className="h-4 w-4" />}
+                          {method.type === 'cash' && <Wallet className="h-4 w-4" />}
+                          <Label className="capitalize">{method.type.replace('_', ' ')}</Label>
                         </div>
+                        <Switch
+                          checked={method.isEnabled}
+                          onCheckedChange={(enabled) => handlePaymentMethodToggle(method.id, enabled)}
+                        />
+                      </div>
 
-                        {method.isEnabled && (
-                          <div className="grid grid-cols-2 gap-4">
+                      {method.isEnabled && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Minimum Amount</Label>
+                            <Input
+                              type="number"
+                              className={premiumComponents.input.base}
+                              value={method.details.minimumAmount}
+                              onChange={(e) => handlePaymentMethodUpdate(method.id, {
+                                minimumAmount: Number(e.target.value)
+                              })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Maximum Amount</Label>
+                            <Input
+                              type="number"
+                              className={premiumComponents.input.base}
+                              value={method.details.maximumAmount}
+                              onChange={(e) => handlePaymentMethodUpdate(method.id, {
+                                maximumAmount: Number(e.target.value)
+                              })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Processing Time</Label>
+                            <Input
+                              className={premiumComponents.input.base}
+                              value={method.details.processingTime}
+                              onChange={(e) => handlePaymentMethodUpdate(method.id, {
+                                processingTime: e.target.value
+                              })}
+                              placeholder="e.g., 1-2 business days"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Fee Type</Label>
+                            <Select
+                              value={method.details.fees?.type}
+                              onValueChange={(value: 'percentage' | 'fixed') => handlePaymentMethodUpdate(method.id, {
+                                fees: { 
+                                  type: value,
+                                  amount: method.details.fees?.amount || 0
+                                }
+                              })}
+                            >
+                              <SelectTrigger className={premiumComponents.select.base}>
+                                <SelectValue placeholder="Select fee type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="percentage">Percentage</SelectItem>
+                                <SelectItem value="fixed">Fixed Amount</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {method.details.fees?.type && (
                             <div className="space-y-2">
-                              <Label>Minimum Amount</Label>
+                              <Label>Fee Amount</Label>
                               <Input
                                 type="number"
                                 className={premiumComponents.input.base}
-                                value={method.details.minimumAmount}
+                                value={method.details.fees.amount}
                                 onChange={(e) => handlePaymentMethodUpdate(method.id, {
-                                  minimumAmount: Number(e.target.value)
-                                })}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Maximum Amount</Label>
-                              <Input
-                                type="number"
-                                className={premiumComponents.input.base}
-                                value={method.details.maximumAmount}
-                                onChange={(e) => handlePaymentMethodUpdate(method.id, {
-                                  maximumAmount: Number(e.target.value)
-                                })}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Processing Time</Label>
-                              <Input
-                                className={premiumComponents.input.base}
-                                value={method.details.processingTime}
-                                onChange={(e) => handlePaymentMethodUpdate(method.id, {
-                                  processingTime: e.target.value
-                                })}
-                                placeholder="e.g., 1-2 business days"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Fee Type</Label>
-                              <Select
-                                value={method.details.fees?.type}
-                                onValueChange={(value: 'percentage' | 'fixed') => handlePaymentMethodUpdate(method.id, {
                                   fees: { 
-                                    type: value,
-                                    amount: method.details.fees?.amount || 0
+                                    type: method.details.fees?.type || 'fixed',
+                                    amount: Number(e.target.value)
                                   }
                                 })}
-                              >
-                                <SelectTrigger className={premiumComponents.select.base}>
-                                  <SelectValue placeholder="Select fee type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="percentage">Percentage</SelectItem>
-                                  <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              />
                             </div>
-                            {method.details.fees?.type && (
-                              <div className="space-y-2">
-                                <Label>Fee Amount</Label>
-                                <Input
-                                  type="number"
-                                  className={premiumComponents.input.base}
-                                  value={method.details.fees.amount}
-                                  onChange={(e) => handlePaymentMethodUpdate(method.id, {
-                                    fees: { 
-                                      type: method.details.fees?.type || 'fixed',
-                                      amount: Number(e.target.value)
-                                    }
-                                  })}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </PremiumCardContent>
-                  </PremiumCard>
-                ))}
-              </PremiumGrid>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </PremiumCardContent>
+                </PremiumCard>
+              ))}
             </div>
           </div>
         </PremiumCardContent>

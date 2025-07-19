@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-
 export interface RateLimitConfig {
   maxRequests: number;
   windowMs: number;
@@ -67,7 +66,7 @@ export async function checkRateLimit(
     .gte('created_at', new Date(windowStart).toISOString());
 
   if (error) {
-    console.error('Error checking rate limit:', error);
+    log.error('Error checking rate limit:', error as Error);
     return {
       allowed: true,
       remaining: config.maxRequests,
@@ -101,7 +100,7 @@ export async function recordRequest(
   });
 
   if (error) {
-    console.error('Error recording request:', error);
+    log.error('Error recording request:', error as Error);
   }
 }
 
@@ -113,7 +112,7 @@ export async function cleanupRateLimits(): Promise<void> {
     .lt('created_at', oneDayAgo);
 
   if (error) {
-    console.error('Error cleaning up rate limits:', error);
+    log.error('Error cleaning up rate limits:', error as Error);
   }
 }
 

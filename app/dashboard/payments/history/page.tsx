@@ -6,7 +6,7 @@ import { getPaymentHistory, getUpcomingPayments } from '@/lib/services/payments'
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-
+import { log } from '@/lib/logger';
 type Payment = {
   id: string;
   type: string;
@@ -42,7 +42,7 @@ export default function PaymentHistoryPage() {
         setHistory(historyData || []);
         setUpcoming(upcomingData || []);
       } catch (err) {
-        console.error('Error fetching payment data:', err);
+        log.error('Error fetching payment data:', err as Error);
         setError('Failed to load payment data');
         // Set mock data for demo
         setHistory([

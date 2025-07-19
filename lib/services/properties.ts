@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
 import { Property, PropertyFormData, PropertyFilters } from '@/types/property';
-
 const supabase = createClient();
 
 export class PropertyService {
@@ -46,7 +46,7 @@ export class PropertyService {
 
       return data || [];
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      log.error('Error fetching properties:', error as Error);
       throw error;
     }
   }
@@ -77,7 +77,7 @@ export class PropertyService {
 
       return data;
     } catch (error) {
-      console.error('Error fetching property:', error);
+      log.error('Error fetching property:', error as Error);
       throw error;
     }
   }
@@ -99,7 +99,7 @@ export class PropertyService {
 
       return data;
     } catch (error) {
-      console.error('Error creating property:', error);
+      log.error('Error creating property:', error as Error);
       throw error;
     }
   }
@@ -122,7 +122,7 @@ export class PropertyService {
 
       return data;
     } catch (error) {
-      console.error('Error updating property:', error);
+      log.error('Error updating property:', error as Error);
       throw error;
     }
   }
@@ -141,7 +141,7 @@ export class PropertyService {
         throw new Error(`Failed to delete property: ${error.message}`);
       }
     } catch (error) {
-      console.error('Error deleting property:', error);
+      log.error('Error deleting property:', error as Error);
       throw error;
     }
   }
@@ -165,7 +165,7 @@ export class PropertyService {
 
       return data || [];
     } catch (error) {
-      console.error('Error fetching owner properties:', error);
+      log.error('Error fetching owner properties:', error as Error);
       throw error;
     }
   }
@@ -190,7 +190,7 @@ export class PropertyService {
 
       return data || [];
     } catch (error) {
-      console.error('Error fetching available properties:', error);
+      log.error('Error fetching available properties:', error as Error);
       throw error;
     }
   }
@@ -215,7 +215,7 @@ export class PropertyService {
 
       return data || [];
     } catch (error) {
-      console.error('Error searching properties:', error);
+      log.error('Error searching properties:', error as Error);
       throw error;
     }
   }
@@ -251,7 +251,7 @@ export class PropertyService {
 
       return stats;
     } catch (error) {
-      console.error('Error fetching property stats:', error);
+      log.error('Error fetching property stats:', error as Error);
       throw error;
     }
   }

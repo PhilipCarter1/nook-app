@@ -48,7 +48,7 @@ export function NotificationProvider({
       const newNotifications = await getNotifications(userId);
       setNotifications(newNotifications);
     } catch (error) {
-      console.error('Error refreshing notifications:', error);
+      log.error('Error refreshing notifications:', error as Error);
     }
   };
 
@@ -59,7 +59,7 @@ export function NotificationProvider({
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      log.error('Error marking notification as read:', error as Error);
     }
   };
 
@@ -68,7 +68,7 @@ export function NotificationProvider({
       await markAllNotificationsAsRead(userId);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      log.error('Error marking all notifications as read:', error as Error);
     }
   };
 
@@ -77,7 +77,7 @@ export function NotificationProvider({
       await deleteNotification(id);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      log.error('Error deleting notification:', error as Error);
     }
   };
 

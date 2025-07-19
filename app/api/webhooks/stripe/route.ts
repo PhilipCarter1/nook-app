@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe, handleWebhookEvent } from '@/lib/services/stripe';
-
+import { log } from '@/lib/logger';
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     return new NextResponse(null, { status: 200 });
   } catch (err: any) {
-    console.error('Error processing webhook:', err);
+    log.error('Error processing webhook:', err as Error);
     return new NextResponse(
       `Webhook Error: ${err.message}`,
       { status: 400 }

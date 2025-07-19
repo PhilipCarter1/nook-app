@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/client';
 
 const supabase = createClient();
 
-// Mock maintenance service for launch readiness
+// Maintenance service with proper logging - TODO: Replace mock implementations with real functionality
 
 export interface MaintenanceTicket {
   id: string;
@@ -192,8 +192,8 @@ export async function getTickets(userId: string, filters?: {
   priority?: string;
   category?: string;
 }): Promise<MaintenanceTicket[]> {
-  // Mock implementation
-  console.log('Getting maintenance tickets for user:', userId, 'with filters:', filters);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'getTickets', { userId, filters });
   
   let filteredTickets = [...mockTickets];
   
@@ -213,8 +213,8 @@ export async function getTickets(userId: string, filters?: {
 }
 
 export async function getTicket(id: string): Promise<MaintenanceTicket | null> {
-  // Mock implementation
-  console.log('Getting maintenance ticket:', id);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'getTicket', { ticketId: id });
   
   const ticket = mockTickets.find(t => t.id === id);
   return ticket || null;
@@ -229,8 +229,8 @@ export async function createTicket(ticketData: {
   unitId?: string;
   userId: string;
 }): Promise<MaintenanceTicket> {
-  // Mock implementation
-  console.log('Creating maintenance ticket:', ticketData);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'createTicket', ticketData);
   
   const newTicket: MaintenanceTicket = {
     id: Math.random().toString(36).substr(2, 9),
@@ -256,8 +256,8 @@ export async function updateTicketStatus(
   ticketId: string, 
   status: 'open' | 'in_progress' | 'resolved'
 ): Promise<MaintenanceTicket> {
-  // Mock implementation
-  console.log('Updating ticket status:', ticketId, 'to', status);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'updateTicketStatus', { ticketId, status });
   
   const ticket = mockTickets.find(t => t.id === ticketId);
   if (!ticket) {
@@ -274,8 +274,8 @@ export async function updateTicketPriority(
   ticketId: string, 
   priority: 'low' | 'medium' | 'high'
 ): Promise<MaintenanceTicket> {
-  // Mock implementation
-  console.log('Updating ticket priority:', ticketId, 'to', priority);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'updateTicketPriority', { ticketId, priority });
   
   const ticket = mockTickets.find(t => t.id === ticketId);
   if (!ticket) {
@@ -292,22 +292,23 @@ export async function assignTicket(
   ticketId: string, 
   assignedTo: string
 ): Promise<MaintenanceTicket> {
-  // Mock implementation
-  console.log('Assigning ticket:', ticketId, 'to', assignedTo);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'assignTicket', { ticketId, assignedTo });
   
   const ticket = mockTickets.find(t => t.id === ticketId);
   if (!ticket) {
     throw new Error('Ticket not found');
   }
   
+  ticket.assigned_to = assignedTo;
   ticket.updated_at = new Date().toISOString();
   
   return ticket;
 }
 
 export async function getTicketStats(userId: string): Promise<TicketStats> {
-  // Mock implementation
-  console.log('Getting ticket stats for user:', userId);
+  // TODO: Replace with real implementation
+  log.service('MaintenanceService', 'getTicketStats', { userId });
   
   const total = mockTickets.length;
   const byStatus = {

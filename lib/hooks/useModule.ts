@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getClient } from '@/lib/supabase/client';
-
 export function useModule(moduleId: string, propertyId?: string, unitId?: string) {
   const [isAvailable, setIsAvailable] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -52,7 +51,7 @@ export function useModule(moduleId: string, propertyId?: string, unitId?: string
         setIsEnabled(true); // Default to enabled if no property/unit context
       }
     } catch (error) {
-      console.error('Error checking module availability:', error);
+      log.error('Error checking module availability:', error as Error);
       setIsAvailable(false);
       setIsEnabled(false);
     } finally {

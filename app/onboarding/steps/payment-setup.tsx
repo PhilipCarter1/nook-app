@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getClient } from '@/lib/supabase/client';
 import { CreditCard, Banknote, Clock } from 'lucide-react';
-
+import { log } from '@/lib/logger';
 interface PaymentSetupProps {
   data: {
     payment: {
@@ -42,7 +42,7 @@ export default function PaymentSetup({ data, onComplete, onBack }: PaymentSetupP
         payment: formData,
       });
     } catch (error) {
-      console.error('Error setting up payment:', error);
+      log.error('Error setting up payment:', error as Error);
     } finally {
       setLoading(false);
     }

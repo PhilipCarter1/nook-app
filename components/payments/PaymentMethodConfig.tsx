@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,7 +24,6 @@ import {
 } from '@/lib/services/payment-methods';
 import { toast } from 'sonner';
 import { Plus, Trash2, Star, StarOff } from 'lucide-react';
-
 interface PaymentMethodConfigProps {
   id: string;
   initialMethods?: PaymentMethod[];
@@ -103,7 +103,7 @@ export function PaymentMethodConfig({
       });
       toast.success('Payment method added successfully');
     } catch (error) {
-      console.error('Error adding payment method:', error);
+      log.error('Error adding payment method:', error);
       toast.error('Failed to add payment method');
     }
   };
@@ -114,7 +114,7 @@ export function PaymentMethodConfig({
       setMethods(methods.filter((method) => method.id !== id));
       toast.success('Payment method deleted');
     } catch (error) {
-      console.error('Error deleting payment method:', error);
+      log.error('Error deleting payment method:', error);
       toast.error('Failed to delete payment method');
     }
   };
@@ -130,7 +130,7 @@ export function PaymentMethodConfig({
       );
       toast.success('Default payment method updated');
     } catch (error) {
-      console.error('Error setting default payment method:', error);
+      log.error('Error setting default payment method:', error);
       toast.error('Failed to update default payment method');
     }
   };

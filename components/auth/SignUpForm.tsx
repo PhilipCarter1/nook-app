@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
+import { Mail, Lock, User, Building } from 'lucide-react';
+import { log } from '@/lib/logger';
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -96,7 +99,7 @@ export default function SignUpForm() {
         router.push('/dashboard');
       }
     } catch (err) {
-      console.error('Sign up error:', err);
+      log.error('Sign up error:', err as Error);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

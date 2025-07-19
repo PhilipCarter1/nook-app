@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Camera, Upload, FileText, X, Loader2, Plus } from 'lucide-react';
+import { Camera, Upload, FileText, X, Loader2, Plus, CheckCircle } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface MobileDocumentUploadProps {
   onUpload: (file: File, metadata: any) => Promise<void>;
   className?: string;
@@ -71,7 +71,7 @@ export function MobileDocumentUpload({ onUpload, className }: MobileDocumentUplo
       }
       setIsCameraActive(true);
     } catch (error) {
-      console.error('Error accessing camera:', error);
+      log.error('Error accessing camera:', error);
       toast.error('Failed to access camera');
     }
   };
@@ -131,7 +131,7 @@ export function MobileDocumentUpload({ onUpload, className }: MobileDocumentUplo
       toast.success('Document uploaded successfully');
       resetForm();
     } catch (error) {
-      console.error('Error uploading document:', error);
+      log.error('Error uploading document:', error);
       toast.error('Failed to upload document');
     } finally {
       setIsUploading(false);

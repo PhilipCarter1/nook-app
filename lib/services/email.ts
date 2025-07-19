@@ -1,14 +1,24 @@
-// Mock email service for testing
-interface SendEmailParams {
+// Email service with proper logging - TODO: Replace mock implementations with real email functionality
+
+export interface EmailConfig {
   to: string;
   subject: string;
   html: string;
+  template?: string;
+  data?: Record<string, any>;
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<void> {
-  // Mock implementation for testing
-  console.log('Mock email sent:', { to, subject });
-  return Promise.resolve();
+// TODO: Replace with real email service (SendGrid, AWS SES, etc.)
+export async function sendEmail(config: EmailConfig): Promise<void> {
+  // TODO: Implement actual email sending
+  log.service('EmailService', 'sendEmail', { 
+    to: config.to, 
+    subject: config.subject,
+    template: config.template 
+  });
+  
+  // Simulate email sending
+  await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 export async function sendPasswordResetEmail(email: string, resetLink: string): Promise<void> {
@@ -96,7 +106,7 @@ export async function sendLeaseExpirationEmail(
 }
 
 // Email service for sending notifications
-// This is a placeholder implementation - replace with your actual email service (SendGrid, AWS SES, etc.)
+// TODO: Replace with your actual email service (SendGrid, AWS SES, etc.)
 
 export async function sendTenantInvitation(
   email: string,
@@ -105,8 +115,12 @@ export async function sendTenantInvitation(
   invitationLink: string
 ): Promise<void> {
   // TODO: Implement actual email sending
-  console.log(`Sending tenant invitation to ${email} for ${propertyName} unit ${unitNumber}`);
-  console.log(`Invitation link: ${invitationLink}`);
+  log.service('EmailService', 'sendTenantInvitation', { 
+    email, 
+    propertyName, 
+    unitNumber, 
+    invitationLink 
+  });
 }
 
 export async function sendDocumentApprovalNotification(
@@ -115,8 +129,11 @@ export async function sendDocumentApprovalNotification(
   approvalLink: string
 ): Promise<void> {
   // TODO: Implement actual email sending
-  console.log(`Sending document approval notification to ${email} for ${documentName}`);
-  console.log(`Approval link: ${approvalLink}`);
+  log.service('EmailService', 'sendDocumentApprovalNotification', { 
+    email, 
+    documentName, 
+    approvalLink 
+  });
 }
 
 export async function sendDocumentRejectionNotification(
@@ -125,8 +142,11 @@ export async function sendDocumentRejectionNotification(
   reason: string
 ): Promise<void> {
   // TODO: Implement actual email sending
-  console.log(`Sending document rejection notification to ${email} for ${documentName}`);
-  console.log(`Reason: ${reason}`);
+  log.service('EmailService', 'sendDocumentRejectionNotification', { 
+    email, 
+    documentName, 
+    reason 
+  });
 }
 
 export async function sendPaymentReceipt(
@@ -136,8 +156,12 @@ export async function sendPaymentReceipt(
   receiptUrl: string
 ): Promise<void> {
   // TODO: Implement actual email sending
-  console.log(`Sending payment receipt to ${email} for $${amount} at ${propertyName}`);
-  console.log(`Receipt URL: ${receiptUrl}`);
+  log.service('EmailService', 'sendPaymentReceipt', { 
+    email, 
+    amount, 
+    propertyName, 
+    receiptUrl 
+  });
 }
 
 export async function sendUsageAlert(
@@ -147,5 +171,10 @@ export async function sendUsageAlert(
   limitValue: number
 ): Promise<void> {
   // TODO: Implement actual email sending
-  console.log(`Sending usage alert to ${email} for ${alertType}: ${currentValue}/${limitValue}`);
+  log.service('EmailService', 'sendUsageAlert', { 
+    email, 
+    alertType, 
+    currentValue, 
+    limitValue 
+  });
 } 

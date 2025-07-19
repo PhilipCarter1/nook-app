@@ -1,8 +1,8 @@
+import { log } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs';
 import { db } from '@/lib/db';
 import { z } from 'zod';
-
 const propertySchema = z.object({
   name: z.string().min(2),
   address: z.string().min(5),
@@ -24,13 +24,13 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[PROPERTIES_GET]', error);
+      log.error('[PROPERTIES_GET]', error as Error);
       return new NextResponse('Internal Error', { status: 500 });
     }
 
     return NextResponse.json(userProperties || []);
   } catch (error) {
-    console.error('[PROPERTIES_GET]', error);
+    log.error('[PROPERTIES_GET]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      console.error('[PROPERTIES_POST]', error);
+      log.error('[PROPERTIES_POST]', error as Error);
       return new NextResponse('Internal Error', { status: 500 });
     }
 
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     if (error instanceof z.ZodError) {
       return new NextResponse('Invalid request data', { status: 422 });
     }
-    console.error('[PROPERTIES_POST]', error);
+    log.error('[PROPERTIES_POST]', error as Error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 } 

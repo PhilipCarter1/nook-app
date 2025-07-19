@@ -5,7 +5,6 @@ test.describe('Maintenance and Rent Features', () => {
   test('should load maintenance page', async ({ page }) => {
     await page.goto('/dashboard/maintenance');
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Maintenance page loads successfully');
   });
 
   test('should display maintenance ticket list', async ({ page }) => {
@@ -13,7 +12,6 @@ test.describe('Maintenance and Rent Features', () => {
     
     // Check if page loads (even if maintenance content isn't implemented yet)
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Maintenance page loads correctly');
   });
 
   test('should have maintenance form elements', async ({ page }) => {
@@ -21,13 +19,11 @@ test.describe('Maintenance and Rent Features', () => {
     
     // Check if page loads (even if form elements aren't implemented yet)
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Maintenance page loads correctly');
   });
 
   test('should load dashboard', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveTitle(/Nook/);
-    console.log('Dashboard loads successfully');
   });
 
   test('should display dashboard content', async ({ page }) => {
@@ -35,7 +31,6 @@ test.describe('Maintenance and Rent Features', () => {
     
     // Check if dashboard content is visible
     await expect(page.getByText(/dashboard/i)).toBeVisible();
-    console.log('Dashboard content displays correctly');
   });
 });
 
@@ -55,7 +50,6 @@ test.describe('Tenant Flow', () => {
     // Wait for response
     await page.waitForTimeout(2000);
     
-    console.log('Tenant login form submission handled correctly');
   });
 
   test('should create maintenance request', async ({ page }) => {
@@ -66,7 +60,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Maintenance request creation accessible');
   });
 
   test('should make rent payment', async ({ page }) => {
@@ -77,7 +70,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Rent payment processing accessible');
   });
 
   test('should view tenant dashboard', async ({ page }) => {
@@ -88,7 +80,6 @@ test.describe('Tenant Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Tenant dashboard accessible');
   });
 });
 
@@ -100,7 +91,6 @@ test.describe('Landlord Flow', () => {
     await page.getByLabel('Email').fill('landlord@example.com');
     await page.getByLabel('Password').fill('password123');
     await page.getByRole('button', { name: /login/i }).click();
-    console.log('Landlord login form submission handled correctly');
   });
 
   test('should view maintenance requests', async ({ page }) => {
@@ -111,7 +101,6 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Landlord maintenance management accessible');
   });
 
   test('should manage properties', async ({ page }) => {
@@ -122,7 +111,6 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Property management accessible');
   });
 
   test('should view landlord dashboard', async ({ page }) => {
@@ -133,6 +121,5 @@ test.describe('Landlord Flow', () => {
     const hasDashboardContent = await page.locator('text=/Welcome back|property management|Quick Actions|Recent Activity/i').count() > 0;
     expect(hasDashboardContent).toBeTruthy();
     
-    console.log('Landlord dashboard accessible');
   });
 }); 

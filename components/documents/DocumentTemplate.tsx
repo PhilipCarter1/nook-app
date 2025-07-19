@@ -18,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { FileText, Plus, Save, Trash2, Tag, X, Home, User, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface DocumentTemplate {
   id: string;
   name: string;
@@ -265,7 +265,7 @@ export function DocumentTemplate({
       });
       toast.success('Template saved successfully');
     } catch (error) {
-      console.error('Error saving template:', error);
+      log.error('Error saving template:', error);
       toast.error('Failed to save template');
     } finally {
       setIsSaving(false);

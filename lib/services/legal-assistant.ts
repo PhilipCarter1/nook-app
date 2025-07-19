@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -137,7 +136,7 @@ export async function validateDocument(
 
     return parsedAnalysis;
   } catch (error) {
-    console.error('Error validating document:', error);
+    log.error('Error validating document:', error as Error);
     throw error;
   }
 }
@@ -174,7 +173,7 @@ export async function getLegalRecommendations(
     if (!recommendations) throw new Error('No recommendations content returned');
     return JSON.parse(recommendations as string);
   } catch (error) {
-    console.error('Error getting legal recommendations:', error);
+    log.error('Error getting legal recommendations:', error as Error);
     throw error;
   }
 }
@@ -228,7 +227,7 @@ export async function checkCompliance(
     if (!complianceCheck) throw new Error('No compliance check content returned');
     return JSON.parse(complianceCheck as string);
   } catch (error) {
-    console.error('Error checking compliance:', error);
+    log.error('Error checking compliance:', error as Error);
     throw error;
   }
 }

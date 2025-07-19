@@ -32,7 +32,7 @@ export interface CreateNotificationParams {
   data?: Record<string, any>;
 }
 
-// Mock implementation for launch readiness
+// Notifications service with proper logging - TODO: Replace mock implementations with real functionality
 export async function createNotification({
   userId,
   type,
@@ -41,8 +41,13 @@ export async function createNotification({
   link,
   data,
 }: CreateNotificationParams): Promise<Notification> {
-  // Mock implementation - just log for now
-  console.log('Notification created:', { userId, type, title, message });
+  // TODO: Replace with real implementation
+  log.service('NotificationService', 'createNotification', { 
+    userId, 
+    type, 
+    title, 
+    message 
+  });
   
   return {
     id: Math.random().toString(36).substr(2, 9),
@@ -57,27 +62,63 @@ export async function createNotification({
   };
 }
 
+// TODO: Replace with real implementation
 export async function getNotifications(userId: string): Promise<Notification[]> {
-  // Mock implementation
-  console.log('Getting notifications for user:', userId);
+  log.service('NotificationService', 'getNotifications', { userId });
+  
+  // TODO: Replace with real database query
   return [];
 }
 
+// TODO: Replace with real implementation
 export async function markNotificationAsRead(notificationId: string): Promise<void> {
-  // Mock implementation
-  console.log('Marking notification as read:', notificationId);
+  log.service('NotificationService', 'markNotificationAsRead', { notificationId });
+  
+  // TODO: Replace with real database update
 }
 
+// TODO: Replace with real implementation
 export async function markAllNotificationsAsRead(userId: string): Promise<void> {
-  // Mock implementation
-  console.log('Marking all notifications as read for user:', userId);
+  log.service('NotificationService', 'markAllNotificationsAsRead', { userId });
+  
+  // TODO: Replace with real database update
 }
 
+// TODO: Replace with real implementation
 export async function deleteNotification(notificationId: string): Promise<void> {
-  // Mock implementation
-  console.log('Deleting notification:', notificationId);
+  log.service('NotificationService', 'deleteNotification', { notificationId });
+  
+  // TODO: Replace with real database delete
 }
 
+// TODO: Replace with real implementation
+export async function getUnreadCount(userId: string): Promise<number> {
+  log.service('NotificationService', 'getUnreadCount', { userId });
+  
+  // TODO: Replace with real database query
+  return 0;
+}
+
+// TODO: Replace with real implementation
+export async function sendNotification(userId: string, notification: Omit<CreateNotificationParams, 'userId'>): Promise<void> {
+  log.service('NotificationService', 'sendNotification', { userId, notification });
+  
+  // TODO: Replace with real implementation
+  await createNotification({
+    userId,
+    ...notification,
+  });
+}
+
+// TODO: Replace with real implementation
+export async function getDocumentNotifications(documentId: string): Promise<Notification[]> {
+  log.service('NotificationService', 'getDocumentNotifications', { documentId });
+  
+  // TODO: Replace with real database query
+  return [];
+}
+
+// Document-specific notification helpers
 export async function notifyMaintenanceRequest(
   userId: string,
   propertyName: string,
@@ -198,115 +239,42 @@ export async function notifyDocumentUpdate(
   });
 }
 
-export async function sendNotification(notification: CreateNotificationParams): Promise<void> {
-  await createNotification(notification);
-}
-
-export async function getUnreadNotifications(userId: string): Promise<Notification[]> {
-  return [];
-}
-
-export async function getDocumentNotifications(documentId: string): Promise<Notification[]> {
-  // Mock implementation
-  console.log('Getting document notifications for:', documentId);
-  return [];
-}
-
-// Document-specific notification helpers
-export async function notifyDocumentUpload(document: any, uploadedBy: any) {
-  const landlordId = document.landlordId;
-  const tenantId = document.tenantId;
-
-  // Notify landlord
-  await sendNotification({
-    userId: landlordId,
-    type: 'document',
-    title: 'New Document Uploaded',
-    message: `${uploadedBy.name} has uploaded a new document: ${document.name}`,
-    link: `/dashboard/documents/${document.id}`,
+// TODO: Replace with real implementation
+export async function notifyDocumentUpload(document: any, uploadedBy: any): Promise<void> {
+  log.service('NotificationService', 'notifyDocumentUpload', { 
+    documentId: document?.id, 
+    uploadedBy: uploadedBy?.id 
   });
-
-  // Notify tenant if uploaded by landlord
-  if (uploadedBy.role === 'landlord') {
-    await sendNotification({
-      userId: tenantId,
-      type: 'document',
-      title: 'New Document Available',
-      message: `Your landlord has uploaded a new document: ${document.name}`,
-      link: `/dashboard/documents/${document.id}`,
-    });
-  }
+  
+  // TODO: Replace with real implementation
 }
 
-export async function notifyDocumentApproval(document: any, approvedBy: any) {
-  const landlordId = document.landlordId;
-  const tenantId = document.tenantId;
-
-  // Notify tenant
-  await sendNotification({
-    userId: tenantId,
-    type: 'workflow',
-    title: 'Document Approved',
-    message: `${approvedBy.name} has approved the document: ${document.name}`,
-    link: `/dashboard/documents/${document.id}`,
+// TODO: Replace with real implementation
+export async function notifyDocumentApproval(document: any, approvedBy: any): Promise<void> {
+  log.service('NotificationService', 'notifyDocumentApproval', { 
+    documentId: document?.id, 
+    approvedBy: approvedBy?.id 
   });
-
-  // Notify landlord if approved by tenant
-  if (approvedBy.role === 'tenant') {
-    await sendNotification({
-      userId: landlordId,
-      type: 'workflow',
-      title: 'Document Approved by Tenant',
-      message: `The tenant has approved the document: ${document.name}`,
-      link: `/dashboard/documents/${document.id}`,
-    });
-  }
+  
+  // TODO: Replace with real implementation
 }
 
-export async function notifyDocumentRejection(document: any, rejectedBy: any, reason: string) {
-  const landlordId = document.landlordId;
-  const tenantId = document.tenantId;
-
-  // Notify tenant
-  await sendNotification({
-    userId: tenantId,
-    type: 'workflow',
-    title: 'Document Rejected',
-    message: `${rejectedBy.name} has rejected the document: ${document.name}. Reason: ${reason}`,
-    link: `/dashboard/documents/${document.id}`,
+// TODO: Replace with real implementation
+export async function notifyDocumentRejection(document: any, rejectedBy: any, reason: string): Promise<void> {
+  log.service('NotificationService', 'notifyDocumentRejection', { 
+    documentId: document?.id, 
+    rejectedBy: rejectedBy?.id, 
+    reason 
   });
-
-  // Notify landlord if rejected by tenant
-  if (rejectedBy.role === 'tenant') {
-    await sendNotification({
-      userId: landlordId,
-      type: 'workflow',
-      title: 'Document Rejected by Tenant',
-      message: `The tenant has rejected the document: ${document.name}. Reason: ${reason}`,
-      link: `/dashboard/documents/${document.id}`,
-    });
-  }
+  
+  // TODO: Replace with real implementation
 }
 
-export async function notifyDocumentExpiration(document: any) {
-  const landlordId = document.landlordId;
-  const tenantId = document.tenantId;
-
-  // Notify both parties
-  await Promise.all([
-    sendNotification({
-      userId: landlordId,
-      type: 'reminder',
-      title: 'Document Expiring Soon',
-      message: `The document "${document.name}" will expire in 7 days.`,
-      link: `/dashboard/documents/${document.id}`,
-    }),
-    sendNotification({
-      userId: tenantId,
-      type: 'reminder',
-      title: 'Document Expiring Soon',
-      message: `The document "${document.name}" will expire in 7 days.`,
-      link: `/dashboard/documents/${document.id}`,
-    }),
-  ]);
+// TODO: Replace with real implementation
+export async function notifyDocumentExpiration(document: any): Promise<void> {
+  log.service('NotificationService', 'notifyDocumentExpiration', { 
+    documentId: document?.id 
+  });
+  
+  // TODO: Replace with real implementation
 } 

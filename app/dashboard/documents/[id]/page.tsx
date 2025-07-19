@@ -20,7 +20,7 @@ import { DocumentExpiration } from '@/components/documents/DocumentExpiration';
 import { DocumentAuditLog } from '@/components/documents/DocumentAuditLog';
 import { validateDocument, getLegalRecommendations } from '@/lib/services/legal-assistant';
 import { sendNotification } from '@/lib/services/notifications';
-
+import { log } from '@/lib/logger';
 interface Document {
   id: string;
   name: string;
@@ -154,7 +154,7 @@ export default function DocumentPage() {
       if (error) throw error;
       setDocument(data);
     } catch (error) {
-      console.error('Error fetching document:', error);
+      log.error('Error fetching document:', error as Error);
       toast.error('Failed to fetch document');
     } finally {
       setLoading(false);
@@ -200,7 +200,7 @@ export default function DocumentPage() {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error updating view count:', error);
+      log.error('Error updating view count:', error as Error);
     }
   };
 
@@ -248,7 +248,7 @@ export default function DocumentPage() {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error downloading document:', error);
+      log.error('Error downloading document:', error as Error);
       toast.error('Failed to download document');
     }
   };
@@ -290,7 +290,7 @@ export default function DocumentPage() {
       await fetchDocument();
       toast.success('Document signed successfully');
     } catch (error) {
-      console.error('Error signing document:', error);
+      log.error('Error signing document:', error as Error);
       toast.error('Failed to sign document');
     }
   };
@@ -345,7 +345,7 @@ export default function DocumentPage() {
       await fetchDocument();
       toast.success('Document shared successfully');
     } catch (error) {
-      console.error('Error sharing document:', error);
+      log.error('Error sharing document:', error as Error);
       toast.error('Failed to share document');
     }
   };
@@ -389,7 +389,7 @@ export default function DocumentPage() {
       await fetchDocument();
       toast.success('Access removed successfully');
     } catch (error) {
-      console.error('Error removing access:', error);
+      log.error('Error removing access:', error as Error);
       toast.error('Failed to remove access');
     }
   };
@@ -428,7 +428,7 @@ export default function DocumentPage() {
       .eq('id', document.id);
 
     if (error) {
-      console.error('Error adding comment:', error);
+      log.error('Error adding comment:', error as Error);
       throw error;
     }
 
@@ -463,7 +463,7 @@ export default function DocumentPage() {
       .eq('id', document.id);
 
     if (error) {
-      console.error('Error deleting comment:', error);
+      log.error('Error deleting comment:', error as Error);
       throw error;
     }
 
@@ -507,7 +507,7 @@ export default function DocumentPage() {
       // Refresh document data
       fetchDocument();
     } catch (error) {
-      console.error('Error validating document:', error);
+      log.error('Error validating document:', error as Error);
       toast.error('Failed to validate document');
     }
   };
@@ -565,8 +565,7 @@ export default function DocumentPage() {
       // Send notification
       const assignedTo = document.workflow.steps.find((s) => s.id === stepId)?.assignedTo;
       if (assignedTo) {
-        await sendNotification({
-          userId: assignedTo,
+        await sendNotification(assignedTo, {
           type: 'workflow',
           title: 'Document Step Approved',
           message: `Step "${document.workflow.steps.find((s) => s.id === stepId)?.name}" has been approved`,
@@ -577,7 +576,7 @@ export default function DocumentPage() {
       // Refresh document data
       fetchDocument();
     } catch (error) {
-      console.error('Error approving step:', error);
+      log.error('Error approving step:', error as Error);
       toast.error('Failed to approve step');
     }
   };
@@ -636,8 +635,7 @@ export default function DocumentPage() {
       // Send notification
       const assignedTo = document.workflow.steps.find((s) => s.id === stepId)?.assignedTo;
       if (assignedTo) {
-        await sendNotification({
-          userId: assignedTo,
+        await sendNotification(assignedTo, {
           type: 'workflow',
           title: 'Document Step Rejected',
           message: `Step "${document.workflow.steps.find((s) => s.id === stepId)?.name}" has been rejected: ${reason}`,
@@ -648,7 +646,7 @@ export default function DocumentPage() {
       // Refresh document data
       fetchDocument();
     } catch (error) {
-      console.error('Error rejecting step:', error);
+      log.error('Error rejecting step:', error as Error);
       toast.error('Failed to reject step');
     }
   };
@@ -687,7 +685,7 @@ export default function DocumentPage() {
 
       await fetchDocument();
     } catch (error) {
-      console.error('Error renewing document:', error);
+      log.error('Error renewing document:', error as Error);
       throw error;
     }
   };
@@ -709,7 +707,7 @@ export default function DocumentPage() {
 
       setDocument((prev) => prev ? { ...prev, tags: updatedTags } : null);
     } catch (error) {
-      console.error('Error adding tag:', error);
+      log.error('Error adding tag:', error as Error);
       toast.error('Failed to add tag');
     }
   };

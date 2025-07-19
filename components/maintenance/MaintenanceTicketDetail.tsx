@@ -6,15 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Paperclip, Clock, User, Building, Home, Phone, Mail, AlertCircle } from 'lucide-react';
-import {
-  PremiumLayout,
-  PremiumCard,
-  PremiumCardHeader,
-  PremiumCardContent,
-  PremiumCardFooter,
-  PremiumGrid,
-} from '@/components/layout/PremiumLayout';
-import { premiumComponents, premiumAnimations } from '@/lib/theme';
+import { PremiumCard, PremiumCardHeader, PremiumCardContent, PremiumCardFooter } from '@/components/ui/PremiumCard';
+import { PremiumLayout } from '@/components/layout/PremiumLayout';
 import { cn } from '@/lib/utils';
 import type { MaintenanceTicket } from '@/lib/services/maintenance';
 
@@ -78,7 +71,7 @@ export function MaintenanceTicketDetail({
 
   return (
     <PremiumLayout>
-      <PremiumGrid cols={1} className="gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <PremiumCard>
           <PremiumCardHeader>
             <div className="flex items-start justify-between">
@@ -267,7 +260,7 @@ export function MaintenanceTicketDetail({
             </div>
           </PremiumCardFooter>
         </PremiumCard>
-      </PremiumGrid>
+      </div>
     </PremiumLayout>
   );
 } 

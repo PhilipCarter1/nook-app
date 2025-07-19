@@ -1,12 +1,14 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { Settings, ToggleLeft, ToggleRight } from 'lucide-react';
+import { log } from '@/lib/logger';
 import { getClient } from '@/lib/supabase/client';
 import { Shield, Building2, Scale } from 'lucide-react';
-
 interface Module {
   id: string;
   name: string;
@@ -88,7 +90,7 @@ export function ModuleConfig({ propertyId, unitId, level, isOnboarding = false }
 
       setConfig(initialConfig);
     } catch (error) {
-      console.error('Error fetching module config:', error);
+      log.error('Error fetching module config:', error);
       toast.error('Failed to load module configuration');
     } finally {
       setLoading(false);
@@ -115,7 +117,7 @@ export function ModuleConfig({ propertyId, unitId, level, isOnboarding = false }
       setConfig(updatedConfig);
       toast.success(`Module ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      console.error('Error updating module config:', error);
+      log.error('Error updating module config:', error);
       toast.error('Failed to update module configuration');
     }
   };

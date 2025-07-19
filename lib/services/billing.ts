@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -86,7 +85,7 @@ export async function getSubscription(organizationId: string): Promise<Subscript
     .single();
 
   if (error) {
-    console.error('Error fetching subscription:', error);
+    log.error('Error fetching subscription:', error as Error);
     return null;
   }
 

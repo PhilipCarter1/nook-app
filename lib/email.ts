@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail({
@@ -21,7 +20,7 @@ export async function sendEmail({
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending email:', error);
+    log.error('Error sending email:', error as Error);
     return { success: false, error };
   }
 } 

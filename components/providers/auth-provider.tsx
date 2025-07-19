@@ -1,6 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
 import { UserWithAuth } from '@/types/supabase';
@@ -8,7 +11,6 @@ import { UserRole } from '@/lib/types';
 import { LoadingPage } from '@/components/ui/loading';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-
 interface AuthContextType {
   user: UserWithAuth | null;
   role: UserRole | null;
@@ -32,16 +34,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const getUser = async () => {
       try {
-        console.log('Fetching user data...');
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
-          console.error('Auth error:', authError);
+          log.error('Auth error:', authError);
           throw authError;
         }
 
         if (authUser) {
-          console.log('Auth user found:', authUser.email);
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -49,12 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
           
           if (userError) {
-            console.error('Error fetching user data:', userError);
+            log.error('Error fetching user data:', userError);
             throw userError;
           }
 
           if (userData) {
-            console.log('User data found:', userData);
             if (mounted) {
               setUser({ ...authUser, ...userData } as UserWithAuth);
               setRole(userData.role as UserRole);
@@ -79,7 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
-            console.log('No user data found, creating new user record...');
             const { data: newUserData, error: createError } = await supabase
               .from('users')
               .insert([
@@ -94,12 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .single();
 
             if (createError) {
-              console.error('Error creating user data:', createError);
+              log.error('Error creating user data:', createError);
               throw createError;
             }
 
             if (newUserData && mounted) {
-              console.log('New user data created:', newUserData);
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
               setRole(newUserData.role as UserRole);
               setLoading(false);
@@ -107,7 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } else {
-          console.log('No auth user found');
           if (mounted) {
             setUser(null);
             setRole(null);
@@ -115,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error in getUser:', error);
+        log.error('Error in getUser:', error);
         if (mounted) {
           setUser(null);
           setRole(null);
@@ -127,7 +123,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' && session?.user) {
         setLoading(true);
         await getUser();
@@ -148,14 +143,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      console.log('Attempting sign in...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error('Sign in error:', error);
+        log.error('Sign in error:', error);
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Invalid email or password');
         } else if (error.message.includes('Email not confirmed')) {
@@ -169,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No user data received');
       }
 
-      console.log('Sign in successful');
       
       // Fetch user data immediately after successful sign in
       const { data: userData, error: userError } = await supabase
@@ -179,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (userError) {
-        console.error('Error fetching user data:', userError);
+        log.error('Error fetching user data:', userError);
         throw new Error('Failed to fetch user data. Please try again.');
       }
 
@@ -190,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('User profile not found. Please contact support.');
       }
     } catch (error: any) {
-      console.error('Error in signIn:', error);
+      log.error('Error in signIn:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -210,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Redirect to home page
       router.push('/');
     } catch (error) {
-      console.error('Error signing out:', error);
+      log.error('Error signing out:', error);
       toast.error('Failed to sign out. Please try again.');
     } finally {
       setLoading(false);
@@ -225,7 +218,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
-        console.log('Loading timeout reached, forcing loading state to false');
         setLoading(false);
       }
     }, 5000); // 5 second timeout

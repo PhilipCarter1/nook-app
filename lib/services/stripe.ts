@@ -104,7 +104,6 @@ export async function createUsageAlert(
   if (!organization?.stripe_customer_id) return;
 
   // Mock implementation - Stripe doesn't have usageRecords API
-  console.log(`Usage alert for ${type}: ${current}/${limit}`);
   
   // Store usage alert in database instead
   await supabase

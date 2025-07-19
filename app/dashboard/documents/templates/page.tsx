@@ -11,7 +11,7 @@ import { DocumentTemplate } from '@/components/documents/DocumentTemplate';
 import { getClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/providers/auth-provider';
 import { cn } from '@/lib/utils';
-
+import { log } from '@/lib/logger';
 interface Template {
   id: string;
   name: string;
@@ -56,7 +56,7 @@ export default function DocumentTemplatesPage() {
       if (error) throw error;
       setTemplates(data || []);
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      log.error('Error fetching templates:', error as Error);
       toast.error('Failed to fetch templates');
     }
   };
@@ -90,7 +90,7 @@ export default function DocumentTemplatesPage() {
       setShowNewTemplate(false);
       toast.success('Template saved successfully');
     } catch (error) {
-      console.error('Error saving template:', error);
+      log.error('Error saving template:', error as Error);
       toast.error('Failed to save template');
     }
   };
@@ -110,7 +110,7 @@ export default function DocumentTemplatesPage() {
       setSelectedTemplate(null);
       toast.success('Template deleted successfully');
     } catch (error) {
-      console.error('Error deleting template:', error);
+      log.error('Error deleting template:', error as Error);
       toast.error('Failed to delete template');
     }
   };

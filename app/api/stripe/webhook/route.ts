@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getClient } from '@/lib/supabase/client';
-
+import { log } from '@/lib/logger';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 });
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    log.error('Webhook signature verification failed:', err as Error);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    log.error('Error processing webhook:', error as Error);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }

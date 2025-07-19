@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-
 export interface AuditLogEntry {
   user_id: string;
   action: string;
@@ -22,7 +21,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   });
 
   if (error) {
-    console.error('Error logging audit event:', error);
+    log.error('Error logging audit event:', error as Error);
     // Don't throw the error to prevent disrupting the main operation
   }
 }
@@ -75,7 +74,7 @@ export async function getAuditLogs(
   const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching audit logs:', error);
+    log.error('Error fetching audit logs:', error as Error);
     throw error;
   }
 

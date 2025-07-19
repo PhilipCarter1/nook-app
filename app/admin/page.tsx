@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { log } from '@/lib/logger';
 import { getClient } from '@/lib/supabase/client';
 import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/card';
@@ -9,7 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-
 interface Organization {
   id: string;
   name: string;
@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
       // Redirect to the organization's dashboard
       window.location.href = '/dashboard';
     } catch (error) {
-      console.error('Error impersonating organization:', error);
+      log.error('Error impersonating organization:', error as Error);
       toast.error('Failed to impersonate organization');
     }
   };
@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
 
       toast.success(`Feature ${enabled ? 'enabled' : 'disabled'} successfully`);
     } catch (error) {
-      console.error('Error updating feature flag:', error);
+      log.error('Error updating feature flag:', error as Error);
       toast.error('Failed to update feature flag');
     }
   };

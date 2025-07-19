@@ -1,8 +1,13 @@
-import React from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { createPaymentIntent, confirmPayment } from '@/lib/stripe';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { CreditCard, DollarSign, CheckCircle } from 'lucide-react';
+import { log } from '@/lib/logger';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { createPaymentIntent, confirmPayment } from '@/lib/stripe';
 
 interface StripePaymentProps {
   amount: number;
@@ -14,7 +19,7 @@ interface StripePaymentProps {
 export default function StripePayment({ amount, leaseId, onSuccess, onError }: StripePaymentProps) {
   const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -53,7 +58,7 @@ export default function StripePayment({ amount, leaseId, onSuccess, onError }: S
       toast.success('Payment completed successfully');
       onSuccess();
     } catch (error) {
-      console.error('Payment error:', error);
+      log.error('Payment error:', error);
       toast.error(error instanceof Error ? error.message : 'Payment failed');
       onError(error instanceof Error ? error : new Error('Payment failed'));
     } finally {

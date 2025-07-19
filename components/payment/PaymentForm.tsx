@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { log } from '@/lib/logger';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import {
@@ -11,7 +12,6 @@ import {
 } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface PaymentFormProps {
@@ -67,7 +67,7 @@ function PaymentFormContent({ amount, propertyId, type, userId }: PaymentFormPro
       toast.success('Payment successful!');
       router.refresh();
     } catch (error) {
-      console.error('Payment error:', error);
+      log.error('Payment error:', error);
       toast.error('Payment failed. Please try again.');
     } finally {
       setIsProcessing(false);

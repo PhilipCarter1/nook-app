@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createPaymentIntent } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import { auth } from '@/lib/auth';
-
+import { log } from '@/lib/logger';
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       .single();
 
     if (insertError) {
-      console.error('Error inserting payment:', insertError);
+      log.error('Error inserting payment:', insertError as Error);
       return new NextResponse('Failed to create payment record', { status: 500 });
     }
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       .eq('id', payment.id);
 
     if (updateError) {
-      console.error('Error updating payment:', updateError);
+      log.error('Error updating payment:', updateError as Error);
     }
 
     return NextResponse.json({
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       paymentId: payment.id,
     });
   } catch (error) {
-    console.error('Error creating payment:', error);
+    log.error('Error creating payment:', error as Error);
     return new NextResponse(
       JSON.stringify({ error: 'Failed to create payment' }),
       { status: 500 }

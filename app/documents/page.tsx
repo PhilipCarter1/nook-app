@@ -6,12 +6,10 @@ import { DocumentUpload } from "@/components/documents/DocumentUpload";
 export default function DocumentsPage() {
   const handleUpload = async (file: File, metadata: any) => {
     // TODO: Implement actual upload logic
-    console.log('Uploading file:', file, metadata);
   };
 
   const handleCancel = () => {
     // TODO: Implement cancel logic
-    console.log('Upload cancelled');
   };
 
   return (

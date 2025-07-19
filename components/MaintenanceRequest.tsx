@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { CalendarIcon, Camera, Video, Clock, AlertCircle } from 'lucide-react';
 import { getClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import { log } from '@/lib/logger';
 
 interface MaintenanceRequestProps {
   propertyId: string;
@@ -62,7 +63,7 @@ export default function MaintenanceRequest({
         type: file.type.startsWith('image/') ? 'image' : 'video'
       }]);
     } catch (error) {
-      console.error('Error uploading media:', error);
+      log.error('Error uploading media:', error);
       setError('Failed to upload media');
     }
   };
@@ -91,7 +92,7 @@ export default function MaintenanceRequest({
       onRequestSubmitted();
       resetForm();
     } catch (error) {
-      console.error('Error submitting maintenance request:', error);
+      log.error('Error submitting maintenance request:', error);
       setError('Failed to submit maintenance request');
     } finally {
       setLoading(false);

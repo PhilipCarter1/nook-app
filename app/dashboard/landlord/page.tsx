@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { log } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Home, Mail } from 'lucide-react';
@@ -19,7 +20,6 @@ import { Label } from '@/components/ui/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
 const inviteSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -92,7 +92,7 @@ export default function LandlordDashboard() {
       if (error) throw error;
       setProperties(properties || []);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      log.error('Error fetching properties:', error as Error);
       toast.error('Failed to load properties');
     } finally {
       setLoading(false);
@@ -138,7 +138,7 @@ export default function LandlordDashboard() {
       fetchProperties();
       reset();
     } catch (error) {
-      console.error('Error inviting tenant:', error);
+      log.error('Error inviting tenant:', error as Error);
       toast.error('Failed to invite tenant');
     }
   };

@@ -1,13 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { getClient } from '@/lib/supabase/client';
-import { FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-
+import { FileText, CheckCircle2, AlertCircle, PenTool, Download, Share2 } from 'lucide-react';
+import { log } from '@/lib/logger';
 interface LeaseAgreementProps {
   propertyId: string;
   userId: string;
@@ -29,10 +31,10 @@ export default function LeaseAgreement({
   securityDeposit,
   onAgreementComplete,
 }: LeaseAgreementProps) {
-  const [loading, setLoading] = React.useState(false);
-  const [agreementUrl, setAgreementUrl] = React.useState('');
-  const [signed, setSigned] = React.useState(false);
-  const [error, setError] = React.useState('');
+  const [loading, setLoading] = useState(false);
+  const [agreementUrl, setAgreementUrl] = useState('');
+  const [signed, setSigned] = useState(false);
+  const [error, setError] = useState('');
   const supabase = getClient();
 
   const generateLeaseAgreement = async () => {
@@ -56,7 +58,7 @@ export default function LeaseAgreement({
 
       setAgreementUrl(data.url);
     } catch (error) {
-      console.error('Error generating lease agreement:', error);
+      log.error('Error generating lease agreement:', error);
       setError('Failed to generate lease agreement. Please try again.');
     } finally {
       setLoading(false);
@@ -90,7 +92,7 @@ export default function LeaseAgreement({
       setSigned(true);
       onAgreementComplete();
     } catch (error) {
-      console.error('Error signing lease agreement:', error);
+      log.error('Error signing lease agreement:', error);
       setError('Failed to sign lease agreement. Please try again.');
     } finally {
       setLoading(false);
