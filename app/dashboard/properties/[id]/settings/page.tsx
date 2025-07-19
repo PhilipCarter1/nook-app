@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

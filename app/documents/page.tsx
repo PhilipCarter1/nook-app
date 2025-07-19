@@ -1,6 +1,9 @@
 "use client";
 
 import { MainLayout } from "@/components/layout/MainLayout";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { DocumentUpload } from "@/components/documents/DocumentUpload";
 
 export default function DocumentsPage() {

@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { TenantInvitations } from '@/components/tenants/TenantInvitations';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { getCurrentUser } from '@/lib/auth';

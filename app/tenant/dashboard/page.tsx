@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, MessageSquare, CreditCard, FileText } from 'lucide-react';

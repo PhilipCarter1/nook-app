@@ -1,4 +1,7 @@
 import React from 'react';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { getClient } from '@/lib/supabase/client';
 import { redirect } from 'next/navigation';
 import TicketManagement from '@/components/TicketManagement';

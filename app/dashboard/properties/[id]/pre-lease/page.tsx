@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

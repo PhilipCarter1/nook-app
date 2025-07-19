@@ -7,13 +7,13 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Force all pages to be dynamic
-  experimental: {
-    appDir: true,
-  },
-  // Disable static generation
   trailingSlash: false,
   generateBuildId: async () => {
     return 'build-' + Date.now();
+  },
+  // Disable static generation
+  experimental: {
+    appDir: true,
   },
 }
 

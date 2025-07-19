@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/providers/auth-provider';

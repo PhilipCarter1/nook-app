@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import React, { Suspense } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

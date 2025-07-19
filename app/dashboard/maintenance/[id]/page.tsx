@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { MaintenanceTicketDetail } from '@/components/maintenance/MaintenanceTicketDetail';
 import { MaintenanceTicketForm } from '@/components/maintenance/MaintenanceTicketForm';

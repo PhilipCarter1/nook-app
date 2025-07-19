@@ -1,5 +1,8 @@
 "use client";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 import { Card } from '@/components/ui/card';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { getPaymentHistory, getUpcomingPayments } from '@/lib/services/payments';
