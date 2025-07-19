@@ -6,10 +6,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Ignore build errors and deploy anyway
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
+  // Force all pages to be dynamic
+  experimental: {
+    appDir: true,
+  },
+  // Disable static generation
+  trailingSlash: false,
+  generateBuildId: async () => {
+    return 'build-' + Date.now();
   },
 }
 
