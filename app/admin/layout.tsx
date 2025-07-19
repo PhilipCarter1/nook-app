@@ -2,16 +2,16 @@
 
 import React from 'react';
 import { AuthProvider } from '@/components/providers/auth-provider';
-import { DashboardContent } from './DashboardContent';
+import { AdminContent } from './AdminContent';
 
-export default function DashboardLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <AuthProvider>
-      <DashboardContent>{children}</DashboardContent>
+      <AdminContent>{children}</AdminContent>
     </AuthProvider>
   );
 } 
