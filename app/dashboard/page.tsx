@@ -2,6 +2,9 @@
 
 import React from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, DollarSign, Wrench, Plus, FileText, Settings } from 'lucide-react';
