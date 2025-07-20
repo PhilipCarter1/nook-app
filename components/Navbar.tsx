@@ -8,7 +8,19 @@ import { UserRole } from '@/lib/types';
 import { Bell, Menu } from 'lucide-react';
 
 export function Navbar() {
-  const { user, role, signOut } = useAuth();
+  // Handle case where AuthProvider is not available (public pages)
+  let user, role, signOut;
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    role = auth.role;
+    signOut = auth.signOut;
+  } catch (error) {
+    // AuthProvider not available, treat as public page
+    user = null;
+    role = null;
+    signOut = () => {};
+  }
 
   const navigation: Record<UserRole, { name: string; href: string }[]> = {
     tenant: [

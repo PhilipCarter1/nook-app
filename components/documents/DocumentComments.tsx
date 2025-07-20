@@ -66,7 +66,7 @@ export function DocumentComments({
       setPosition(undefined);
       toast.success('Comment added successfully');
     } catch (error) {
-      log.error('Error adding comment:', error);
+      log.error('Error adding comment:', error as Error);
       toast.error('Failed to add comment');
     } finally {
       setIsAddingComment(false);
@@ -78,7 +78,7 @@ export function DocumentComments({
       await onDeleteComment(commentId);
       toast.success('Comment deleted successfully');
     } catch (error) {
-      log.error('Error deleting comment:', error);
+      log.error('Error deleting comment:', error as Error);
       toast.error('Failed to delete comment');
     }
   };

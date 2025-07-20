@@ -26,7 +26,7 @@ export function DocumentApproval({ document, onUpdate }: DocumentApprovalProps) 
       toast.success('Document approved successfully');
       onUpdate();
     } catch (error) {
-      log.error('Error approving document:', error);
+      log.error('Error approving document:', error as Error);
       toast.error('Failed to approve document');
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ export function DocumentApproval({ document, onUpdate }: DocumentApprovalProps) 
       toast.success('Document rejected');
       onUpdate();
     } catch (error) {
-      log.error('Error rejecting document:', error);
+      log.error('Error rejecting document:', error as Error);
       toast.error('Failed to reject document');
     } finally {
       setLoading(false);

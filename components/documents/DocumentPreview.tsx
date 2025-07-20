@@ -57,7 +57,7 @@ export default function DocumentPreview({ url, type, name, className, onView }: 
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
-      log.error('Error downloading document:', error);
+      log.error('Error downloading document:', error as Error);
       toast.error('Failed to download document');
     }
   };

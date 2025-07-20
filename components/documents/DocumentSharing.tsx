@@ -57,7 +57,7 @@ export function DocumentSharing({
       setEmail('');
       toast.success('Document shared successfully');
     } catch (error) {
-      log.error('Error sharing document:', error);
+      log.error('Error sharing document:', error as Error);
       toast.error('Failed to share document');
     } finally {
       setIsSharing(false);
@@ -69,7 +69,7 @@ export function DocumentSharing({
       await onRemoveShare(userId);
       toast.success('Access removed successfully');
     } catch (error) {
-      log.error('Error removing access:', error);
+      log.error('Error removing access:', error as Error);
       toast.error('Failed to remove access');
     }
   };
