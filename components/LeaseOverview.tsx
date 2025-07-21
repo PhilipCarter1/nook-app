@@ -72,7 +72,7 @@ export default function LeaseOverview({ tenantId }: LeaseOverviewProps) {
       if (paymentError) throw paymentError;
       setPayments(paymentData || []);
     } catch (error) {
-      log.error('Error fetching lease data:', error);
+      log.error('Error fetching lease data:', error as Error);
       toast.error('Failed to fetch lease information');
     } finally {
       setLoading(false);

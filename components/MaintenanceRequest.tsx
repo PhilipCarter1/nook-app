@@ -63,7 +63,7 @@ export default function MaintenanceRequest({
         type: file.type.startsWith('image/') ? 'image' : 'video'
       }]);
     } catch (error) {
-      log.error('Error uploading media:', error);
+      log.error('Error uploading media:', error as Error);
       setError('Failed to upload media');
     }
   };
@@ -92,7 +92,7 @@ export default function MaintenanceRequest({
       onRequestSubmitted();
       resetForm();
     } catch (error) {
-      log.error('Error submitting maintenance request:', error);
+      log.error('Error submitting maintenance request:', error as Error);
       setError('Failed to submit maintenance request');
     } finally {
       setLoading(false);

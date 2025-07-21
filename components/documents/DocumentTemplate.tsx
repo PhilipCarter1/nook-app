@@ -265,7 +265,7 @@ export function DocumentTemplate({
       });
       toast.success('Template saved successfully');
     } catch (error) {
-      log.error('Error saving template:', error);
+      log.error('Error saving template:', error as Error);
       toast.error('Failed to save template');
     } finally {
       setIsSaving(false);

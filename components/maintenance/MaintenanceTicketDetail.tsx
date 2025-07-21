@@ -9,6 +9,7 @@ import { MessageSquare, Paperclip, Clock, User, Building, Home, Phone, Mail, Ale
 import { PremiumCard, PremiumCardHeader, PremiumCardContent, PremiumCardFooter } from '@/components/ui/PremiumCard';
 import { PremiumLayout } from '@/components/layout/PremiumLayout';
 import { cn } from '@/lib/utils';
+import { premiumComponents } from '@/lib/theme';
 import type { MaintenanceTicket } from '@/lib/services/maintenance';
 
 type MaintenancePriority = 'low' | 'medium' | 'high' | 'emergency';

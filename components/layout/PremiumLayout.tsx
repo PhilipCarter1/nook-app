@@ -168,7 +168,7 @@ export function PremiumLayout({
   };
 
   const isActive = (href: string) => {
-    return pathname === href || pathname.startsWith(href + '/');
+    return pathname === href || (pathname && pathname.startsWith(href + '/'));
   };
 
   const renderNavigationItem = (item: NavigationItem, level = 0) => {

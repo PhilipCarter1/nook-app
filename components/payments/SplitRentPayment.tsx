@@ -132,7 +132,7 @@ export default function SplitRentPayment({
       setPaymentMethods(settingsData.data.payment_methods || []);
       setIsSplitEnabled(settingsData.data.split_rent_enabled);
     } catch (error) {
-      log.error('Error fetching data:', error);
+      log.error('Error fetching data:', error as Error);
       setError('Failed to load information');
     } finally {
       setLoading(false);
@@ -202,11 +202,11 @@ export default function SplitRentPayment({
 
       window.location.href = session.url;
     } catch (error) {
-      log.error('Error creating payment session:', error);
+      log.error('Error creating payment session:', error as Error);
       toast({
         title: 'Payment Error',
         description: 'Failed to process payment. Please try again.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
@@ -224,7 +224,7 @@ export default function SplitRentPayment({
         description: 'Share this link with the tenant to pay their share',
       });
     } catch (error) {
-      log.error('Error sharing payment link:', error);
+      log.error('Error sharing payment link:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to copy payment link',

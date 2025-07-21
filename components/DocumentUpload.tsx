@@ -74,7 +74,7 @@ export function DocumentUpload({
         toast.success('File uploaded successfully');
         if (onUploadComplete) onUploadComplete('uploaded-file-url'); // Replace with actual URL if available
       } catch (error) {
-        log.error('Error uploading file:', error);
+        log.error('Error uploading file:', error as Error);
         toast.error('Failed to upload file');
         if (onUploadError) onUploadError(error);
       } finally {

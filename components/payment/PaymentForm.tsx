@@ -67,7 +67,7 @@ function PaymentFormContent({ amount, propertyId, type, userId }: PaymentFormPro
       toast.success('Payment successful!');
       router.refresh();
     } catch (error) {
-      log.error('Payment error:', error);
+      log.error('Payment error:', error as Error);
       toast.error('Payment failed. Please try again.');
     } finally {
       setIsProcessing(false);

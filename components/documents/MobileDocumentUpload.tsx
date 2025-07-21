@@ -71,7 +71,7 @@ export function MobileDocumentUpload({ onUpload, className }: MobileDocumentUplo
       }
       setIsCameraActive(true);
     } catch (error) {
-      log.error('Error accessing camera:', error);
+      log.error('Error accessing camera:', error as Error);
       toast.error('Failed to access camera');
     }
   };
@@ -131,7 +131,7 @@ export function MobileDocumentUpload({ onUpload, className }: MobileDocumentUplo
       toast.success('Document uploaded successfully');
       resetForm();
     } catch (error) {
-      log.error('Error uploading document:', error);
+      log.error('Error uploading document:', error as Error);
       toast.error('Failed to upload document');
     } finally {
       setIsUploading(false);

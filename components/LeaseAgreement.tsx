@@ -58,7 +58,7 @@ export default function LeaseAgreement({
 
       setAgreementUrl(data.url);
     } catch (error) {
-      log.error('Error generating lease agreement:', error);
+      log.error('Error generating lease agreement:', error as Error);
       setError('Failed to generate lease agreement. Please try again.');
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function LeaseAgreement({
       setSigned(true);
       onAgreementComplete();
     } catch (error) {
-      log.error('Error signing lease agreement:', error);
+      log.error('Error signing lease agreement:', error as Error);
       setError('Failed to sign lease agreement. Please try again.');
     } finally {
       setLoading(false);

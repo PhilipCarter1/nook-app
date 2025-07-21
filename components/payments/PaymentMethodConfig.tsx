@@ -103,7 +103,7 @@ export function PaymentMethodConfig({
       });
       toast.success('Payment method added successfully');
     } catch (error) {
-      log.error('Error adding payment method:', error);
+      log.error('Error adding payment method:', error as Error);
       toast.error('Failed to add payment method');
     }
   };
@@ -114,7 +114,7 @@ export function PaymentMethodConfig({
       setMethods(methods.filter((method) => method.id !== id));
       toast.success('Payment method deleted');
     } catch (error) {
-      log.error('Error deleting payment method:', error);
+      log.error('Error deleting payment method:', error as Error);
       toast.error('Failed to delete payment method');
     }
   };
@@ -130,7 +130,7 @@ export function PaymentMethodConfig({
       );
       toast.success('Default payment method updated');
     } catch (error) {
-      log.error('Error setting default payment method:', error);
+      log.error('Error setting default payment method:', error as Error);
       toast.error('Failed to update default payment method');
     }
   };

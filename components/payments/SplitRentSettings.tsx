@@ -61,11 +61,11 @@ export default function SplitRentSettings({
       setIsSplitEnabled(data.split_rent_enabled);
       setPaymentMethods(data.payment_methods || []);
     } catch (error) {
-      log.error('Error fetching settings:', error);
+      log.error('Error fetching settings:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to load settings',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      log.error('Error updating split rent setting:', error);
+      log.error('Error updating split rent setting:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to update settings',
@@ -117,7 +117,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      log.error('Error updating payment method:', error);
+      log.error('Error updating payment method:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to update payment method',
@@ -148,7 +148,7 @@ export default function SplitRentSettings({
       });
       onUpdate();
     } catch (error) {
-      log.error('Error updating payment method details:', error);
+      log.error('Error updating payment method details:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to update payment method details',

@@ -71,7 +71,7 @@ export default function MaintenanceTicket({ unitId, tenantId }: MaintenanceTicke
       if (error) throw error;
       setTickets(data || []);
     } catch (error) {
-      log.error('Error fetching tickets:', error);
+      log.error('Error fetching tickets:', error as Error);
       toast.error('Failed to fetch maintenance tickets');
     } finally {
       setLoading(false);
@@ -121,7 +121,7 @@ export default function MaintenanceTicket({ unitId, tenantId }: MaintenanceTicke
       setNewTicket({ title: '', description: '', priority: 'medium' });
       fetchTickets();
     } catch (error) {
-      log.error('Error creating ticket:', error);
+      log.error('Error creating ticket:', error as Error);
       toast.error('Failed to create maintenance ticket');
     }
   };

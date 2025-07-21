@@ -62,7 +62,7 @@ export function MaintenanceTicketForm({ onSubmit, onCancel }: MaintenanceTicketF
         location: '',
       });
     } catch (error) {
-      log.error('Error submitting ticket:', error);
+      log.error('Error submitting ticket:', error as Error);
       toast.error('Failed to submit maintenance ticket');
     } finally {
       setLoading(false);

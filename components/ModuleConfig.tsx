@@ -90,7 +90,7 @@ export function ModuleConfig({ propertyId, unitId, level, isOnboarding = false }
 
       setConfig(initialConfig);
     } catch (error) {
-      log.error('Error fetching module config:', error);
+      log.error('Error fetching module config:', error as Error);
       toast.error('Failed to load module configuration');
     } finally {
       setLoading(false);
@@ -117,7 +117,7 @@ export function ModuleConfig({ propertyId, unitId, level, isOnboarding = false }
       setConfig(updatedConfig);
       toast.success(`Module ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      log.error('Error updating module config:', error);
+      log.error('Error updating module config:', error as Error);
       toast.error('Failed to update module configuration');
     }
   };
