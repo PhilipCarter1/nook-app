@@ -55,18 +55,18 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-nook-purple-600 flex items-center justify-center">
+              <div className="h-7 w-7 rounded-lg bg-nook-purple-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">N</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-lg font-bold text-gray-900">
                 Nook
               </span>
             </Link>
             {user && (
-              <div className="ml-10 hidden md:flex md:space-x-8">
+              <div className="ml-8 hidden md:flex md:space-x-6">
                 {currentNavigation.map((item) => (
                   <Link
                     key={item.name}
@@ -79,20 +79,20 @@ export function Navbar() {
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {user ? (
               <>
                 <RoleSwitcher />
-                <Button variant="ghost" size="sm" onClick={signOut}>
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-sm">
                   Sign Out
                 </Button>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+                <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full"></span>
                 </Button>
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-7 w-7">
                   <AvatarImage src={user.avatar_url || undefined} alt={user.email} />
-                  <AvatarFallback className="bg-nook-purple-100 text-nook-purple-600 text-sm">
+                  <AvatarFallback className="bg-nook-purple-100 text-nook-purple-600 text-xs">
                     {user.email
                       .split('@')[0]
                       .split('')
@@ -105,10 +105,10 @@ export function Navbar() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm">Sign In</Button>
+                  <Button variant="ghost" size="sm" className="text-sm">Sign In</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="bg-nook-purple-600 hover:bg-nook-purple-500">
+                  <Button size="sm" className="bg-nook-purple-600 hover:bg-nook-purple-500 text-sm px-4">
                     Sign Up
                   </Button>
                 </Link>

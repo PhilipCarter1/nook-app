@@ -53,9 +53,9 @@ export function Sidebar({ role }: SidebarProps) {
   };
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-      <div className="h-full px-3 py-4">
-        <nav className="space-y-1">
+    <div className="w-56 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="h-full px-3 py-3">
+        <nav className="space-y-0.5">
           {getNavigationItems().map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -63,21 +63,21 @@ export function Sidebar({ role }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-md',
+                  'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200',
                   isActive
-                    ? 'bg-nook-purple-50 text-nook-purple-600 dark:bg-nook-purple-900 dark:text-nook-purple-200'
-                    : 'text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-nook-purple-50 text-nook-purple-600 dark:bg-nook-purple-900 dark:text-nook-purple-200 shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                 )}
               >
                 <item.icon
                   className={cn(
-                    'mr-3 h-5 w-5',
+                    'mr-3 h-4 w-4 flex-shrink-0',
                     isActive
                       ? 'text-nook-purple-600 dark:text-nook-purple-200'
                       : 'text-gray-400 dark:text-gray-500'
                   )}
                 />
-                {item.name}
+                <span className="truncate">{item.name}</span>
               </Link>
             );
           })}

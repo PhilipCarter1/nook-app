@@ -116,23 +116,23 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-nook-purple-50 dark:from-gray-900 dark:to-nook-purple-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Welcome back, {user?.email}
           </h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+          <p className="mt-1 text-base text-gray-600 dark:text-gray-300">
             Here's an overview of your property management dashboard
           </p>
         </MotionDiv>
 
         {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           {stats.map((stat) => (
             <MotionDiv
               key={stat.name}
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                     <stat.icon className="h-4 w-4 text-nook-purple-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stat.value}</div>
+                    <div className="text-xl font-bold">{stat.value}</div>
                     <p className="text-xs text-muted-foreground">{stat.description}</p>
                   </CardContent>
                 </Card>
@@ -167,10 +167,10 @@ export default function DashboardPage() {
           >
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold">Recent Activity</CardTitle>
+                <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-nook-purple-500 rounded-full mt-2"></div>
@@ -195,15 +195,15 @@ export default function DashboardPage() {
           >
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold">Quick Actions</CardTitle>
+                <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {quickActions
                     .filter(action => action.showFor.includes(role || 'tenant'))
                     .map((action) => (
                       <Link key={action.name} href={action.href}>
-                        <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-nook-purple-50 dark:text-gray-300 dark:hover:bg-nook-purple-900/50 rounded-md transition-colors flex items-center">
+                        <button className="w-full text-left px-3 py-2.5 text-sm text-gray-700 hover:bg-nook-purple-50 dark:text-gray-300 dark:hover:bg-nook-purple-900/50 rounded-md transition-colors flex items-center">
                           <action.icon className="w-4 h-4 mr-3 text-nook-purple-500" />
                           <div>
                             <div className="font-medium">{action.name}</div>
@@ -223,28 +223,28 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-8"
+          className="mt-6"
         >
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold">Platform Features</CardTitle>
+              <CardTitle className="text-lg font-semibold">Platform Features</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="text-center p-4">
-                  <Building2 className="w-8 h-8 mx-auto mb-2 text-nook-purple-500" />
-                  <h3 className="font-semibold">Property Management</h3>
-                  <p className="text-sm text-gray-600">Manage properties, units, and tenants</p>
+                <div className="text-center p-3">
+                  <Building2 className="w-6 h-6 mx-auto mb-2 text-nook-purple-500" />
+                  <h3 className="font-semibold text-sm">Property Management</h3>
+                  <p className="text-xs text-gray-600">Manage properties, units, and tenants</p>
                 </div>
-                <div className="text-center p-4">
-                  <DollarSign className="w-8 h-8 mx-auto mb-2 text-nook-purple-500" />
-                  <h3 className="font-semibold">Payment Processing</h3>
-                  <p className="text-sm text-gray-600">Secure rent and deposit payments</p>
+                <div className="text-center p-3">
+                  <DollarSign className="w-6 h-6 mx-auto mb-2 text-nook-purple-500" />
+                  <h3 className="font-semibold text-sm">Payment Processing</h3>
+                  <p className="text-xs text-gray-600">Secure rent and deposit payments</p>
                 </div>
-                <div className="text-center p-4">
-                  <Wrench className="w-8 h-8 mx-auto mb-2 text-nook-purple-500" />
-                  <h3 className="font-semibold">Maintenance Hub</h3>
-                  <p className="text-sm text-gray-600">Track and manage maintenance requests</p>
+                <div className="text-center p-3">
+                  <Wrench className="w-6 h-6 mx-auto mb-2 text-nook-purple-500" />
+                  <h3 className="font-semibold text-sm">Maintenance Hub</h3>
+                  <p className="text-xs text-gray-600">Track and manage maintenance requests</p>
                 </div>
               </div>
             </CardContent>

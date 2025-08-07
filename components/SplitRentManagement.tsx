@@ -91,7 +91,7 @@ export default function SplitRentManagement({
 
       setTenants(formattedTenants);
     } catch (error) {
-      log.error('Error fetching tenants:', error);
+      log.error('Error fetching tenants:', error as Error);
       setError('Failed to load tenant information');
     } finally {
       setLoading(false);
@@ -120,7 +120,7 @@ export default function SplitRentManagement({
 
       if (error) throw error;
     } catch (error) {
-      log.error('Error sending reminder:', error);
+      log.error('Error sending reminder:', error as Error);
       setError('Failed to send payment reminder');
     }
   };
@@ -147,7 +147,7 @@ export default function SplitRentManagement({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      log.error('Error generating report:', error);
+      log.error('Error generating report:', error as Error);
       setError('Failed to generate rent report');
     }
   };

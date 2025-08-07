@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase/client';
+import { getClient } from '@/lib/supabase/client';
 import { log } from '@/lib/logger';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
-        log.error('Error in getUser:', error);
+        log.error('Error in getUser:', error as Error);
         if (mounted) {
           setUser(null);
           setRole(null);
@@ -203,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Redirect to home page
       router.push('/');
     } catch (error) {
-      log.error('Error signing out:', error);
+      log.error('Error signing out:', error as Error);
       toast.error('Failed to sign out. Please try again.');
     } finally {
       setLoading(false);
