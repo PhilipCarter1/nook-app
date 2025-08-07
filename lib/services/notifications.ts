@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+import { log } from '@/lib/logger';
 import {
   sendMaintenanceRequestEmail,
   sendPaymentReminderEmail,

@@ -5,7 +5,7 @@ import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserRole } from '@/lib/types';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, Menu, Sparkles } from 'lucide-react';
 
 export function Navbar() {
   // Handle case where AuthProvider is not available (public pages)
@@ -58,7 +58,7 @@ export function Navbar() {
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="h-7 w-7 rounded-lg bg-nook-purple-600 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-nook-purple-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">N</span>
               </div>
               <span className="text-lg font-bold text-gray-900">
@@ -104,12 +104,27 @@ export function Navbar() {
               </>
             ) : (
               <>
+                <div className="hidden sm:flex items-center space-x-4">
+                  <Link href="/features" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                    Features
+                  </Link>
+                  <Link href="/demo" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                    Demo
+                  </Link>
+                  <Link href="/contact" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                    Contact
+                  </Link>
+                </div>
                 <Link href="/login">
                   <Button variant="ghost" size="sm" className="text-sm">Sign In</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm" className="bg-nook-purple-600 hover:bg-nook-purple-500 text-sm px-4">
-                    Sign Up
+                  <Button 
+                    size="sm" 
+                    className="bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    Start Free Trial
                   </Button>
                 </Link>
               </>

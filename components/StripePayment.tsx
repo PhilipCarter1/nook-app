@@ -58,7 +58,7 @@ export default function StripePayment({ amount, leaseId, onSuccess, onError }: S
       toast.success('Payment completed successfully');
       onSuccess();
     } catch (error) {
-      log.error('Payment error:', error);
+      log.error('Payment error:', error as Error);
       toast.error(error instanceof Error ? error.message : 'Payment failed');
       onError(error instanceof Error ? error : new Error('Payment failed'));
     } finally {

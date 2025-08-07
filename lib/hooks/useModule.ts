@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useFeatureFlags } from './use-feature-flags';
+import { log } from '@/lib/logger';
 import { getClient } from '@/lib/supabase/client';
 export function useModule(moduleId: string, propertyId?: string, unitId?: string) {
   const [isAvailable, setIsAvailable] = useState(false);

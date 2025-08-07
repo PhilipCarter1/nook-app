@@ -232,5 +232,4 @@ export {
   PremiumCardDescription, 
   PremiumCardContent,
   cardVariants 
-}
-export type { PremiumCardProps } 
+} 

@@ -1,3 +1,5 @@
+import { log } from '@/lib/logger';
+
 // Email service with proper logging - TODO: Replace mock implementations with real email functionality
 
 export interface EmailConfig {

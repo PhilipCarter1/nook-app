@@ -105,16 +105,16 @@ const PremiumButton = React.forwardRef<HTMLButtonElement, PremiumButtonProps>(
       const x = event.clientX - rect.left - size / 2
       const y = event.clientY - rect.top - size / 2
       
-      const ripple = document.createElement("span")
-      ripple.style.width = ripple.style.height = size + "px"
-      ripple.style.left = x + "px"
-      ripple.style.top = y + "px"
-      ripple.classList.add("ripple")
+      const rippleElement = document.createElement("span")
+      rippleElement.style.width = rippleElement.style.height = size + "px"
+      rippleElement.style.left = x + "px"
+      rippleElement.style.top = y + "px"
+      rippleElement.classList.add("ripple")
       
-      button.appendChild(ripple)
+      button.appendChild(rippleElement)
       
       setTimeout(() => {
-        ripple.remove()
+        rippleElement.remove()
       }, 600)
     }
 
@@ -240,5 +240,4 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, PremiumButtonPr
 )
 LoadingButton.displayName = "LoadingButton"
 
-export { PremiumButton, buttonVariants }
-export type { PremiumButtonProps } 
+export { PremiumButton, buttonVariants } 

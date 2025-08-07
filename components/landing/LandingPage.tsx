@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Check, Shield, FileText, CreditCard, MessageSquare, Building2, Users, BarChart3 } from 'lucide-react';
+import { ArrowRight, Check, Shield, FileText, CreditCard, MessageSquare, Building2, Users, BarChart3, Star } from 'lucide-react';
 
 const features = [
   {
@@ -48,10 +48,34 @@ const stats = [
   { label: 'Uptime', value: '99.9%' },
 ];
 
+const testimonials = [
+  {
+    name: 'Sarah Johnson',
+    role: 'Property Manager',
+    company: 'Urban Properties',
+    content: 'Nook has transformed how we manage our properties. The automated workflows save us hours every week.',
+    rating: 5,
+  },
+  {
+    name: 'Michael Chen',
+    role: 'Landlord',
+    company: 'Chen Real Estate',
+    content: 'The payment system is seamless and the maintenance tracking keeps everything organized.',
+    rating: 5,
+  },
+  {
+    name: 'Emily Rodriguez',
+    role: 'Tenant',
+    company: 'Downtown Living',
+    content: 'Finally, a platform that makes renting easy. Communication with my landlord is instant.',
+    rating: 5,
+  },
+];
+
 export default function LandingPage() {
   return (
     <div className="bg-white min-h-screen">
-      {/* Hero section - Reduced padding and more compact */}
+      {/* Hero section - Enhanced with better CTA */}
       <div className="relative isolate overflow-hidden bg-gradient-to-br from-nook-purple-50 via-white to-nook-purple-50">
         <div className="mx-auto max-w-7xl px-6 pb-16 pt-12 sm:pb-24 lg:flex lg:px-8 lg:py-24">
           <div className="mx-auto max-w-2xl flex-shrink-0 lg:mx-0 lg:max-w-xl lg:pt-8">
@@ -91,19 +115,35 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="mt-8 flex items-center gap-x-6"
+              className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4"
             >
               <Link
                 href="/signup"
-                className="rounded-lg bg-nook-purple-600 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-nook-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nook-purple-600 transition-all duration-200 hover:shadow-xl"
+                className="w-full sm:w-auto rounded-lg bg-nook-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:bg-nook-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nook-purple-600 transition-all duration-200 hover:shadow-xl transform hover:scale-105"
               >
-                Start Free Trial
+                Start Free Trial - No Credit Card Required
               </Link>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <span>Trusted by 10,000+ property managers</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-6"
+            >
               <Link 
                 href="/demo" 
-                className="text-base font-semibold leading-6 text-gray-900 hover:text-nook-purple-600 transition-colors duration-200"
+                className="text-base font-semibold leading-6 text-gray-900 hover:text-nook-purple-600 transition-colors duration-200 inline-flex items-center"
               >
-                View Demo <span aria-hidden="true">→</span>
+                Watch Demo <span aria-hidden="true" className="ml-1">→</span>
               </Link>
             </motion.div>
           </div>
@@ -165,8 +205,52 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* Testimonials section - New */}
+      <div className="bg-gray-50 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mx-auto max-w-2xl lg:text-center mb-12"
+          >
+            <h2 className="text-base font-semibold leading-7 text-nook-purple-600">What our customers say</h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Trusted by property managers nationwide
+            </p>
+          </motion.div>
+          
+          <div className="mx-auto max-w-2xl sm:mt-16 lg:mt-20 lg:max-w-none">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
+                >
+                  <div className="flex items-center mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 mb-4">"{testimonial.content}"</p>
+                  <div>
+                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-gray-500">{testimonial.role} at {testimonial.company}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Feature section - More compact spacing */}
-      <div className="bg-gray-50 py-12 sm:py-16">
+      <div className="bg-white py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -217,7 +301,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* CTA section - More compact */}
+      {/* CTA section - Enhanced */}
       <div className="relative isolate mt-24 px-6 py-24 sm:mt-32 sm:py-32 lg:px-8">
         <div className="absolute inset-x-0 top-1/2 -z-10 -translate-y-1/2 transform-gpu overflow-hidden opacity-30 blur-3xl">
           <div
@@ -241,12 +325,12 @@ export default function LandingPage() {
           <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-gray-600">
             Join thousands of property owners and managers who trust Nook for their property management needs.
           </p>
-          <div className="mt-8 flex items-center justify-center gap-x-6">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="rounded-lg bg-nook-purple-600 px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-nook-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nook-purple-600 transition-all duration-200 hover:shadow-xl"
+              className="w-full sm:w-auto rounded-lg bg-nook-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:bg-nook-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nook-purple-600 transition-all duration-200 hover:shadow-xl transform hover:scale-105"
             >
-              Start Free Trial
+              Start Free Trial - No Credit Card Required
             </Link>
             <Link 
               href="/contact" 

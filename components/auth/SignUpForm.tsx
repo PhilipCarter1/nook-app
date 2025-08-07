@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +8,22 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Building } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { log } from '@/lib/logger';
+
+interface ValidationState {
+  email: { isValid: boolean; message: string };
+  password: { isValid: boolean; message: string };
+  confirmPassword: { isValid: boolean; message: string };
+  firstName: { isValid: boolean; message: string };
+  lastName: { isValid: boolean; message: string };
+}
 
 export default function SignUpForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -23,47 +32,112 @@ export default function SignUpForm() {
     confirmPassword: '',
   });
 
-  const validateEmail = (email: string) => {
+  const [validation, setValidation] = useState<ValidationState>({
+    email: { isValid: true, message: '' },
+    password: { isValid: true, message: '' },
+    confirmPassword: { isValid: true, message: '' },
+    firstName: { isValid: true, message: '' },
+    lastName: { isValid: true, message: '' },
+  });
+
+  const [hasInteracted, setHasInteracted] = useState({
+    email: false,
+    password: false,
+    confirmPassword: false,
+    firstName: false,
+    lastName: false,
+  });
+
+  const validateEmail = (email: string): { isValid: boolean; message: string } => {
+    if (!email) return { isValid: false, message: 'Email is required' };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
-      return false;
+      return { isValid: false, message: 'Please enter a valid email address' };
     }
-    return true;
+    return { isValid: true, message: '' };
   };
 
-  const validatePassword = (password: string) => {
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return false;
+  const validatePassword = (password: string): { isValid: boolean; message: string } => {
+    if (!password) return { isValid: false, message: 'Password is required' };
+    if (password.length < 8) {
+      return { isValid: false, message: 'Password must be at least 8 characters' };
     }
-    return true;
+    if (!/(?=.*[a-z])/.test(password)) {
+      return { isValid: false, message: 'Password must contain at least one lowercase letter' };
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return { isValid: false, message: 'Password must contain at least one uppercase letter' };
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return { isValid: false, message: 'Password must contain at least one number' };
+    }
+    return { isValid: true, message: '' };
   };
 
-  const validateConfirmPassword = (confirmPassword: string) => {
+  const validateConfirmPassword = (confirmPassword: string): { isValid: boolean; message: string } => {
+    if (!confirmPassword) return { isValid: false, message: 'Please confirm your password' };
     if (confirmPassword !== formData.password) {
-      setError('Passwords do not match');
-      return false;
+      return { isValid: false, message: 'Passwords do not match' };
     }
-    return true;
+    return { isValid: true, message: '' };
   };
 
-  const validateRequired = (field: string, value: string) => {
-    if (!value.trim()) {
-      setError(`${field} is required`);
-      return false;
+  const validateName = (name: string, field: 'firstName' | 'lastName'): { isValid: boolean; message: string } => {
+    if (!name.trim()) return { isValid: false, message: `${field === 'firstName' ? 'First name' : 'Last name'} is required` };
+    if (name.length < 2) return { isValid: false, message: `${field === 'firstName' ? 'First name' : 'Last name'} must be at least 2 characters` };
+    return { isValid: true, message: '' };
+  };
+
+  const updateValidation = (field: keyof ValidationState, value: string) => {
+    let validationResult: { isValid: boolean; message: string };
+    
+    switch (field) {
+      case 'email':
+        validationResult = validateEmail(value);
+        break;
+      case 'password':
+        validationResult = validatePassword(value);
+        break;
+      case 'confirmPassword':
+        validationResult = validateConfirmPassword(value);
+        break;
+      case 'firstName':
+        validationResult = validateName(value, 'firstName');
+        break;
+      case 'lastName':
+        validationResult = validateName(value, 'lastName');
+        break;
+      default:
+        return;
     }
-    return true;
+
+    setValidation(prev => ({
+      ...prev,
+      [field]: validationResult
+    }));
+  };
+
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setHasInteracted(prev => ({ ...prev, [field]: true }));
+    updateValidation(field as keyof ValidationState, value);
+  };
+
+  const isFormValid = () => {
+    return Object.values(validation).every(v => v.isValid) &&
+           Object.values(formData).every(v => v.trim() !== '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateRequired('First name', formData.firstName) ||
-        !validateRequired('Last name', formData.lastName) ||
-        !validateEmail(formData.email) ||
-        !validatePassword(formData.password) ||
-        !validateConfirmPassword(formData.confirmPassword)) {
+    // Validate all fields
+    Object.keys(formData).forEach(field => {
+      updateValidation(field as keyof ValidationState, formData[field as keyof typeof formData]);
+      setHasInteracted(prev => ({ ...prev, [field]: true }));
+    });
+
+    if (!isFormValid()) {
       return;
     }
     
@@ -96,110 +170,240 @@ export default function SignUpForm() {
           throw profileError;
         }
 
+        toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
       }
-    } catch (err) {
-      log.error('Sign up error:', err as Error);
-      setError('Something went wrong. Please try again.');
+    } catch (err: any) {
+      log.error('Sign up error:', err);
+      if (err.message?.includes('already registered')) {
+        toast.error('An account with this email already exists. Please sign in instead.');
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'email') {
-      validateEmail(value);
-    } else if (field === 'password') {
-      validatePassword(value);
-    } else if (field === 'confirmPassword') {
-      validateConfirmPassword(value);
-    } else if (field === 'firstName' || field === 'lastName') {
-      validateRequired(field === 'firstName' ? 'First name' : 'Last name', value);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">Create an account</CardTitle>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-nook-purple-50 via-white to-nook-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="text-center pb-6">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
+            <User className="h-6 w-6 text-nook-purple-600" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-gray-900">Create your account</CardTitle>
+          <p className="text-gray-600 mt-2">Join thousands of property managers using Nook</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" role="form">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  required
-                  aria-label="First Name"
-                />
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                  First Name
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className={`pr-10 ${
+                      hasInteracted.firstName && !validation.firstName.isValid
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                        : hasInteracted.firstName && validation.firstName.isValid
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
+                    }`}
+                    placeholder="John"
+                    required
+                  />
+                  {hasInteracted.firstName && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      {validation.firstName.isValid ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {hasInteracted.firstName && !validation.firstName.isValid && (
+                  <p className="text-xs text-red-500">{validation.firstName.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  required
-                  aria-label="Last Name"
-                />
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                  Last Name
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className={`pr-10 ${
+                      hasInteracted.lastName && !validation.lastName.isValid
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                        : hasInteracted.lastName && validation.lastName.isValid
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
+                    }`}
+                    placeholder="Doe"
+                    required
+                  />
+                  {hasInteracted.lastName && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      {validation.lastName.isValid ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {hasInteracted.lastName && !validation.lastName.isValid && (
+                  <p className="text-xs text-red-500">{validation.lastName.message}</p>
+                )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                required
-                aria-label="Email"
-              />
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email Address
+              </Label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                </div>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={`pl-10 pr-10 ${
+                    hasInteracted.email && !validation.email.isValid
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : hasInteracted.email && validation.email.isValid
+                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                      : ''
+                  }`}
+                  placeholder="john@example.com"
+                  required
+                />
+                {hasInteracted.email && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    {validation.email.isValid ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {hasInteracted.email && !validation.email.isValid && (
+                <p className="text-xs text-red-500">{validation.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                required
-                aria-label="Password"
-              />
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password
+              </Label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-gray-400" />
+                </div>
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className={`pl-10 pr-10 ${
+                    hasInteracted.password && !validation.password.isValid
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : hasInteracted.password && validation.password.isValid
+                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                      : ''
+                  }`}
+                  placeholder="Create a strong password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {hasInteracted.password && !validation.password.isValid && (
+                <p className="text-xs text-red-500">{validation.password.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                required
-                aria-label="Confirm Password"
-              />
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm Password
+              </Label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-gray-400" />
+                </div>
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  className={`pl-10 pr-10 ${
+                    hasInteracted.confirmPassword && !validation.confirmPassword.isValid
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : hasInteracted.confirmPassword && validation.confirmPassword.isValid
+                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                      : ''
+                  }`}
+                  placeholder="Confirm your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {hasInteracted.confirmPassword && !validation.confirmPassword.isValid && (
+                <p className="text-xs text-red-500">{validation.confirmPassword.message}</p>
+              )}
             </div>
 
-            {error && (
-              <p className="text-sm text-red-500" role="alert">{error}</p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create Account'}
+            <Button 
+              type="submit" 
+              className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
+              disabled={isLoading || !isFormValid()}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </Button>
 
-            <div className="text-center">
+            <div className="text-center pt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <a href="/login" className="text-blue-600 hover:text-blue-500">
+                <a href="/login" className="text-nook-purple-600 hover:text-nook-purple-500 font-medium transition-colors duration-200">
                   Sign in
                 </a>
               </p>

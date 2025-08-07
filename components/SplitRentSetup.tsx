@@ -67,10 +67,10 @@ export default function SplitRentSetup({ tenants, onUpdate }: SplitRentSetupProp
       setNewTenant({ name: '', email: '', percentage: 0 });
       onUpdate();
     } catch (error) {
-      log.error('Error adding tenant:', error);
+      log.error('Error updating split settings:', error as Error);
       toast({
         title: 'Error',
-        description: 'Failed to add tenant',
+        description: 'Failed to update split settings',
         variant: 'destructive',
       });
     }
@@ -97,7 +97,7 @@ export default function SplitRentSetup({ tenants, onUpdate }: SplitRentSetupProp
 
       onUpdate();
     } catch (error) {
-      log.error('Error removing tenant:', error);
+      log.error('Error removing tenant:', error as Error);
       toast({
         title: 'Error',
         description: 'Failed to remove tenant',

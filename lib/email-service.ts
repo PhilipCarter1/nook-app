@@ -1,5 +1,6 @@
 import sgMail from '@sendgrid/mail';
 import { emailTemplates } from './email-templates';
+import { log } from './logger';
 if (!process.env.SENDGRID_API_KEY) {
   throw new Error('Missing SENDGRID_API_KEY environment variable');
 }

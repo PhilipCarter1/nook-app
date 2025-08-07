@@ -12,6 +12,7 @@ import {
   deleteNotification,
 } from '@/lib/services/notifications';
 import type { Notification } from '@/lib/services/notifications';
+import { log } from '@/lib/logger';
 
 interface NotificationContextType {
   notifications: Notification[];

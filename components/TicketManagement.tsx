@@ -103,7 +103,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       if (error) throw error;
       setTickets(data || []);
     } catch (error) {
-      log.error('Error fetching tickets:', error);
+      log.error('Error fetching tickets:', error as Error);
       toast.error('Failed to fetch maintenance tickets');
     } finally {
       setLoading(false);
@@ -152,7 +152,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Ticket status updated');
       fetchTickets();
     } catch (error) {
-      log.error('Error updating ticket status:', error);
+      log.error('Error updating ticket status:', error as Error);
       toast.error('Failed to update ticket status');
     }
   };
@@ -175,7 +175,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Ticket assigned');
       fetchTickets();
     } catch (error) {
-      log.error('Error assigning ticket:', error);
+      log.error('Error assigning ticket:', error as Error);
       toast.error('Failed to assign ticket');
     }
   };
@@ -198,7 +198,7 @@ export default function TicketManagement({ role, propertyId, userId }: TicketMan
       toast.success('Comment added');
       fetchTickets();
     } catch (error) {
-      log.error('Error adding comment:', error);
+      log.error('Error adding comment:', error as Error);
       toast.error('Failed to add comment');
     }
   };

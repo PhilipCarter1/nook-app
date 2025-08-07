@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { supabase } from './supabase';
+import { log } from '@/lib/logger';
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set');
 }

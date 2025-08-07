@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+import { log } from '@/lib/logger';
 export interface RateLimitConfig {
   maxRequests: number;
   windowMs: number;
@@ -42,11 +43,6 @@ const ENDPOINT_CONFIGS: Record<string, RateLimitConfig> = {
     windowMs: 3600000,
   },
 };
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function checkRateLimit(
   userId: string,

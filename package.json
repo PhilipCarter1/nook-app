@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:simple": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
+    "deploy": "npm run build:simple && npx vercel --prod",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { log } from '@/lib/logger';
 export interface SubscriptionPlan {
   id: string;
   name: string;

@@ -3,6 +3,8 @@ import { promisify } from 'util';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { createClient } from '@supabase/supabase-js';
+import { log } from '@/lib/logger';
 dotenv.config();
 
 const execAsync = promisify(exec);

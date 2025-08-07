@@ -1,15 +1,13 @@
 'use client';
 
-import LandingPage from '@/components/landing/LandingPage';
 import { Navbar } from '@/components/Navbar';
+import LandingPage from '@/components/landing/LandingPage';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="pt-14">
-        <LandingPage />
-      </div>
-    </>
+      <LandingPage />
+    </div>
   );
 } 

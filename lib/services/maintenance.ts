@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
 
 const supabase = createClient();
 

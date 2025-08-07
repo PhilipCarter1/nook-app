@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { log } from '@/lib/logger';
 export interface AuditLogEntry {
   user_id: string;
   action: string;

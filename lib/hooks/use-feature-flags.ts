@@ -1,85 +1,150 @@
-import { useEffect, useState } from 'react';
-import { getClient } from '@/lib/supabase/client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { log } from '@/lib/logger';
+
 interface FeatureFlags {
   legal_assistant: boolean;
-  concierge_setup: boolean;
+  payment_processing: boolean;
+  maintenance_tracking: boolean;
+  document_management: boolean;
+  analytics: boolean;
+  tenant_portal: boolean;
+  landlord_portal: boolean;
+  admin_portal: boolean;
+  premium_features: boolean;
+  advanced_analytics: boolean;
   custom_branding: boolean;
-  maintenance_tickets: boolean;
-  split_payments: boolean;
-  pre_lease_flow: boolean;
-  document_upload: boolean;
-  dark_mode: boolean;
+  priority_support: boolean;
 }
 
-export function useFeatureFlags() {
-  const [flags, setFlags] = useState<FeatureFlags>({
+interface UseFeatureFlagsReturn {
+  featureFlags: FeatureFlags;
+  loading: boolean;
+  error: string | null;
+  hasFeature: (feature: keyof FeatureFlags) => boolean;
+  refreshFlags: () => Promise<void>;
+}
+
+export function useFeatureFlags(): UseFeatureFlagsReturn {
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
     legal_assistant: false,
-    concierge_setup: false,
+    payment_processing: false,
+    maintenance_tracking: false,
+    document_management: false,
+    analytics: false,
+    tenant_portal: false,
+    landlord_portal: false,
+    admin_portal: false,
+    premium_features: false,
+    advanced_analytics: false,
     custom_branding: false,
-    maintenance_tickets: true,
-    split_payments: true,
-    pre_lease_flow: true,
-    document_upload: true,
-    dark_mode: true,
+    priority_support: false,
   });
   const [loading, setLoading] = useState(true);
-  const supabase = getClient();
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchFeatureFlags = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Default flags for unauthenticated users
+        setFeatureFlags({
+          legal_assistant: true,
+          payment_processing: true,
+          maintenance_tracking: true,
+          document_management: true,
+          analytics: false,
+          tenant_portal: true,
+          landlord_portal: true,
+          admin_portal: false,
+          premium_features: false,
+          advanced_analytics: false,
+          custom_branding: false,
+          priority_support: false,
+        });
+        return;
+      }
+
+      // Fetch user's feature flags from the database
+      const { data: userFlags, error: fetchError } = await supabase
+        .from('user_feature_flags')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      // Merge with default flags
+      const flags = {
+        legal_assistant: true,
+        payment_processing: true,
+        maintenance_tracking: true,
+        document_management: true,
+        analytics: false,
+        tenant_portal: true,
+        landlord_portal: true,
+        admin_portal: false,
+        premium_features: false,
+        advanced_analytics: false,
+        custom_branding: false,
+        priority_support: false,
+        ...userFlags?.flags,
+      };
+
+      setFeatureFlags(flags);
+
+      // Set up real-time subscription for feature flag changes
+      const channel = supabase
+        .channel('feature_flags')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_feature_flags',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload: any) => {
+            if (payload.new) {
+              setFeatureFlags(prev => ({
+                ...prev,
+                ...payload.new.flags,
+              }));
+            }
+          }
+        )
+        .subscribe();
+    } catch (error) {
+      log.error('Error fetching feature flags:', error as Error);
+      setError('Failed to load feature flags');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let channel: any;
-    async function fetchFeatureFlags() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Get the organization ID from the user's metadata
-        const orgId = user.user_metadata.organization_id;
-        if (!orgId) return;
-
-        // Fetch the organization's client config
-        const { data: org } = await supabase
-          .from('organizations')
-          .select('client_config')
-          .eq('id', orgId)
-          .single();
-
-        if (org?.client_config) {
-          setFlags(org.client_config as FeatureFlags);
-        }
-
-        // Subscribe to changes in the organization's client config
-        channel = supabase
-          .channel('organization_config')
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'organizations',
-              filter: `id=eq.${orgId}`,
-            },
-            (payload) => {
-              if (payload.new.client_config) {
-                setFlags(payload.new.client_config as FeatureFlags);
-              }
-            }
-          )
-          .subscribe();
-      } catch (error) {
-        log.error('Error fetching feature flags:', error as Error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchFeatureFlags();
+  }, []);
 
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [supabase]);
+  const hasFeature = (feature: keyof FeatureFlags): boolean => {
+    return featureFlags[feature] || false;
+  };
 
-  return { flags, loading };
+  const refreshFlags = async () => {
+    await fetchFeatureFlags();
+  };
+
+  return {
+    featureFlags,
+    loading,
+    error,
+    hasFeature,
+    refreshFlags,
+  };
 } 
