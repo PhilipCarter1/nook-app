@@ -181,33 +181,15 @@ export default function PremiumSignUpForm() {
 
       if (signUpError) {
         console.error('Signup error:', signUpError);
-        alert('Signup error: ' + signUpError.message); // Temporary test
+        alert('Signup error: ' + JSON.stringify(signUpError)); // Temporary test
         throw signUpError;
       }
 
       if (authData.user) {
-        console.log('User created, creating profile...');
+        console.log('User created successfully!');
         alert('User created successfully!'); // Temporary test
         
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email: formData.email,
-              name: `${formData.firstName} ${formData.lastName}`,
-              role: 'tenant',
-            },
-          ]);
-
-        console.log('Profile creation result:', { profileError });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          alert('Profile creation error: ' + profileError.message); // Temporary test
-          throw profileError;
-        }
-
+        // For now, just create the auth user without profile
         console.log('Account created successfully!');
         alert('Account created successfully!'); // Temporary test
         toast.success('Account created successfully! Welcome to Nook.');
