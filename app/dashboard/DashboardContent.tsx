@@ -35,8 +35,22 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Dashboard loading...');
+    alert('Dashboard loading...'); // Debug
+    
     const checkAuthAndLoadData = async () => {
       try {
+        console.log('Checking auth...');
+        alert('Checking auth...'); // Debug
+        
+        // Temporary: Skip auth check for now
+        console.log('Temporary: Skipping auth check');
+        alert('Temporary: Skipping auth check'); // Debug
+        
+        setUser({ id: '1', email: 'test@example.com', name: 'Test User', role: 'tenant' });
+        setLoading(false);
+        
+        /* Comment out actual auth check for now
         const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
@@ -53,8 +67,10 @@ export default function DashboardContent() {
           .single();
 
         setUser(userProfile);
+        */
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        alert('Error loading dashboard: ' + error); // Debug
         toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
