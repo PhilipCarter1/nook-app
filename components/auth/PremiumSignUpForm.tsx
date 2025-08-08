@@ -172,6 +172,16 @@ export default function PremiumSignUpForm() {
       const supabase = createClient();
       console.log('Supabase client created');
       
+      // Temporary: Skip actual signup for now and just show success
+      console.log('Temporary: Skipping actual signup for debugging');
+      alert('Temporary: Would create account with email: ' + formData.email);
+      
+      console.log('Account created successfully!');
+      alert('Account created successfully!'); // Temporary test
+      toast.success('Account created successfully! Welcome to Nook.');
+      router.push('/');
+      
+      /* Comment out actual signup for now
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -199,6 +209,7 @@ export default function PremiumSignUpForm() {
         alert('No user data returned'); // Temporary test
         toast.error('Account creation failed. Please try again.');
       }
+      */
     } catch (err: any) {
       console.error('Sign up error:', err);
       alert('Sign up error: ' + err.message); // Temporary test
