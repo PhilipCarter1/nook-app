@@ -149,6 +149,8 @@ export default function PremiumSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!');
+    alert('Form submitted!'); // Immediate feedback
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -157,9 +159,13 @@ export default function PremiumSignUpForm() {
     });
 
     if (!isStepValid(3)) {
+      console.log('Form validation failed');
+      alert('Form validation failed'); // Immediate feedback
       return;
     }
     
+    console.log('Starting signup process...');
+    alert('Starting signup process...'); // Immediate feedback
     setIsLoading(true);
 
     try {
@@ -463,7 +469,10 @@ export default function PremiumSignUpForm() {
               type="submit"
               className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
               disabled={isLoading || !isStepValid(3)}
-              onClick={() => console.log('Button clicked!')}
+              onClick={() => {
+                console.log('Button clicked!');
+                alert('Button clicked!');
+              }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
