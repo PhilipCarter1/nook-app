@@ -175,14 +175,35 @@ export default function PremiumSignUpForm() {
       console.log('Supabase client created');
       alert('Supabase client created');
 
-      // Test Supabase connection
+      // Log environment variables (without exposing sensitive data)
+      console.log('Environment variables check:', {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        urlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
+        keyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0
+      });
+      alert('Environment check - URL: ' + (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'EXISTS (' + (process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0) + ' chars)' : 'MISSING') + ', Key: ' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS (' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0) + ' chars)' : 'MISSING'));
+
+      // Test basic Supabase connection
       try {
-        const { data: testData, error: testError } = await supabase.from('users').select('count').limit(1);
-        console.log('Supabase connection test:', { testData, testError });
-        alert('Supabase connection test: ' + (testError ? 'FAILED - ' + testError.message : 'SUCCESS'));
+        console.log('Testing Supabase connection...');
+        const { data: testData, error: testError } = await supabase
+          .from('users')
+          .select('count')
+          .limit(1);
+        
+        console.log('Connection test result:', { testData, testError });
+        alert('Connection test: ' + (testError ? 'FAILED - ' + testError.message : 'SUCCESS'));
+        
+        if (testError) {
+          console.error('Supabase connection failed:', testError);
+          alert('Cannot connect to database. Please check Supabase configuration.');
+          return;
+        }
       } catch (testErr) {
         console.error('Supabase connection test error:', testErr);
         alert('Supabase connection test error: ' + testErr);
+        return;
       }
 
       alert('Attempting to sign up...');
