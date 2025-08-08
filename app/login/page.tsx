@@ -68,25 +68,25 @@ export default function LoginPage() {
   };
 
   const isFormValid = () => {
-    const emailValid = validation.email.isValid && formData.email.trim() !== '';
-    const passwordValid = validation.password.isValid && formData.password.trim() !== '';
-    const allValid = emailValid && passwordValid;
+    // Temporarily simplify validation for debugging
+    const hasEmail = formData.email.trim() !== '';
+    const hasPassword = formData.password.trim() !== '';
+    const isValid = hasEmail && hasPassword;
     
-    console.log('Form validation check:', {
-      emailValid,
-      passwordValid,
-      allValid,
+    console.log('Simple form validation:', {
+      hasEmail,
+      hasPassword,
+      isValid,
       email: formData.email,
-      password: formData.password,
-      emailValidation: validation.email,
-      passwordValidation: validation.password
+      password: formData.password
     });
     
-    return allValid;
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    alert('Form submitted!');
     console.log('Login form submitted!');
     console.log('Form data:', formData);
     console.log('Validation state:', validation);
@@ -140,7 +140,7 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Sign in to your Nook account</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form id="login-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email Address
@@ -229,7 +229,10 @@ export default function LoginPage() {
               type="submit" 
               className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
               disabled={isLoading || !isFormValid()}
-              onClick={() => console.log('Button clicked! Form valid:', isFormValid(), 'Loading:', isLoading)}
+              onClick={() => {
+                alert('Button clicked!');
+                console.log('Button clicked! Form valid:', isFormValid(), 'Loading:', isLoading);
+              }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
