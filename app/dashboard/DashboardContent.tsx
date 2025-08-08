@@ -19,7 +19,8 @@ import {
   Calendar,
   TrendingUp,
   Shield,
-  Zap
+  Zap,
+  BarChart
 } from 'lucide-react';
 
 interface User {
@@ -35,22 +36,8 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Dashboard loading...');
-    alert('Dashboard loading...'); // Debug
-    
     const checkAuthAndLoadData = async () => {
       try {
-        console.log('Checking auth...');
-        alert('Checking auth...'); // Debug
-        
-        // Temporary: Skip auth check for now
-        console.log('Temporary: Skipping auth check');
-        alert('Temporary: Skipping auth check'); // Debug
-        
-        setUser({ id: '1', email: 'test@example.com', name: 'Test User', role: 'tenant' });
-        setLoading(false);
-        
-        /* Comment out actual auth check for now
         const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
@@ -67,10 +54,8 @@ export default function DashboardContent() {
           .single();
 
         setUser(userProfile);
-        */
       } catch (error) {
         console.error('Error loading dashboard data:', error);
-        alert('Error loading dashboard: ' + error); // Debug
         toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
@@ -136,7 +121,7 @@ export default function DashboardContent() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/properties')}>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -148,8 +133,7 @@ export default function DashboardContent() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/tenants')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Users className="h-6 w-6 text-green-600 mr-3" />
@@ -160,50 +144,46 @@ export default function DashboardContent() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/maintenance')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Wrench className="h-6 w-6 text-orange-600 mr-3" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Maintenance</h3>
-                  <p className="text-sm text-gray-600">Track maintenance requests</p>
+                  <p className="text-sm text-gray-600">Track and manage maintenance requests</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/payments')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Payments</h3>
-                  <p className="text-sm text-gray-600">Manage rent and payments</p>
+                  <p className="text-sm text-gray-600">Manage rent and other payments</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/documents')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FileText className="h-6 w-6 text-green-600 mr-3" />
+                <FileText className="h-6 w-6 text-red-600 mr-3" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Documents</h3>
-                  <p className="text-sm text-gray-600">Manage leases and documents</p>
+                  <p className="text-sm text-gray-600">Store and manage important documents</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/analytics')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <TrendingUp className="h-6 w-6 text-indigo-600 mr-3" />
+                <BarChart className="h-6 w-6 text-yellow-600 mr-3" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Analytics</h3>
-                  <p className="text-sm text-gray-600">View property performance</p>
+                  <p className="text-sm text-gray-600">Gain insights into your portfolio</p>
                 </div>
               </div>
             </CardContent>

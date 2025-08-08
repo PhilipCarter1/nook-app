@@ -8,8 +8,6 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
-  console.log('Dashboard page rendering...');
-  
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <DashboardContent />
