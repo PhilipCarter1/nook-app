@@ -25,7 +25,7 @@ interface Organization {
   tenants_count: number;
 }
 
-export default function AdminContent({ children }: { children: React.ReactNode }) {
+export default function AdminContent() {
   const router = useRouter();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,9 +165,81 @@ export default function AdminContent({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        {children}
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+
+      <div className="space-y-6">
+        {organizations?.map((org: Organization) => (
+          <Card key={org.id} className="p-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold">{org.name}</h2>
+                  <div className="flex gap-2 mt-2">
+                    <Badge className={getStatusColor(org.status)}>
+                      {org.status}
+                    </Badge>
+                    <span className="text-sm text-gray-500">
+                      Created {new Date(org.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => handleImpersonate(org.id)}
+                >
+                  Impersonate
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium mb-2">Organization Stats</h3>
+                  <div className="space-y-2">
+                    <p>Properties: {org.properties_count}</p>
+                    <p>Tenants: {org.tenants_count}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-2">Feature Flags</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`legal-${org.id}`}>Legal Assistant</Label>
+                      <Switch
+                        id={`legal-${org.id}`}
+                        checked={org.client_config.legal_assistant}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'legal_assistant', checked)
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`concierge-${org.id}`}>Concierge Setup</Label>
+                      <Switch
+                        id={`concierge-${org.id}`}
+                        checked={org.client_config.concierge_setup}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'concierge_setup', checked)
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`branding-${org.id}`}>Custom Branding</Label>
+                      <Switch
+                        id={`branding-${org.id}`}
+                        checked={org.client_config.custom_branding}
+                        onCheckedChange={(checked) =>
+                          handleFeatureToggle(org.id, 'custom_branding', checked)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );

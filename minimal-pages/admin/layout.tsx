@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AuthProvider } from '@/components/providers/auth-provider';
-import AdminContent from './AdminContent';
+import { AdminContent } from './AdminContent';
 
 export default function AdminLayout({
   children,
