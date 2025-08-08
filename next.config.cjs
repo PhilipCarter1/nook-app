@@ -6,6 +6,11 @@ const nextConfig = {
   images: {
     domains: ['localhost', 'vercel.app', 'nook.app'],
   },
+  // Disable static generation for problematic pages
+  async generateStaticParams() {
+    return [];
+  },
+  // Force dynamic rendering
   trailingSlash: false,
   async headers() {
     return [
