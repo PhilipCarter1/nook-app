@@ -1,13 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Upload, File, X, CheckCircle } from 'lucide-react';
-import { log } from '@/lib/logger';
+import React from 'react';
 import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 interface DocumentUploadProps {
   onUpload: (file: File) => Promise<void>;
   accept?: Record<string, string[]>;
@@ -74,7 +70,7 @@ export function DocumentUpload({
         toast.success('File uploaded successfully');
         if (onUploadComplete) onUploadComplete('uploaded-file-url'); // Replace with actual URL if available
       } catch (error) {
-        log.error('Error uploading file:', error as Error);
+        console.error('Error uploading file:', error);
         toast.error('Failed to upload file');
         if (onUploadError) onUploadError(error);
       } finally {

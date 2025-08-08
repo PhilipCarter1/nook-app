@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,8 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
-import { log } from '@/lib/logger';
-import { Wrench, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 interface MaintenanceTicket {
   id: string;
   title: string;
@@ -71,7 +69,7 @@ export default function MaintenanceTicket({ unitId, tenantId }: MaintenanceTicke
       if (error) throw error;
       setTickets(data || []);
     } catch (error) {
-      log.error('Error fetching tickets:', error as Error);
+      console.error('Error fetching tickets:', error);
       toast.error('Failed to fetch maintenance tickets');
     } finally {
       setLoading(false);
@@ -121,7 +119,7 @@ export default function MaintenanceTicket({ unitId, tenantId }: MaintenanceTicke
       setNewTicket({ title: '', description: '', priority: 'medium' });
       fetchTickets();
     } catch (error) {
-      log.error('Error creating ticket:', error as Error);
+      console.error('Error creating ticket:', error);
       toast.error('Failed to create maintenance ticket');
     }
   };

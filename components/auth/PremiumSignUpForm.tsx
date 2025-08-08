@@ -149,8 +149,6 @@ export default function PremiumSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted!');
-    alert('Form submitted!'); // Temporary test
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -159,60 +157,46 @@ export default function PremiumSignUpForm() {
     });
 
     if (!isStepValid(3)) {
-      console.log('Form validation failed');
-      alert('Form validation failed'); // Temporary test
       return;
     }
     
-    console.log('Starting signup process...');
-    alert('Starting signup process...'); // Temporary test
     setIsLoading(true);
 
     try {
       const supabase = createClient();
-      console.log('Supabase client created');
       
-      // Temporary: Skip actual signup for now and just show success
-      console.log('Temporary: Skipping actual signup for debugging');
-      alert('Temporary: Would create account with email: ' + formData.email);
-      
-      console.log('Account created successfully!');
-      alert('Account created successfully!'); // Temporary test
-      toast.success('Account created successfully! Welcome to Nook.');
-      router.push('/');
-      
-      /* Comment out actual signup for now
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
-      console.log('Auth response:', { authData, signUpError });
-
       if (signUpError) {
-        console.error('Signup error:', signUpError);
-        alert('Signup error: ' + JSON.stringify(signUpError)); // Temporary test
         throw signUpError;
       }
 
       if (authData.user) {
-        console.log('User created successfully!');
-        alert('User created successfully!'); // Temporary test
-        
-        // For now, just create the auth user without profile
-        console.log('Account created successfully!');
-        alert('Account created successfully!'); // Temporary test
+        // Create user profile
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: authData.user.id,
+              email: formData.email,
+              name: `${formData.firstName} ${formData.lastName}`,
+              role: 'tenant',
+            },
+          ]);
+
+        if (profileError) {
+          throw profileError;
+        }
+
         toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/');
+        router.push('/dashboard');
       } else {
-        console.log('No user data returned');
-        alert('No user data returned'); // Temporary test
         toast.error('Account creation failed. Please try again.');
       }
-      */
     } catch (err: any) {
-      console.error('Sign up error:', err);
-      alert('Sign up error: ' + err.message); // Temporary test
       log.error('Sign up error:', err);
       
       if (err.message?.includes('already registered')) {

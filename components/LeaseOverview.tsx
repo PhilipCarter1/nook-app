@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { FileText, Calendar, DollarSign, Users } from 'lucide-react';
-import { log } from '@/lib/logger';
+import React from 'react';
+import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { getClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 interface Lease {
   id: string;
   start_date: string;
@@ -72,7 +68,7 @@ export default function LeaseOverview({ tenantId }: LeaseOverviewProps) {
       if (paymentError) throw paymentError;
       setPayments(paymentData || []);
     } catch (error) {
-      log.error('Error fetching lease data:', error as Error);
+      console.error('Error fetching lease data:', error);
       toast.error('Failed to fetch lease information');
     } finally {
       setLoading(false);

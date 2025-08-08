@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Users, DollarSign, Plus, Trash2 } from 'lucide-react';
-import { log } from '@/lib/logger';
 import { getClient } from '@/lib/supabase/client';
 interface Tenant {
   id: string;
@@ -28,12 +25,12 @@ interface RentSplitManagerProps {
 }
 
 export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps) {
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [splits, setSplits] = useState<RentSplit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tenants, setTenants] = React.useState<Tenant[]>([]);
+  const [splits, setSplits] = React.useState<RentSplit[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const supabase = getClient();
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchTenantsAndSplits();
   }, [unitId]);
 
@@ -66,7 +63,7 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
       if (splitsError) throw splitsError;
       setSplits(splitsData || []);
     } catch (error) {
-      log.error('Error fetching tenants and splits:', error as Error);
+      console.error('Error fetching tenants and splits:', error);
       toast.error('Failed to load rent split information');
     } finally {
       setLoading(false);
@@ -110,7 +107,7 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
       fetchTenantsAndSplits();
       toast.success('Rent split updated');
     } catch (error) {
-      log.error('Error updating rent split:', error as Error);
+      console.error('Error updating rent split:', error);
       toast.error('Failed to update rent split');
     }
   };
@@ -128,7 +125,7 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
       fetchTenantsAndSplits();
       toast.success('Rent split removed');
     } catch (error) {
-      log.error('Error removing rent split:', error as Error);
+      console.error('Error removing rent split:', error);
       toast.error('Failed to remove rent split');
     }
   };

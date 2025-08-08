@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DocumentUpload } from './DocumentUpload';
 import { getClient } from '@/lib/supabase/client';
 import { CreditCard, Banknote, Receipt } from 'lucide-react';
-import { log } from '@/lib/logger';
 interface DepositPaymentProps {
   propertyId: string;
   userId: string;
@@ -46,7 +45,7 @@ export default function DepositPayment({
       // Redirect to Stripe Checkout
       window.location.href = session.url;
     } catch (error) {
-      log.error('Error creating payment session:', error as Error);
+      console.error('Error creating payment session:', error);
     } finally {
       setLoading(false);
     }
@@ -72,7 +71,7 @@ export default function DepositPayment({
 
       onPaymentComplete();
     } catch (error) {
-      log.error('Error recording manual payment:', error as Error);
+      console.error('Error recording manual payment:', error);
     } finally {
       setLoading(false);
     }

@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { CreditCard, Settings, Plus, CheckCircle } from 'lucide-react';
-import { log } from '@/lib/logger';
+import React from 'react';
+import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import Stripe from 'stripe';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { getClient } from '@/lib/supabase/client';
-import { toast } from '@/lib/hooks/use-toast';
+import Stripe from 'stripe';
 interface PaymentConfigProps {
   propertyId?: string;
   unitId?: string;
@@ -48,12 +45,8 @@ export function PaymentConfig({ propertyId, unitId, level }: PaymentConfigProps)
         setConfig(data.payment_config);
       }
     } catch (error) {
-      log.error('Error fetching payment config:', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to load payment configuration",
-        variant: "destructive"
-      });
+      console.error('Error fetching payment config:', error);
+      toast.error('Failed to load payment configuration');
     } finally {
       setLoading(false);
     }
@@ -77,17 +70,10 @@ export function PaymentConfig({ propertyId, unitId, level }: PaymentConfigProps)
       if (error) throw error;
 
       setConfig(updatedConfig);
-      toast({
-        title: "Success",
-        description: `Payment method ${enabled ? 'enabled' : 'disabled'}`
-      });
+      toast.success(`Payment method ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      log.error('Error updating payment config:', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to update payment configuration",
-        variant: "destructive"
-      });
+      console.error('Error updating payment config:', error);
+      toast.error('Failed to update payment configuration');
     }
   };
 
@@ -104,12 +90,8 @@ export function PaymentConfig({ propertyId, unitId, level }: PaymentConfigProps)
 
       window.location.href = accountLink.url;
     } catch (error) {
-      log.error('Error connecting Stripe account:', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to connect Stripe account",
-        variant: "destructive"
-      });
+      console.error('Error connecting Stripe account:', error);
+      toast.error('Failed to connect Stripe account');
     }
   };
 
@@ -131,17 +113,10 @@ export function PaymentConfig({ propertyId, unitId, level }: PaymentConfigProps)
       if (error) throw error;
 
       setConfig(updatedConfig);
-      toast({
-        title: "Success",
-        description: "Payment details updated"
-      });
+      toast.success('Payment details updated');
     } catch (error) {
-      log.error('Error updating payment details:', error as Error);
-      toast({
-        title: "Error",
-        description: "Failed to update payment details",
-        variant: "destructive"
-      });
+      console.error('Error updating payment details:', error);
+      toast.error('Failed to update payment details');
     }
   };
 

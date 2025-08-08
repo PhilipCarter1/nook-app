@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { getClient } from '@/lib/supabase/client';
 import { User, CreditCard, AlertCircle, CheckCircle2, Clock, Send, Download } from 'lucide-react';
-import { log } from '@/lib/logger';
 interface Tenant {
   id: string;
   name: string;
@@ -91,7 +90,7 @@ export default function SplitRentManagement({
 
       setTenants(formattedTenants);
     } catch (error) {
-      log.error('Error fetching tenants:', error as Error);
+      console.error('Error fetching tenants:', error);
       setError('Failed to load tenant information');
     } finally {
       setLoading(false);
@@ -120,7 +119,7 @@ export default function SplitRentManagement({
 
       if (error) throw error;
     } catch (error) {
-      log.error('Error sending reminder:', error as Error);
+      console.error('Error sending reminder:', error);
       setError('Failed to send payment reminder');
     }
   };
@@ -147,7 +146,7 @@ export default function SplitRentManagement({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      log.error('Error generating report:', error as Error);
+      console.error('Error generating report:', error);
       setError('Failed to generate rent report');
     }
   };

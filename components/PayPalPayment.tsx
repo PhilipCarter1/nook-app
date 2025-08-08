@@ -1,94 +1,61 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import React from 'react';
+import { PayPalButtons } from '@paypal/react-paypal-js';
+import { createPayPalOrder, capturePayPalOrder } from '@/lib/paypal';
 import { toast } from 'sonner';
-import { CreditCard, DollarSign, CheckCircle } from 'lucide-react';
-import { log } from '@/lib/logger';
-
 interface PayPalPaymentProps {
   amount: number;
-  currency?: string;
-  onSuccess?: (orderId: string) => void;
-  onError?: (error: Error) => void;
+  unitId: string;
+  onSuccess: () => void;
+  onError: (error: Error) => void;
 }
 
-// Mock PayPal functions
-const createPayPalOrder = async (amount: number, currency: string) => {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return { id: `paypal_${Date.now()}` };
-};
-
-export function PayPalPayment({ 
-  amount, 
-  currency = 'USD', 
-  onSuccess, 
-  onError 
-}: PayPalPaymentProps) {
-  const [loading, setLoading] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
-
+export default function PayPalPayment({ amount, unitId, onSuccess, onError }: PayPalPaymentProps) {
   const handleCreateOrder = async () => {
-    setLoading(true);
     try {
-      const order = await createPayPalOrder(amount, currency);
-      setOrderId(order.id);
-      toast.success('PayPal order created successfully');
+      const order = await createPayPalOrder(amount, unitId);
+      return order.id;
     } catch (error) {
-      log.error('Error creating PayPal order:', error as Error);
+      console.error('Error creating PayPal order:', error);
       toast.error('Failed to create PayPal order');
-    } finally {
-      setLoading(false);
+      onError(error instanceof Error ? error : new Error('Failed to create PayPal order'));
+      throw error;
     }
   };
 
-  const handleCapture = async (orderId: string) => {
+  const handleApprove = async (data: { orderID: string }) => {
     try {
-      setLoading(true);
-      // Simulate PayPal capture
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const order = await capturePayPalOrder(data.orderID);
       
-      toast.success('Payment captured successfully!');
-      onSuccess?.(orderId);
+      if (order.status === 'COMPLETED') {
+        toast.success('Payment completed successfully');
+        onSuccess();
+      } else {
+        throw new Error('Payment not completed');
+      }
     } catch (error) {
-      log.error('Error capturing PayPal order:', error as Error);
-      toast.error('Failed to capture payment');
-    } finally {
-      setLoading(false);
+      console.error('Error capturing PayPal order:', error);
+      toast.error('Payment failed');
+      onError(error instanceof Error ? error : new Error('Payment failed'));
     }
-  };
-
-  const handleError = (err: any) => {
-    log.error('PayPal error:', err as Error);
-    toast.error('PayPal payment failed');
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">PayPal Payment</h3>
-          <Badge variant="secondary">{currency} {amount.toFixed(2)}</Badge>
-        </div>
-        
-        <div className="space-y-4">
-          <Button 
-            onClick={handleCreateOrder}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? 'Processing...' : 'Pay with PayPal'}
-          </Button>
-          
-          {orderId && (
-            <div className="text-sm text-green-600">
-              Order created: {orderId}
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="w-full">
+      <PayPalButtons
+        style={{
+          layout: 'vertical',
+          color: 'blue',
+          shape: 'rect',
+          label: 'pay',
+        }}
+        createOrder={handleCreateOrder}
+        onApprove={handleApprove}
+        onError={(err) => {
+          console.error('PayPal error:', err);
+          toast.error('Payment failed');
+          onError(new Error('Payment failed'));
+        }}
+      />
     </div>
   );
 } 

@@ -1,14 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Users, DollarSign, Plus, Trash2 } from 'lucide-react';
-import { log } from '@/lib/logger';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { getClient } from '@/lib/supabase/client';
@@ -79,7 +75,7 @@ export default function SplitRent({
 
       setTenants(formattedTenants);
     } catch (error) {
-      log.error('Error fetching tenants:', error as Error);
+      console.error('Error fetching tenants:', error);
       setError('Failed to load tenant information');
     } finally {
       setLoading(false);
@@ -122,7 +118,7 @@ export default function SplitRent({
       setNewTenantShare(0);
       setShowSplitForm(false);
     } catch (error) {
-      log.error('Error adding tenant:', error as Error);
+      console.error('Error adding tenant:', error);
       setError('Failed to add tenant');
     }
   };
@@ -144,7 +140,7 @@ export default function SplitRent({
       // Redirect to Stripe Checkout
       window.location.href = session.url;
     } catch (error) {
-      log.error('Error creating payment session:', error as Error);
+      console.error('Error creating payment session:', error);
       setError('Failed to process payment');
     }
   };

@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Users, Plus, Trash2, Mail } from 'lucide-react';
-import { log } from '@/lib/logger';
+import { Card } from '@/components/ui/card';
+import { Users, Plus, Trash2 } from 'lucide-react';
 import { getClient } from '@/lib/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/lib/hooks/use-toast';
 interface Tenant {
   id: string;
   name: string;
@@ -67,10 +64,10 @@ export default function SplitRentSetup({ tenants, onUpdate }: SplitRentSetupProp
       setNewTenant({ name: '', email: '', percentage: 0 });
       onUpdate();
     } catch (error) {
-      log.error('Error updating split settings:', error as Error);
+      console.error('Error adding tenant:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update split settings',
+        description: 'Failed to add tenant',
         variant: 'destructive',
       });
     }
@@ -97,7 +94,7 @@ export default function SplitRentSetup({ tenants, onUpdate }: SplitRentSetupProp
 
       onUpdate();
     } catch (error) {
-      log.error('Error removing tenant:', error as Error);
+      console.error('Error removing tenant:', error);
       toast({
         title: 'Error',
         description: 'Failed to remove tenant',
