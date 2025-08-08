@@ -68,12 +68,29 @@ export default function LoginPage() {
   };
 
   const isFormValid = () => {
-    return Object.values(validation).every(v => v.isValid) &&
-           Object.values(formData).every(v => v.trim() !== '');
+    const emailValid = validation.email.isValid && formData.email.trim() !== '';
+    const passwordValid = validation.password.isValid && formData.password.trim() !== '';
+    const allValid = emailValid && passwordValid;
+    
+    console.log('Form validation check:', {
+      emailValid,
+      passwordValid,
+      allValid,
+      email: formData.email,
+      password: formData.password,
+      emailValidation: validation.email,
+      passwordValidation: validation.password
+    });
+    
+    return allValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted!');
+    console.log('Form data:', formData);
+    console.log('Validation state:', validation);
+    console.log('Form valid:', isFormValid());
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -82,24 +99,30 @@ export default function LoginPage() {
     });
 
     if (!isFormValid()) {
+      console.log('Form validation failed');
       return;
     }
     
+    console.log('Starting login process...');
     setIsLoading(true);
 
     try {
       const supabase = createClient();
+      console.log('Attempting to sign in with:', formData.email);
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       if (signInError) {
+        console.error('Sign in error:', signInError);
         toast.error('Invalid email or password');
         return;
       }
+      console.log('Login successful!');
       toast.success('Welcome back to Nook!');
       router.push('/dashboard');
     } catch (err: any) {
+      console.error('Login error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -206,6 +229,7 @@ export default function LoginPage() {
               type="submit" 
               className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
               disabled={isLoading || !isFormValid()}
+              onClick={() => console.log('Button clicked! Form valid:', isFormValid(), 'Loading:', isLoading)}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
