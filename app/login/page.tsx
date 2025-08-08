@@ -111,6 +111,11 @@ export default function LoginPage() {
     try {
       alert('Creating Supabase client...');
       const supabase = createClient();
+      
+      // Test Supabase configuration
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+      
       console.log('Attempting to sign in with:', formData.email);
       alert('Attempting to sign in...');
       const { error: signInError } = await supabase.auth.signInWithPassword({

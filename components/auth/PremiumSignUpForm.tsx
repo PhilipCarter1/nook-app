@@ -149,33 +149,51 @@ export default function PremiumSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    alert('Signup form submitted!');
+    console.log('Form submitted!');
+    console.log('Form data:', formData);
+
     // Validate all fields
     Object.keys(formData).forEach(field => {
-      updateValidation(field as keyof ValidationState, formData[field as keyof typeof formData]);
+      updateValidation(field as keyof typeof formData, formData[field as keyof typeof formData]);
       setHasInteracted(prev => ({ ...prev, [field]: true }));
     });
 
     if (!isStepValid(3)) {
-      toast.error('Form validation failed. Please check your inputs.');
+      alert('Form validation failed');
+      console.log('Form validation failed');
       return;
     }
-    
+
+    alert('Form validation passed, starting signup...');
+    console.log('Starting signup process...');
     setIsLoading(true);
 
     try {
+      alert('Creating Supabase client...');
       const supabase = createClient();
+      console.log('Supabase client created');
+      alert('Supabase client created');
 
+      alert('Attempting to sign up...');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
+      console.log('Auth response:', { authData, signUpError });
+      alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
+
       if (signUpError) {
+        alert('Signup error: ' + signUpError.message);
+        console.error('Signup error:', signUpError);
         throw signUpError;
       }
 
       if (authData.user) {
+        alert('User created, creating profile...');
+        console.log('User created, creating profile...');
+
         const { error: profileError } = await supabase
           .from('users')
           .insert([
@@ -187,23 +205,27 @@ export default function PremiumSignUpForm() {
             },
           ]);
 
+        console.log('Profile creation result:', { profileError });
+
         if (profileError) {
+          alert('Profile creation error: ' + profileError.message);
           console.error('Profile creation error:', profileError);
           // Don't throw error, just log it - user can still access the platform
         }
 
+        alert('Account created successfully!');
+        console.log('Account created successfully!');
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
       } else {
+        alert('No user data returned');
+        console.log('No user data returned');
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
-      
-      if (err.message?.includes('already registered')) {
-        toast.error('An account with this email already exists. Please sign in instead.');
-      } else {
-        toast.error('Something went wrong. Please try again.');
-      }
+      alert('Sign up error: ' + err.message);
+      console.error('Sign up error:', err);
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
