@@ -187,6 +187,22 @@ export default function PremiumSignUpForm() {
 
       alert('Attempting to sign up...');
       console.log('Attempting to sign up...');
+      console.log('Email:', formData.email);
+      console.log('Password length:', formData.password.length);
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        alert('Invalid email format');
+        return;
+      }
+      
+      // Validate password length (Supabase requires at least 6 characters)
+      if (formData.password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+      
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -200,9 +216,11 @@ export default function PremiumSignUpForm() {
 
       console.log('Auth response:', { authData, signUpError });
       alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
-
+      
       if (signUpError) {
-        alert('Signup error: ' + signUpError.message);
+        const errorMessage = signUpError.message || 'Unknown error';
+        const errorCode = signUpError.status || 'No status code';
+        alert(`Signup error: ${errorMessage} (Code: ${errorCode})`);
         console.error('Signup error details:', signUpError);
         toast.error('Failed to create account. Please try again.');
         return;
