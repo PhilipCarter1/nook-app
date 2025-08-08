@@ -145,4 +145,4 @@ export function getClient() {
 }
 
 // Export createClient for backward compatibility
-export const createClient = () => supabase;
+export const createClient = () => createClientComponentClient<Database>();
