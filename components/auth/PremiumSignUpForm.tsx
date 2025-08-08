@@ -200,7 +200,7 @@ export default function PremiumSignUpForm() {
         }
 
         toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/');
+        router.push('/dashboard');
       } else {
         console.log('No user data returned');
         toast.error('Account creation failed. Please try again.');
