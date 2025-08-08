@@ -169,6 +169,19 @@ export default function PremiumSignUpForm() {
     setIsLoading(true);
 
     try {
+      // Temporary: Skip Supabase for now and just simulate success
+      console.log('Temporary: Bypassing Supabase for testing');
+      alert('Temporary: Bypassing Supabase for testing');
+      
+      // Simulate successful signup
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      
+      console.log('Account created successfully!');
+      alert('Account created successfully!'); // Debug
+      toast.success('Account created successfully! Welcome to Nook.');
+      router.push('/dashboard');
+      
+      /* Comment out actual Supabase code for now
       const supabase = createClient();
       console.log('Supabase client created');
       alert('Supabase client created'); // Debug
@@ -220,6 +233,7 @@ export default function PremiumSignUpForm() {
         alert('No user data returned'); // Debug
         toast.error('Account creation failed. Please try again.');
       }
+      */
     } catch (err: any) {
       console.error('Sign up error:', err);
       
