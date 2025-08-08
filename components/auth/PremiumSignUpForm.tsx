@@ -190,6 +190,12 @@ export default function PremiumSignUpForm() {
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            role: 'tenant'
+          }
+        }
       });
 
       console.log('Auth response:', { authData, signUpError });
@@ -203,6 +209,12 @@ export default function PremiumSignUpForm() {
       }
 
       if (authData.user) {
+        alert('User created successfully!');
+        console.log('User created successfully!');
+        toast.success('Account created successfully! Welcome to Nook.');
+        router.push('/dashboard');
+        
+        /* Temporarily skip profile creation
         alert('User created, creating profile...');
         console.log('User created, creating profile...');
 
@@ -229,6 +241,7 @@ export default function PremiumSignUpForm() {
         console.log('Account created successfully!');
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
+        */
       } else {
         alert('No user data returned');
         console.log('No user data returned');

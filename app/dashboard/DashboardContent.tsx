@@ -46,6 +46,15 @@ export default function DashboardContent() {
           return;
         }
 
+        // For now, just use the auth user data
+        setUser({
+          id: authUser.id,
+          email: authUser.email || '',
+          name: authUser.user_metadata?.full_name || authUser.email || 'User',
+          role: 'tenant'
+        });
+
+        /* Comment out profile lookup for now
         // Get user profile
         const { data: userProfile } = await supabase
           .from('users')
@@ -54,6 +63,7 @@ export default function DashboardContent() {
           .single();
 
         setUser(userProfile);
+        */
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         toast.error('Failed to load dashboard data');
