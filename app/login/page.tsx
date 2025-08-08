@@ -85,30 +85,30 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Form submitted!');
-    console.log('Login form submitted!');
-    console.log('Form data:', formData);
-    console.log('Validation state:', validation);
-    console.log('Form valid:', isFormValid());
-    
-    // Validate all fields
-    Object.keys(formData).forEach(field => {
-      updateValidation(field as 'email' | 'password', formData[field as keyof typeof formData]);
-      setHasInteracted(prev => ({ ...prev, [field]: true }));
-    });
-
-    if (!isFormValid()) {
-      alert('Form validation failed');
-      console.log('Form validation failed');
-      return;
-    }
-    
-    alert('Form validation passed, starting login...');
-    console.log('Starting login process...');
-    setIsLoading(true);
-
     try {
+      e.preventDefault();
+      alert('Form submitted!');
+      console.log('Login form submitted!');
+      console.log('Form data:', formData);
+      console.log('Validation state:', validation);
+      console.log('Form valid:', isFormValid());
+      
+      // Validate all fields
+      Object.keys(formData).forEach(field => {
+        updateValidation(field as 'email' | 'password', formData[field as keyof typeof formData]);
+        setHasInteracted(prev => ({ ...prev, [field]: true }));
+      });
+
+      if (!isFormValid()) {
+        alert('Form validation failed');
+        console.log('Form validation failed');
+        return;
+      }
+      
+      alert('Form validation passed, starting login...');
+      console.log('Starting login process...');
+      setIsLoading(true);
+
       alert('Creating Supabase client...');
       const supabase = createClient();
       
@@ -237,13 +237,33 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Test button to see if form submission works */}
+            <Button 
+              type="button"
+              onClick={() => {
+                alert('Test button clicked!');
+                console.log('Test button clicked!');
+              }}
+              className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Test Button (Should Show Alert)
+            </Button>
+
             <Button 
               type="submit" 
               className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
-              disabled={isLoading || !isFormValid()}
+              disabled={isLoading}
               onClick={() => {
                 alert('Button clicked!');
                 console.log('Button clicked! Form valid:', isFormValid(), 'Loading:', isLoading);
+                // Also try to manually trigger form submission
+                const form = document.getElementById('login-form') as HTMLFormElement;
+                if (form) {
+                  console.log('Form found, attempting manual submission');
+                  form.dispatchEvent(new Event('submit', { bubbles: true }));
+                } else {
+                  console.log('Form not found');
+                }
               }}
             >
               {isLoading ? (
