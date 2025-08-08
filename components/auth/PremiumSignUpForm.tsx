@@ -213,14 +213,15 @@ export default function PremiumSignUpForm() {
         alert('User created, creating profile...');
         console.log('User created, creating profile...');
 
+        // Create user profile with auth user ID as reference
         const { error: profileError } = await supabase
           .from('users')
           .insert([
             {
-              id: authData.user.id,
-              name: `${formData.firstName} ${formData.lastName}`,
               email: formData.email,
+              name: `${formData.firstName} ${formData.lastName}`,
               role: 'tenant',
+              auth_user_id: authData.user.id, // Add reference to auth user
             },
           ]);
 
