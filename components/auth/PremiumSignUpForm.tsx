@@ -149,7 +149,6 @@ export default function PremiumSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Signup form submitted!');
     console.log('Form submitted!');
     console.log('Form data:', formData);
 
@@ -160,60 +159,43 @@ export default function PremiumSignUpForm() {
     });
 
     if (!isStepValid(3)) {
-      alert('Form validation failed');
       console.log('Form validation failed');
       return;
     }
 
-    alert('Form validation passed, starting signup...');
     console.log('Starting signup process...');
     setIsLoading(true);
 
     try {
-      alert('Creating Supabase client...');
       const supabase = createClient();
       console.log('Supabase client created');
-      alert('Supabase client created');
 
       // Test Supabase connection
       try {
         const { data: testData, error: testError } = await supabase.from('users').select('count').limit(1);
         console.log('Supabase connection test:', { testData, testError });
-        alert('Supabase connection test: ' + (testError ? 'FAILED - ' + testError.message : 'SUCCESS'));
       } catch (testErr) {
         console.error('Supabase connection test error:', testErr);
-        alert('Supabase connection test error: ' + testErr);
       }
 
-      // Check environment variables
-      console.log('Environment check:', {
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS' : 'MISSING'
-      });
-      alert('Environment check - URL: ' + (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'EXISTS' : 'MISSING') + ', Key: ' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS' : 'MISSING'));
-
-      alert('Attempting to sign up...');
+      console.log('Attempting to sign up...');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
       console.log('Auth response:', { authData, signUpError });
-      alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
-      
+
       if (signUpError) {
-        const errorMessage = signUpError.message || 'Unknown error';
-        const errorCode = signUpError.status || 'No status code';
-        alert(`Signup error: ${errorMessage} (Code: ${errorCode})`);
         console.error('Signup error details:', signUpError);
-        throw signUpError;
+        toast.error('Failed to create account. Please try again.');
+        return;
       }
 
       if (authData.user) {
-        alert('User created, creating profile...');
         console.log('User created, creating profile...');
 
-        // Create user profile with auth user ID as reference
+        // Create user profile without specifying ID (let database auto-generate)
         const { error: profileError } = await supabase
           .from('users')
           .insert([
@@ -221,29 +203,24 @@ export default function PremiumSignUpForm() {
               email: formData.email,
               name: `${formData.firstName} ${formData.lastName}`,
               role: 'tenant',
-              auth_user_id: authData.user.id, // Add reference to auth user
             },
           ]);
 
         console.log('Profile creation result:', { profileError });
 
         if (profileError) {
-          alert('Profile creation error: ' + profileError.message);
           console.error('Profile creation error:', profileError);
           // Don't throw error, just log it - user can still access the platform
         }
 
-        alert('Account created successfully!');
         console.log('Account created successfully!');
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
       } else {
-        alert('No user data returned');
         console.log('No user data returned');
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
-      alert('Sign up error: ' + err.message);
       console.error('Sign up error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
