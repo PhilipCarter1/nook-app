@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { log } from '@/lib/logger';
@@ -163,16 +163,23 @@ export default function PremiumSignUpForm() {
     setIsLoading(true);
 
     try {
+      const supabase = createClient();
+      console.log('Starting signup process...');
+      
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
+
+      console.log('Auth response:', { authData, signUpError });
 
       if (signUpError) {
         throw signUpError;
       }
 
       if (authData.user) {
+        console.log('User created, creating profile...');
+        
         const { error: profileError } = await supabase
           .from('users')
           .insert([
@@ -185,19 +192,29 @@ export default function PremiumSignUpForm() {
             },
           ]);
 
+        console.log('Profile creation result:', { profileError });
+
         if (profileError) {
+          console.error('Profile creation error:', profileError);
           throw profileError;
         }
 
         toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/dashboard');
+        router.push('/');
+      } else {
+        console.log('No user data returned');
+        toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
+      console.error('Sign up error:', err);
       log.error('Sign up error:', err);
+      
       if (err.message?.includes('already registered')) {
         toast.error('An account with this email already exists. Please sign in instead.');
+      } else if (err.message?.includes('relation "users" does not exist')) {
+        toast.error('Database setup required. Please contact support.');
       } else {
-        toast.error('Something went wrong. Please try again.');
+        toast.error(`Something went wrong: ${err.message || 'Please try again.'}`);
       }
     } finally {
       setIsLoading(false);
