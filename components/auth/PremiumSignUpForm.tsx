@@ -175,6 +175,16 @@ export default function PremiumSignUpForm() {
       console.log('Supabase client created');
       alert('Supabase client created');
 
+      // Test Supabase connection
+      try {
+        const { data: testData, error: testError } = await supabase.from('users').select('count').limit(1);
+        console.log('Supabase connection test:', { testData, testError });
+        alert('Supabase connection test: ' + (testError ? 'FAILED - ' + testError.message : 'SUCCESS'));
+      } catch (testErr) {
+        console.error('Supabase connection test error:', testErr);
+        alert('Supabase connection test error: ' + testErr);
+      }
+
       // Check environment variables
       console.log('Environment check:', {
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -192,7 +202,9 @@ export default function PremiumSignUpForm() {
       alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
       
       if (signUpError) {
-        alert('Signup error details: ' + JSON.stringify(signUpError, null, 2));
+        const errorMessage = signUpError.message || 'Unknown error';
+        const errorCode = signUpError.status || 'No status code';
+        alert(`Signup error: ${errorMessage} (Code: ${errorCode})`);
         console.error('Signup error details:', signUpError);
         throw signUpError;
       }
