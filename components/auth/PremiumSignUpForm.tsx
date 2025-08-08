@@ -194,10 +194,9 @@ export default function PremiumSignUpForm() {
           .insert([
             {
               id: authData.user.id,
-              first_name: formData.firstName,
-              last_name: formData.lastName,
               email: formData.email,
-              role: 'user',
+              name: `${formData.firstName} ${formData.lastName}`,
+              role: 'tenant',
             },
           ]);
 
@@ -212,7 +211,7 @@ export default function PremiumSignUpForm() {
         console.log('Account created successfully!');
         alert('Account created successfully!'); // Temporary test
         toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/dashboard');
+        router.push('/');
       } else {
         console.log('No user data returned');
         alert('No user data returned'); // Temporary test
