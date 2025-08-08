@@ -99,29 +99,36 @@ export default function LoginPage() {
     });
 
     if (!isFormValid()) {
+      alert('Form validation failed');
       console.log('Form validation failed');
       return;
     }
     
+    alert('Form validation passed, starting login...');
     console.log('Starting login process...');
     setIsLoading(true);
 
     try {
+      alert('Creating Supabase client...');
       const supabase = createClient();
       console.log('Attempting to sign in with:', formData.email);
+      alert('Attempting to sign in...');
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       if (signInError) {
+        alert('Sign in error: ' + signInError.message);
         console.error('Sign in error:', signInError);
         toast.error('Invalid email or password');
         return;
       }
+      alert('Login successful! Redirecting...');
       console.log('Login successful!');
       toast.success('Welcome back to Nook!');
       router.push('/dashboard');
     } catch (err: any) {
+      alert('Login error: ' + err.message);
       console.error('Login error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
