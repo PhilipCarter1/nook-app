@@ -149,6 +149,8 @@ export default function PremiumSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!');
+    alert('Form submitted!'); // Temporary test
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -157,14 +159,18 @@ export default function PremiumSignUpForm() {
     });
 
     if (!isStepValid(3)) {
+      console.log('Form validation failed');
+      alert('Form validation failed'); // Temporary test
       return;
     }
     
+    console.log('Starting signup process...');
+    alert('Starting signup process...'); // Temporary test
     setIsLoading(true);
 
     try {
       const supabase = createClient();
-      console.log('Starting signup process...');
+      console.log('Supabase client created');
       
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -174,11 +180,14 @@ export default function PremiumSignUpForm() {
       console.log('Auth response:', { authData, signUpError });
 
       if (signUpError) {
+        console.error('Signup error:', signUpError);
+        alert('Signup error: ' + signUpError.message); // Temporary test
         throw signUpError;
       }
 
       if (authData.user) {
         console.log('User created, creating profile...');
+        alert('User created successfully!'); // Temporary test
         
         const { error: profileError } = await supabase
           .from('users')
@@ -196,17 +205,22 @@ export default function PremiumSignUpForm() {
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
+          alert('Profile creation error: ' + profileError.message); // Temporary test
           throw profileError;
         }
 
+        console.log('Account created successfully!');
+        alert('Account created successfully!'); // Temporary test
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
       } else {
         console.log('No user data returned');
+        alert('No user data returned'); // Temporary test
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
       console.error('Sign up error:', err);
+      alert('Sign up error: ' + err.message); // Temporary test
       log.error('Sign up error:', err);
       
       if (err.message?.includes('already registered')) {
@@ -474,6 +488,7 @@ export default function PremiumSignUpForm() {
               type="submit"
               className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
               disabled={isLoading || !isStepValid(3)}
+              onClick={() => console.log('Button clicked!')}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
