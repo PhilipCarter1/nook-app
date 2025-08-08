@@ -170,17 +170,27 @@ export default function PremiumSignUpForm() {
 
     try {
       const supabase = createClient();
+      console.log('Supabase client created');
+      alert('Supabase client created'); // Debug
       
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
+      console.log('Auth response:', { authData, signUpError });
+      alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS')); // Debug
+
       if (signUpError) {
+        console.error('Signup error:', signUpError);
+        alert('Signup error: ' + signUpError.message); // Debug
         throw signUpError;
       }
 
       if (authData.user) {
+        console.log('User created, creating profile...');
+        alert('User created successfully!'); // Debug
+        
         // Create user profile with the correct schema
         const { error: profileError } = await supabase
           .from('users')
@@ -193,14 +203,21 @@ export default function PremiumSignUpForm() {
             },
           ]);
 
+        console.log('Profile creation result:', { profileError });
+
         if (profileError) {
           console.error('Profile creation error:', profileError);
+          alert('Profile creation error: ' + profileError.message); // Debug
           // Don't throw error, just log it - user can still access the platform
         }
 
+        console.log('Account created successfully!');
+        alert('Account created successfully!'); // Debug
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
       } else {
+        console.log('No user data returned');
+        alert('No user data returned'); // Debug
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
