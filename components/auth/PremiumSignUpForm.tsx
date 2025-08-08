@@ -175,6 +175,13 @@ export default function PremiumSignUpForm() {
       console.log('Supabase client created');
       alert('Supabase client created');
 
+      // Check environment variables
+      console.log('Environment check:', {
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS' : 'MISSING'
+      });
+      alert('Environment check - URL: ' + (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'EXISTS' : 'MISSING') + ', Key: ' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS' : 'MISSING'));
+
       alert('Attempting to sign up...');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -183,10 +190,10 @@ export default function PremiumSignUpForm() {
 
       console.log('Auth response:', { authData, signUpError });
       alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
-
+      
       if (signUpError) {
-        alert('Signup error: ' + signUpError.message);
-        console.error('Signup error:', signUpError);
+        alert('Signup error details: ' + JSON.stringify(signUpError, null, 2));
+        console.error('Signup error details:', signUpError);
         throw signUpError;
       }
 
