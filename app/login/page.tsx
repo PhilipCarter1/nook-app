@@ -74,6 +74,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted!');
+    alert('Login form submitted!'); // Debug
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -82,13 +84,30 @@ export default function LoginPage() {
     });
 
     if (!isFormValid()) {
+      console.log('Login form validation failed');
+      alert('Login form validation failed'); // Debug
       return;
     }
     
+    console.log('Starting login process...');
+    alert('Starting login process...'); // Debug
     setIsLoading(true);
 
     try {
-      const supabase = getClient();
+      // Temporary: Skip Supabase for now and just simulate success
+      console.log('Temporary: Bypassing Supabase for login testing');
+      alert('Temporary: Bypassing Supabase for login testing');
+      
+      // Simulate successful login
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      
+      console.log('Login successful!');
+      alert('Login successful!'); // Debug
+      toast.success('Welcome back!');
+      router.push('/dashboard');
+      
+      /* Comment out actual Supabase code for now
+      const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -99,11 +118,13 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success('Welcome back to Nook!');
+      toast.success('Welcome back!');
       router.push('/dashboard');
-    } catch (err) {
-      log.error('Login error:', err as Error);
-      toast.error('Invalid email or password');
+      */
+    } catch (err: any) {
+      console.error('Login error:', err);
+      alert('Login error: ' + err.message); // Debug
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
