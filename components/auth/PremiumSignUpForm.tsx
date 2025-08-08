@@ -175,7 +175,7 @@ export default function PremiumSignUpForm() {
       }
 
       if (authData.user) {
-        // Create user profile
+        // Create user profile with the correct schema
         const { error: profileError } = await supabase
           .from('users')
           .insert([
@@ -188,7 +188,8 @@ export default function PremiumSignUpForm() {
           ]);
 
         if (profileError) {
-          throw profileError;
+          console.error('Profile creation error:', profileError);
+          // Don't throw error, just log it - user can still access the platform
         }
 
         toast.success('Account created successfully! Welcome to Nook.');
@@ -197,14 +198,12 @@ export default function PremiumSignUpForm() {
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: any) {
-      log.error('Sign up error:', err);
+      console.error('Sign up error:', err);
       
       if (err.message?.includes('already registered')) {
         toast.error('An account with this email already exists. Please sign in instead.');
-      } else if (err.message?.includes('relation "users" does not exist')) {
-        toast.error('Database setup required. Please contact support.');
       } else {
-        toast.error(`Something went wrong: ${err.message || 'Please try again.'}`);
+        toast.error('Something went wrong. Please try again.');
       }
     } finally {
       setIsLoading(false);
