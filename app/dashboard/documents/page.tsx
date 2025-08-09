@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +20,8 @@ import {
   Building,
   Eye,
   Trash2,
-  Plus
+  Plus,
+  ArrowLeft
 } from 'lucide-react';
 
 interface Document {
@@ -35,6 +37,7 @@ interface Document {
 }
 
 export default function DocumentsPage() {
+  const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -165,9 +168,19 @@ export default function DocumentsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Documents</h1>
-            <p className="text-gray-600">Store and manage important documents</p>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/dashboard/admin')}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Documents</h1>
+              <p className="text-gray-600">Store and manage important documents</p>
+            </div>
           </div>
           <Button onClick={() => setShowUpload(true)}>
             <Upload className="h-4 w-4 mr-2" />

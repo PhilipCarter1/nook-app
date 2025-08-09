@@ -1,0 +1,385 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Building2, 
+  MessageSquare, 
+  CreditCard, 
+  FileText, 
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Home,
+  Users
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { getClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
+
+interface TenantDashboardData {
+  property: {
+    id: string;
+    name: string;
+    address: string;
+  };
+  unit: {
+    id: string;
+    name: string;
+    rent: number;
+  };
+  maintenanceTickets: {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    created_at: string;
+  }[];
+  payments: {
+    id: string;
+    amount: number;
+    status: string;
+    due_date: string;
+  }[];
+  documents: {
+    id: string;
+    title: string;
+    type: string;
+    status: string;
+  }[];
+}
+
+export default function TenantDashboard() {
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<TenantDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && user.role === 'tenant') {
+      fetchTenantDashboardData();
+    }
+  }, [user]);
+
+  // Early return for static generation
+  if (typeof window === 'undefined') {
+    return <div>Loading...</div>;
+  }
+
+  const fetchTenantDashboardData = async () => {
+    try {
+      const supabase = getClient();
+      
+      // Get tenant's property and unit information
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('property_id, unit_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (userError || !userData) {
+        toast.error('Failed to load tenant data');
+        return;
+      }
+
+      // Get property information
+      const { data: property, error: propertyError } = await supabase
+        .from('properties')
+        .select('id, name, address')
+        .eq('id', userData.property_id)
+        .single();
+
+      // Get unit information
+      const { data: unit, error: unitError } = await supabase
+        .from('units')
+        .select('id, name, rent')
+        .eq('id', userData.unit_id)
+        .single();
+
+      // Get maintenance tickets
+      const { data: tickets, error: ticketsError } = await supabase
+        .from('maintenance_tickets')
+        .select('id, title, status, priority, created_at')
+        .eq('tenant_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Get payments
+      const { data: payments, error: paymentsError } = await supabase
+        .from('payments')
+        .select('id, amount, status, due_date')
+        .eq('tenant_id', user?.id)
+        .order('due_date', { ascending: true })
+        .limit(5);
+
+      // Get documents
+      const { data: documents, error: documentsError } = await supabase
+        .from('documents')
+        .select('id, title, type, status')
+        .eq('tenant_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setDashboardData({
+        property: property || { id: '', name: '', address: '' },
+        unit: unit || { id: '', name: '', rent: 0 },
+        maintenanceTickets: tickets || [],
+        payments: payments || [],
+        documents: documents || [],
+      });
+    } catch (error) {
+      console.error('Error fetching tenant dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+      case 'paid':
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':
+      case 'open':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nook-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Property Assigned</h3>
+              <p className="text-gray-600">You haven't been assigned to a property yet. Please contact your landlord.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Welcome Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.email?.split('@')[0] || 'Tenant'}!</h1>
+          <p className="text-gray-600">Here's what's happening with your rental</p>
+        </div>
+        <Badge variant="outline" className="text-sm">
+          Tenant Dashboard
+        </Badge>
+      </div>
+
+      {/* Property Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Home className="h-5 w-5" />
+            Your Property
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold text-gray-900">{dashboardData.property.name}</h3>
+              <p className="text-gray-600">{dashboardData.property.address}</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Unit {dashboardData.unit.name}</h3>
+              <p className="text-gray-600">Rent: ${dashboardData.unit.rent}/month</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-8 w-8 text-blue-600" />
+              <div>
+                <h3 className="font-semibold">Maintenance</h3>
+                <p className="text-sm text-gray-600">Report issues</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-8 w-8 text-green-600" />
+              <div>
+                <h3 className="font-semibold">Payments</h3>
+                <p className="text-sm text-gray-600">Pay rent online</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <FileText className="h-8 w-8 text-purple-600" />
+              <div>
+                <h3 className="font-semibold">Documents</h3>
+                <p className="text-sm text-gray-600">View lease & docs</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Calendar className="h-8 w-8 text-orange-600" />
+              <div>
+                <h3 className="font-semibold">Schedule</h3>
+                <p className="text-sm text-gray-600">View events</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Maintenance Tickets */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Recent Maintenance Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {dashboardData.maintenanceTickets.length > 0 ? (
+              <div className="space-y-3">
+                {dashboardData.maintenanceTickets.map((ticket) => (
+                  <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{ticket.title}</h4>
+                      <p className="text-sm text-gray-600">{new Date(ticket.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge className={getStatusColor(ticket.status)}>
+                        {ticket.status}
+                      </Badge>
+                      <Badge className={getPriorityColor(ticket.priority)}>
+                        {ticket.priority}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No maintenance requests yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Payments */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Recent Payments
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {dashboardData.payments.length > 0 ? (
+              <div className="space-y-3">
+                {dashboardData.payments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900">Rent Payment</h4>
+                      <p className="text-sm text-gray-600">Due: {new Date(payment.due_date).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">${payment.amount}</span>
+                      <Badge className={getStatusColor(payment.status)}>
+                        {payment.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No recent payments</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Recent Documents
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {dashboardData.documents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboardData.documents.map((document) => (
+                <div key={document.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-blue-600" />
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{document.title}</h4>
+                      <p className="text-sm text-gray-600">{document.type}</p>
+                    </div>
+                    <Badge className={getStatusColor(document.status)}>
+                      {document.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-4">No documents available</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+} 

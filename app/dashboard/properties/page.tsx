@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Building, Plus, MapPin, Users, X } from 'lucide-react';
+import { Building, Plus, MapPin, Users, X, ArrowLeft } from 'lucide-react';
 
 interface Property {
   id: string;
@@ -141,9 +141,19 @@ export default function PropertiesPage() {
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Properties</h1>
-              <p className="text-gray-600">Manage your properties</p>
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/dashboard/admin')}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Properties</h1>
+                <p className="text-gray-600">Manage your properties</p>
+              </div>
             </div>
             <Button 
               onClick={() => setShowAddModal(true)}

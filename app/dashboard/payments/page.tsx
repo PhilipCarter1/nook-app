@@ -17,8 +17,10 @@ import {
   DollarSign,
   CheckCircle,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Payment {
   id: string;
@@ -43,6 +45,8 @@ export default function PaymentsPage() {
     property_id: '',
     due_date: ''
   });
+
+  const router = useRouter();
 
   useEffect(() => {
     loadPayments();
@@ -146,9 +150,19 @@ export default function PaymentsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
-            <p className="text-gray-600">Manage rent and other payments</p>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/dashboard/admin')}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
+              <p className="text-gray-600">Manage rent and other payments</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline">

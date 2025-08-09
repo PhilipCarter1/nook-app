@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Users, Plus, Search, Mail, Phone, Calendar, Edit, Trash2 } from 'lucide-react';
+import { Users, Plus, Search, Mail, Phone, Calendar, Edit, Trash2, ArrowLeft } from 'lucide-react';
 
 interface Tenant {
   id: string;
@@ -198,9 +198,19 @@ export default function TenantsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Tenant Management</h1>
-            <p className="text-gray-600">Onboard and manage tenants for your properties</p>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/dashboard/admin')}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Tenant Management</h1>
+              <p className="text-gray-600">Onboard and manage tenants for your properties</p>
+            </div>
           </div>
           <Button 
             onClick={() => setShowAddForm(true)}

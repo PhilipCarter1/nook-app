@@ -32,7 +32,7 @@ export default function PremiumSignUpForm() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'admin' as 'admin', // Default to admin for trial starters
+    role: 'admin' as const,
   });
 
   const [validation, setValidation] = useState({
@@ -101,9 +101,9 @@ export default function PremiumSignUpForm() {
         validationResult = validateName(value, 'lastName');
         break;
       default:
-        return;
+        validationResult = { isValid: true, message: '' };
     }
-
+    
     setValidation(prev => ({
       ...prev,
       [field]: validationResult
@@ -113,172 +113,113 @@ export default function PremiumSignUpForm() {
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasInteracted(prev => ({ ...prev, [field]: true }));
-    updateValidation(field as keyof ValidationState, value);
+    updateValidation(field, value);
   };
 
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
-        return validation.firstName.isValid && hasInteracted.firstName &&
-               validation.lastName.isValid && hasInteracted.lastName &&
-               formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
+        return validation.firstName.isValid && validation.lastName.isValid && formData.firstName && formData.lastName;
       case 2:
-        return validation.email.isValid && hasInteracted.email &&
-               formData.email.trim() !== '';
+        return validation.email.isValid && formData.email;
       case 3:
-        return validation.password.isValid && hasInteracted.password &&
-               validation.confirmPassword.isValid && hasInteracted.confirmPassword &&
-               formData.password.trim() !== '' && formData.confirmPassword.trim() !== '';
+        return validation.password.isValid && validation.confirmPassword.isValid && formData.password && formData.confirmPassword;
       default:
         return false;
     }
   };
 
   const handleNext = () => {
-    if (currentStep === 1) {
-      updateValidation('email', formData.email);
-      setHasInteracted(prev => ({ ...prev, email: true }));
-      if (validation.email.isValid && formData.email.trim() !== '') {
-        setCurrentStep(2);
-      }
-    } else if (currentStep === 2) {
-      updateValidation('password', formData.password);
-      updateValidation('confirmPassword', formData.confirmPassword);
-      setHasInteracted(prev => ({ ...prev, password: true, confirmPassword: true }));
-      if (validation.password.isValid && validation.confirmPassword.isValid && 
-          formData.password.trim() !== '' && formData.confirmPassword.trim() !== '') {
-        setCurrentStep(3);
+    if (isStepValid(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, 3));
+    } else {
+      // Mark all fields in current step as interacted
+      if (currentStep === 1) {
+        setHasInteracted(prev => ({ ...prev, firstName: true, lastName: true }));
+      } else if (currentStep === 2) {
+        setHasInteracted(prev => ({ ...prev, email: true }));
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Signup form submitted!');
-    console.log('Form submitted!');
-    console.log('Form data:', formData);
-
-    // Validate all fields
-    Object.keys(formData).forEach(field => {
-      updateValidation(field as keyof typeof formData, formData[field as keyof typeof formData]);
-      setHasInteracted(prev => ({ ...prev, [field]: true }));
-    });
-
-    if (!isStepValid(3)) {
-      alert('Form validation failed');
-      console.log('Form validation failed');
-      return;
-    }
-
-    alert('Form validation passed, starting signup...');
-    console.log('Starting signup process...');
     setIsLoading(true);
 
     try {
-      alert('Creating Supabase client...');
       const supabase = createClient();
-      console.log('Supabase client created');
-      alert('Supabase client created');
 
-      // Log environment variables (without exposing sensitive data)
-      console.log('Environment variables check:', {
-        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        urlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
-        keyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0
+      // Validate all fields
+      Object.keys(formData).forEach(field => {
+        updateValidation(field as keyof typeof formData, formData[field as keyof typeof formData]);
+        setHasInteracted(prev => ({ ...prev, [field]: true }));
       });
-      alert('Environment check - URL: ' + (process.env.NEXT_PUBLIC_SUPABASE_URL ? 'EXISTS (' + (process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0) + ' chars)' : 'MISSING') + ', Key: ' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS (' + (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0) + ' chars)' : 'MISSING'));
 
-      // Test basic Supabase connection
-      try {
-        console.log('Testing Supabase connection...');
-        const { data: testData, error: testError } = await supabase
-          .from('users')
-          .select('count')
-          .limit(1);
-        
-        console.log('Connection test result:', { testData, testError });
-        alert('Connection test: ' + (testError ? 'FAILED - ' + testError.message : 'SUCCESS'));
-        
-        if (testError) {
-          console.error('Supabase connection failed:', testError);
-          alert('Cannot connect to database. Please check Supabase configuration.');
-          return;
-        }
-      } catch (testErr) {
-        console.error('Supabase connection test error:', testErr);
-        alert('Supabase connection test error: ' + testErr);
+      if (!isStepValid(3)) {
+        toast.error('Please fix the validation errors before submitting.');
+        setIsLoading(false);
         return;
       }
 
-      alert('Attempting to sign up...');
-      console.log('Attempting to sign up...');
-      console.log('Email:', formData.email);
-      console.log('Password length:', formData.password.length);
-      
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        alert('Invalid email format');
-        return;
-      }
-      
-      // Validate password length (Supabase requires at least 6 characters)
-      if (formData.password.length < 6) {
-        alert('Password must be at least 6 characters long');
-        return;
-      }
-      
-      // TEMPORARY: Bypass Supabase for now and simulate success
-      alert('Temporary: Bypassing Supabase signup for testing');
-      console.log('Temporary: Bypassing Supabase signup for testing');
-      
-      // Simulate successful signup
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      // Show loading toast
+      const loadingToast = toast.loading('Creating your account...');
 
-      console.log('Account created successfully!');
-      toast.success('Account created successfully! Welcome to Nook.');
-      
-      // All trial starters become admins
-      router.push('/dashboard/admin');
-      
-      /* Comment out actual Supabase code for now
+      // Create user account with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             full_name: `${formData.firstName} ${formData.lastName}`,
-            role: 'tenant'
+            role: 'admin'
           }
         }
       });
 
-      console.log('Auth response:', { authData, signUpError });
-      alert('Auth response received: ' + (signUpError ? 'ERROR' : 'SUCCESS'));
-      
       if (signUpError) {
-        const errorMessage = signUpError.message || 'Unknown error';
-        const errorCode = signUpError.status || 'No status code';
-        alert(`Signup error: ${errorMessage} (Code: ${errorCode})`);
-        console.error('Signup error details:', signUpError);
-        toast.error('Failed to create account. Please try again.');
+        console.error('Sign up error:', signUpError);
+        toast.dismiss(loadingToast);
+        toast.error(`Failed to create account: ${signUpError.message}`);
+        setIsLoading(false);
         return;
       }
 
       if (authData.user) {
-        alert('User created successfully!');
-        console.log('User created successfully!');
-        toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/dashboard');
+        // Create user profile in database
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: authData.user.id,
+              email: formData.email,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              role: 'admin',
+              trial_status: 'active',
+              trial_start_date: new Date().toISOString(),
+              trial_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+          ]);
+
+        toast.dismiss(loadingToast);
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // If profile creation fails, we still have the auth user, so we can continue
+          toast.warning('Account created but profile setup incomplete. You can complete it later.');
+        } else {
+          toast.success('Account created successfully! Welcome to Nook Admin.');
+        }
+        
+        // Redirect to admin dashboard
+        setTimeout(() => {
+          router.push('/dashboard/admin');
+        }, 1000);
       } else {
-        alert('No user data returned');
-        console.log('No user data returned');
+        toast.dismiss(loadingToast);
         toast.error('Account creation failed. Please try again.');
       }
-      */
     } catch (err: any) {
-      alert('Sign up error: ' + err.message);
       console.error('Sign up error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
@@ -291,68 +232,101 @@ export default function PremiumSignUpForm() {
       case 1:
         return (
           <>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Name</h2>
+            <div className="text-center mb-6">
+              <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <User className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Your Name</h2>
+              <p className="text-gray-600 mt-2">Let's start with your basic information</p>
+            </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className={hasInteracted.firstName && !validation.firstName.isValid ? 'border-red-500' : ''}
+                  className={`h-11 ${hasInteracted.firstName && !validation.firstName.isValid ? 'border-red-500 focus:ring-red-500' : 'focus:ring-nook-purple-500'}`}
+                  placeholder="Enter your first name"
                   required
                 />
                 {hasInteracted.firstName && !validation.firstName.isValid && (
-                  <p className="text-xs text-red-500">{validation.firstName.message}</p>
+                  <p className="text-xs text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {validation.firstName.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className={hasInteracted.lastName && !validation.lastName.isValid ? 'border-red-500' : ''}
+                  className={`h-11 ${hasInteracted.lastName && !validation.lastName.isValid ? 'border-red-500 focus:ring-red-500' : 'focus:ring-nook-purple-500'}`}
+                  placeholder="Enter your last name"
                   required
                 />
                 {hasInteracted.lastName && !validation.lastName.isValid && (
-                  <p className="text-xs text-red-500">{validation.lastName.message}</p>
+                  <p className="text-xs text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {validation.lastName.message}
+                  </p>
                 )}
               </div>
             </div>
-            <Button onClick={handleNext} className="w-full mt-6 bg-nook-purple-600 hover:bg-nook-purple-500">
-              Next <ArrowRight className="ml-2 h-4 w-4" />
+            <Button 
+              onClick={handleNext} 
+              className="w-full mt-6 h-11 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </>
         );
       case 2:
         return (
           <>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Email</h2>
+            <div className="text-center mb-6">
+              <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <Mail className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Your Email</h2>
+              <p className="text-gray-600 mt-2">We'll use this for your account</p>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</Label>
               <div className="relative">
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`pl-10 ${hasInteracted.email && !validation.email.isValid ? 'border-red-500' : ''}`}
+                  className={`h-11 pl-10 ${hasInteracted.email && !validation.email.isValid ? 'border-red-500 focus:ring-red-500' : 'focus:ring-nook-purple-500'}`}
                   placeholder="john@example.com"
                   required
                 />
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
               {hasInteracted.email && !validation.email.isValid && (
-                <p className="text-xs text-red-500">{validation.email.message}</p>
+                <p className="text-xs text-red-500 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {validation.email.message}
+                </p>
               )}
             </div>
-            <div className="flex gap-2 mt-6">
-              <Button variant="outline" onClick={() => setCurrentStep(1)} className="flex-1">
+            <div className="flex gap-3 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(1)} 
+                className="flex-1 h-11 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Back
               </Button>
-              <Button onClick={handleNext} className="flex-1 bg-nook-purple-600 hover:bg-nook-purple-500">
-                Next <ArrowRight className="ml-2 h-4 w-4" />
+              <Button 
+                onClick={handleNext} 
+                className="flex-1 h-11 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Continue <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </>
@@ -360,17 +334,23 @@ export default function PremiumSignUpForm() {
       case 3:
         return (
           <>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Set Password</h2>
+            <div className="text-center mb-6">
+              <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                <Lock className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Set Password</h2>
+              <p className="text-gray-600 mt-2">Create a secure password for your account</p>
+            </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`pl-10 pr-10 ${hasInteracted.password && !validation.password.isValid ? 'border-red-500' : ''}`}
+                    className={`h-11 pl-10 pr-10 ${hasInteracted.password && !validation.password.isValid ? 'border-red-500 focus:ring-red-500' : 'focus:ring-nook-purple-500'}`}
                     placeholder="Min 8 characters"
                     required
                   />
@@ -388,27 +368,31 @@ export default function PremiumSignUpForm() {
                   </button>
                 </div>
                 {hasInteracted.password && !validation.password.isValid && (
-                  <p className="text-xs text-red-500">{validation.password.message}</p>
+                  <p className="text-xs text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {validation.password.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className={`pl-10 pr-10 ${hasInteracted.confirmPassword && !validation.confirmPassword.isValid ? 'border-red-500' : ''}`}
+                    className={`h-11 pl-10 pr-10 ${hasInteracted.confirmPassword && !validation.confirmPassword.isValid ? 'border-red-500 focus:ring-red-500' : 'focus:ring-nook-purple-500'}`}
+                    placeholder="Confirm your password"
                     required
                   />
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3"
                   >
-                    {showPassword ? (
+                    {showConfirmPassword ? (
                       <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
                       <Eye className="h-4 w-4 text-gray-400" />
@@ -416,24 +400,30 @@ export default function PremiumSignUpForm() {
                   </button>
                 </div>
                 {hasInteracted.confirmPassword && !validation.confirmPassword.isValid && (
-                  <p className="text-xs text-red-500">{validation.confirmPassword.message}</p>
+                  <p className="text-xs text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {validation.confirmPassword.message}
+                  </p>
                 )}
               </div>
             </div>
-            <div className="flex gap-2 mt-6">
-              <Button variant="outline" onClick={() => setCurrentStep(2)} className="flex-1">
+            <div className="flex gap-3 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(2)} 
+                className="flex-1 h-11 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 Back
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-nook-purple-600 hover:bg-nook-purple-500"
+                className="flex-1 h-11 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                 disabled={isLoading || !isStepValid(3)}
-                onClick={() => console.log('Create Account button clicked!')}
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <CheckCircle className="mr-2 h-4 w-4" />
+                  <Sparkles className="mr-2 h-4 w-4" />
                 )}
                 Start Free Trial
               </Button>
@@ -447,13 +437,13 @@ export default function PremiumSignUpForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-nook-purple-50 via-white to-nook-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
+        <CardContent className="p-8">
           <form onSubmit={handleSubmit}>
             {renderStep()}
           </form>
           
-          <div className="text-center pt-6">
+          <div className="text-center pt-6 border-t border-gray-100 mt-6">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
               <a href="/login" className="text-nook-purple-600 hover:text-nook-purple-500 font-medium transition-colors duration-200">
