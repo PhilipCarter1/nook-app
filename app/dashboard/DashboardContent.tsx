@@ -38,6 +38,17 @@ export default function DashboardContent() {
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
       try {
+        // TEMPORARY: Skip auth check and use simulated user data
+        console.log('Using simulated user data');
+        setUser({
+          id: '1',
+          email: 'user@example.com',
+          name: 'Demo User',
+          role: 'tenant'
+        });
+        setLoading(false);
+        
+        /* Comment out actual auth check for now
         const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
@@ -53,16 +64,6 @@ export default function DashboardContent() {
           name: authUser.user_metadata?.full_name || authUser.email || 'User',
           role: 'tenant'
         });
-
-        /* Comment out profile lookup for now
-        // Get user profile
-        const { data: userProfile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', authUser.id)
-          .single();
-
-        setUser(userProfile);
         */
       } catch (error) {
         console.error('Error loading dashboard data:', error);

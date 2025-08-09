@@ -85,30 +85,21 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
     try {
-      e.preventDefault();
-      alert('Form submitted!');
-      console.log('Login form submitted!');
-      console.log('Form data:', formData);
-      console.log('Validation state:', validation);
-      console.log('Form valid:', isFormValid());
+      // TEMPORARY: Bypass Supabase for now and simulate success
+      console.log('Temporary: Bypassing Supabase login for testing');
       
-      // Validate all fields
-      Object.keys(formData).forEach(field => {
-        updateValidation(field as 'email' | 'password', formData[field as keyof typeof formData]);
-        setHasInteracted(prev => ({ ...prev, [field]: true }));
-      });
-
-      if (!isFormValid()) {
-        alert('Form validation failed');
-        console.log('Form validation failed');
-        return;
-      }
+      // Simulate successful login
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
       
-      alert('Form validation passed, starting login...');
-      console.log('Starting login process...');
-      setIsLoading(true);
-
+      console.log('Login successful!');
+      toast.success('Welcome back to Nook!');
+      router.push('/dashboard');
+      
+      /* Comment out actual Supabase code for now
       alert('Creating Supabase client...');
       const supabase = createClient();
       
@@ -147,7 +138,6 @@ export default function LoginPage() {
       router.push('/dashboard');
       */
     } catch (err: any) {
-      alert('Login error: ' + err.message);
       console.error('Login error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
