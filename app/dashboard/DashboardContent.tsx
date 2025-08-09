@@ -85,18 +85,31 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome to Nook</h1>
-              <p className="text-gray-600">Your property management platform</p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-nook-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">N</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Nook</h1>
+                  <p className="text-gray-600 text-sm">Property Management</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="secondary">{user?.role || 'User'}</Badge>
-              <Button variant="outline" onClick={() => router.push('/settings')}>
+              <Badge variant="secondary" className="bg-nook-purple-100 text-nook-purple-800 border-nook-purple-200">
+                {user?.role || 'User'}
+              </Badge>
+              <Button 
+                variant="outline" 
+                onClick={() => toast.info('Settings coming soon!')}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
@@ -108,21 +121,21 @@ export default function DashboardContent() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
+        <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-nook-purple-50 to-blue-50">
+          <CardContent className="p-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome, {user?.name || 'User'}!</h2>
-              <p className="text-gray-600 mb-4">Your Nook account is ready. Start managing your properties.</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome, {user?.name || 'User'}!</h2>
+              <p className="text-gray-600 mb-6 text-lg">Your Nook account is ready. Start managing your properties.</p>
               <div className="flex justify-center space-x-4">
-                <Badge variant="outline" className="bg-green-50 text-green-700">
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                   <Shield className="h-4 w-4 mr-1" />
                   Secure
                 </Badge>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
                   <Zap className="h-4 w-4 mr-1" />
                   Fast
                 </Badge>
-                <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   Premium
                 </Badge>
@@ -132,69 +145,86 @@ export default function DashboardContent() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/properties')}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/properties')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Building className="h-6 w-6 text-nook-purple-600 mr-3" />
+                <div className="w-12 h-12 bg-nook-purple-100 rounded-lg flex items-center justify-center mr-4">
+                  <Building className="h-6 w-6 text-nook-purple-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Properties</h3>
-                  <p className="text-sm text-gray-600">Manage your properties</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Properties</h3>
+                  <p className="text-gray-600 text-sm">Manage your properties</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/tenants')}>
+          
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Users className="h-6 w-6 text-green-600 mr-3" />
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                  <Users className="h-6 w-6 text-green-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Tenants</h3>
-                  <p className="text-sm text-gray-600">Manage tenant information</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Tenants</h3>
+                  <p className="text-gray-600 text-sm">Manage tenant information</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/maintenance')}>
+          
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Wrench className="h-6 w-6 text-orange-600 mr-3" />
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                  <Wrench className="h-6 w-6 text-orange-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Maintenance</h3>
-                  <p className="text-sm text-gray-600">Track and manage maintenance requests</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Maintenance</h3>
+                  <p className="text-gray-600 text-sm">Track and manage maintenance requests</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/payments')}>
+          
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                  <CreditCard className="h-6 w-6 text-blue-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Payments</h3>
-                  <p className="text-sm text-gray-600">Manage rent and other payments</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Payments</h3>
+                  <p className="text-gray-600 text-sm">Manage rent and other payments</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/documents')}>
+          
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FileText className="h-6 w-6 text-red-600 mr-3" />
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                  <FileText className="h-6 w-6 text-red-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Documents</h3>
-                  <p className="text-sm text-gray-600">Store and manage important documents</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
+                  <p className="text-gray-600 text-sm">Store and manage important documents</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => router.push('/dashboard/analytics')}>
+          
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <BarChart className="h-6 w-6 text-yellow-600 mr-3" />
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                  <BarChart className="h-6 w-6 text-yellow-600" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Analytics</h3>
-                  <p className="text-sm text-gray-600">Gain insights into your portfolio</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Analytics</h3>
+                  <p className="text-gray-600 text-sm">Gain insights into your portfolio</p>
                 </div>
               </div>
             </CardContent>
@@ -202,13 +232,13 @@ export default function DashboardContent() {
         </div>
 
         {/* Getting Started */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Getting Started</CardTitle>
+        <Card className="border-0 shadow-lg bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold text-gray-900">Getting Started</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center p-4 bg-green-50 rounded-lg">
+              <div className="flex items-center p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                     <CheckIcon className="h-5 w-5 text-green-600" />
@@ -220,7 +250,7 @@ export default function DashboardContent() {
                 </div>
               </div>
               
-              <div className="flex items-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <Plus className="h-5 w-5 text-blue-600" />
