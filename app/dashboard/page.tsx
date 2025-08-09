@@ -16,7 +16,7 @@ export default function DashboardPage() {
     const checkUserRole = async () => {
       try {
         // TEMPORARY: Use simulated user data
-        const userRole = 'tenant'; // This would come from auth context
+        const userRole = 'tenant' as 'tenant' | 'landlord' | 'admin'; // This would come from auth context
         
         // Route based on role
         switch (userRole) {

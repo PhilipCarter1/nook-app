@@ -17,6 +17,7 @@ interface ValidationState {
   confirmPassword: { isValid: boolean; message: string };
   firstName: { isValid: boolean; message: string };
   lastName: { isValid: boolean; message: string };
+  role: { isValid: boolean; message: string };
 }
 
 export default function PremiumSignUpForm() {
@@ -124,7 +125,7 @@ export default function PremiumSignUpForm() {
                validation.lastName.isValid && hasInteracted.lastName &&
                formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
       case 2:
-        return formData.role !== '';
+        return formData.role !== 'tenant'; // Check if role has been changed from default
       case 3:
         return validation.email.isValid && hasInteracted.email &&
                formData.email.trim() !== '';
