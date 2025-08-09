@@ -31,22 +31,25 @@ export default function PremiumSignUpForm() {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'tenant' as 'tenant' | 'landlord' | 'admin',
   });
 
-  const [validation, setValidation] = useState<ValidationState>({
+  const [validation, setValidation] = useState({
+    firstName: { isValid: true, message: '' },
+    lastName: { isValid: true, message: '' },
     email: { isValid: true, message: '' },
     password: { isValid: true, message: '' },
     confirmPassword: { isValid: true, message: '' },
-    firstName: { isValid: true, message: '' },
-    lastName: { isValid: true, message: '' },
+    role: { isValid: true, message: '' },
   });
 
   const [hasInteracted, setHasInteracted] = useState({
+    firstName: false,
+    lastName: false,
     email: false,
     password: false,
     confirmPassword: false,
-    firstName: false,
-    lastName: false,
+    role: false,
   });
 
   const validateEmail = (email: string): { isValid: boolean; message: string } => {
@@ -114,19 +117,24 @@ export default function PremiumSignUpForm() {
     updateValidation(field as keyof ValidationState, value);
   };
 
-  const isStepValid = (currentStep: number) => {
-    if (currentStep === 1) {
-      return validation.email.isValid && formData.email.trim() !== '';
+  const isStepValid = (step: number) => {
+    switch (step) {
+      case 1:
+        return validation.firstName.isValid && hasInteracted.firstName &&
+               validation.lastName.isValid && hasInteracted.lastName &&
+               formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
+      case 2:
+        return formData.role !== '';
+      case 3:
+        return validation.email.isValid && hasInteracted.email &&
+               formData.email.trim() !== '';
+      case 4:
+        return validation.password.isValid && hasInteracted.password &&
+               validation.confirmPassword.isValid && hasInteracted.confirmPassword &&
+               formData.password.trim() !== '' && formData.confirmPassword.trim() !== '';
+      default:
+        return false;
     }
-    if (currentStep === 2) {
-      return validation.password.isValid && validation.confirmPassword.isValid && 
-             formData.password.trim() !== '' && formData.confirmPassword.trim() !== '';
-    }
-    if (currentStep === 3) {
-      return validation.firstName.isValid && validation.lastName.isValid && 
-             formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
-    }
-    return false;
   };
 
   const handleNextStep = () => {
@@ -229,12 +237,24 @@ export default function PremiumSignUpForm() {
       console.log('Temporary: Bypassing Supabase signup for testing');
       
       // Simulate successful signup
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-      
-      alert('Account created successfully!');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+
       console.log('Account created successfully!');
       toast.success('Account created successfully! Welcome to Nook.');
-      router.push('/dashboard');
+      
+      // Redirect based on role
+      switch (formData.role) {
+        case 'admin':
+          router.push('/dashboard/admin');
+          break;
+        case 'landlord':
+          router.push('/dashboard/landlord');
+          break;
+        case 'tenant':
+        default:
+          router.push('/dashboard/tenant');
+          break;
+      }
       
       /* Comment out actual Supabase code for now
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
