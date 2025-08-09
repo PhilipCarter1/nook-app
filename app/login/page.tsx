@@ -68,24 +68,17 @@ export default function LoginPage() {
   };
 
   const isFormValid = () => {
-    // Temporarily simplify validation for debugging
-    const hasEmail = formData.email.trim() !== '';
-    const hasPassword = formData.password.trim() !== '';
-    const isValid = hasEmail && hasPassword;
-    
-    console.log('Simple form validation:', {
-      hasEmail,
-      hasPassword,
-      isValid,
-      email: formData.email,
-      password: formData.password
-    });
-    
-    return isValid;
+    return formData.email.trim() !== '' && formData.password.trim() !== '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -100,39 +93,18 @@ export default function LoginPage() {
       router.push('/dashboard');
       
       /* Comment out actual Supabase code for now
-      alert('Creating Supabase client...');
       const supabase = createClient();
       
-      // Test Supabase configuration
-      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-      console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-      
-      // TEMPORARY: Bypass Supabase for now and simulate success
-      alert('Temporary: Bypassing Supabase login for testing');
-      console.log('Temporary: Bypassing Supabase login for testing');
-      
-      // Simulate successful login
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-      
-      alert('Login successful! Redirecting...');
-      console.log('Login successful!');
-      toast.success('Welcome back to Nook!');
-      router.push('/dashboard');
-      
-      /* Comment out actual Supabase code for now
       console.log('Attempting to sign in with:', formData.email);
-      alert('Attempting to sign in...');
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       if (signInError) {
-        alert('Sign in error: ' + signInError.message);
         console.error('Sign in error:', signInError);
         toast.error('Invalid email or password');
         return;
       }
-      alert('Login successful! Redirecting...');
       console.log('Login successful!');
       toast.success('Welcome back to Nook!');
       router.push('/dashboard');
@@ -156,7 +128,7 @@ export default function LoginPage() {
           <p className="text-gray-600 mt-2">Sign in to your Nook account</p>
         </CardHeader>
         <CardContent>
-          <form id="login-form" onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email Address
@@ -175,7 +147,7 @@ export default function LoginPage() {
                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                       : hasInteracted.email && validation.email.isValid
                       ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                      : ''
+                      : 'border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500'
                   }`}
                   placeholder="john@example.com"
                   required
@@ -213,7 +185,7 @@ export default function LoginPage() {
                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                       : hasInteracted.password && validation.password.isValid
                       ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                      : ''
+                      : 'border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500'
                   }`}
                   placeholder="Enter your password"
                   required
@@ -241,34 +213,10 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Test button to see if form submission works */}
-            <Button 
-              type="button"
-              onClick={() => {
-                alert('Test button clicked!');
-                console.log('Test button clicked!');
-              }}
-              className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              Test Button (Should Show Alert)
-            </Button>
-
             <Button 
               type="submit" 
-              className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
+              className="w-full bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
               disabled={isLoading}
-              onClick={() => {
-                alert('Button clicked!');
-                console.log('Button clicked! Form valid:', isFormValid(), 'Loading:', isLoading);
-                // Also try to manually trigger form submission
-                const form = document.getElementById('login-form') as HTMLFormElement;
-                if (form) {
-                  console.log('Form found, attempting manual submission');
-                  form.dispatchEvent(new Event('submit', { bubbles: true }));
-                } else {
-                  console.log('Form not found');
-                }
-              }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
