@@ -116,6 +116,19 @@ export default function LoginPage() {
       console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
       console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
       
+      // TEMPORARY: Bypass Supabase for now and simulate success
+      alert('Temporary: Bypassing Supabase login for testing');
+      console.log('Temporary: Bypassing Supabase login for testing');
+      
+      // Simulate successful login
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      
+      alert('Login successful! Redirecting...');
+      console.log('Login successful!');
+      toast.success('Welcome back to Nook!');
+      router.push('/dashboard');
+      
+      /* Comment out actual Supabase code for now
       console.log('Attempting to sign in with:', formData.email);
       alert('Attempting to sign in...');
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -132,6 +145,7 @@ export default function LoginPage() {
       console.log('Login successful!');
       toast.success('Welcome back to Nook!');
       router.push('/dashboard');
+      */
     } catch (err: any) {
       alert('Login error: ' + err.message);
       console.error('Login error:', err);

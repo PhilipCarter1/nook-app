@@ -224,6 +224,19 @@ export default function PremiumSignUpForm() {
         return;
       }
       
+      // TEMPORARY: Bypass Supabase for now and simulate success
+      alert('Temporary: Bypassing Supabase signup for testing');
+      console.log('Temporary: Bypassing Supabase signup for testing');
+      
+      // Simulate successful signup
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      
+      alert('Account created successfully!');
+      console.log('Account created successfully!');
+      toast.success('Account created successfully! Welcome to Nook.');
+      router.push('/dashboard');
+      
+      /* Comment out actual Supabase code for now
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -252,40 +265,12 @@ export default function PremiumSignUpForm() {
         console.log('User created successfully!');
         toast.success('Account created successfully! Welcome to Nook.');
         router.push('/dashboard');
-        
-        /* Temporarily skip profile creation
-        alert('User created, creating profile...');
-        console.log('User created, creating profile...');
-
-        // Create user profile without specifying ID (let database auto-generate)
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              email: formData.email,
-              name: `${formData.firstName} ${formData.lastName}`,
-              role: 'tenant',
-            },
-          ]);
-
-        console.log('Profile creation result:', { profileError });
-
-        if (profileError) {
-          alert('Profile creation error: ' + profileError.message);
-          console.error('Profile creation error:', profileError);
-          // Don't throw error, just log it - user can still access the platform
-        }
-
-        alert('Account created successfully!');
-        console.log('Account created successfully!');
-        toast.success('Account created successfully! Welcome to Nook.');
-        router.push('/dashboard');
-        */
       } else {
         alert('No user data returned');
         console.log('No user data returned');
         toast.error('Account creation failed. Please try again.');
       }
+      */
     } catch (err: any) {
       alert('Sign up error: ' + err.message);
       console.error('Sign up error:', err);
