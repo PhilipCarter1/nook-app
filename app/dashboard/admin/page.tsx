@@ -24,6 +24,7 @@ import {
   FileText
 } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -39,6 +40,7 @@ interface Notification {
   message: string;
   timestamp: string;
   read: boolean;
+  link?: string;
 }
 
 interface ActivityItem {
@@ -48,6 +50,7 @@ interface ActivityItem {
   description: string;
   timestamp: string;
   user: string;
+  link?: string;
 }
 
 export default function AdminDashboard() {
@@ -56,10 +59,10 @@ export default function AdminDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [stats, setStats] = useState({
-    totalProperties: 0,
-    totalTenants: 0,
-    pendingMaintenance: 0,
-    totalRevenue: 0,
+    totalProperties: 12,
+    totalTenants: 24,
+    pendingMaintenance: 3,
+    totalRevenue: 75000,
   });
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function AdminDashboard() {
         role: 'admin'
       });
 
-      // Simulate notifications
+      // Simulate notifications with links
       setNotifications([
         {
           id: '1',
@@ -81,6 +84,7 @@ export default function AdminDashboard() {
           message: 'Property "Sunset Apartments" has been added to the system',
           timestamp: '2 hours ago',
           read: false,
+          link: '/dashboard/properties'
         },
         {
           id: '2',
@@ -89,6 +93,7 @@ export default function AdminDashboard() {
           message: 'New maintenance request for Unit 3B at Downtown Lofts',
           timestamp: '4 hours ago',
           read: false,
+          link: '/dashboard/maintenance'
         },
         {
           id: '3',
@@ -97,44 +102,67 @@ export default function AdminDashboard() {
           message: 'Rent payment received for Unit 1A at Riverside Complex',
           timestamp: '6 hours ago',
           read: true,
+          link: '/dashboard/payments'
         },
+        {
+          id: '4',
+          type: 'info',
+          title: 'New Tenant Onboarded',
+          message: 'Sarah Johnson has been successfully onboarded',
+          timestamp: '1 day ago',
+          read: true,
+          link: '/dashboard/tenants'
+        }
       ]);
 
-      // Simulate recent activity
+      // Simulate recent activity with links
       setRecentActivity([
         {
           id: '1',
           type: 'property',
           action: 'Property Added',
-          description: 'Sunset Apartments was added to the system',
+          description: 'Sunset Apartments was added to the portfolio',
           timestamp: '2 hours ago',
           user: 'Admin User',
+          link: '/dashboard/properties'
         },
         {
           id: '2',
-          type: 'tenant',
-          action: 'Tenant Onboarded',
-          description: 'John Doe was onboarded to Unit 3B',
+          type: 'maintenance',
+          action: 'Maintenance Request',
+          description: 'New ticket created for Unit 3B - Leaky faucet',
           timestamp: '4 hours ago',
-          user: 'Admin User',
+          user: 'John Smith',
+          link: '/dashboard/maintenance'
         },
         {
           id: '3',
-          type: 'maintenance',
-          action: 'Maintenance Request',
-          description: 'New request for plumbing issue in Unit 2A',
+          type: 'payment',
+          action: 'Payment Received',
+          description: 'Rent payment of $2,500 received for Unit 1A',
           timestamp: '6 hours ago',
-          user: 'Tenant',
+          user: 'Sarah Johnson',
+          link: '/dashboard/payments'
         },
+        {
+          id: '4',
+          type: 'tenant',
+          action: 'Tenant Onboarded',
+          description: 'New tenant Sarah Johnson added to Riverside Complex',
+          timestamp: '1 day ago',
+          user: 'Admin User',
+          link: '/dashboard/tenants'
+        },
+        {
+          id: '5',
+          type: 'document',
+          action: 'Document Uploaded',
+          description: 'Lease agreement uploaded for Unit 2C',
+          timestamp: '2 days ago',
+          user: 'Admin User',
+          link: '/dashboard/documents'
+        }
       ]);
-
-      // Simulate stats
-      setStats({
-        totalProperties: 12,
-        totalTenants: 45,
-        pendingMaintenance: 3,
-        totalRevenue: 125000,
-      });
     };
 
     checkAuthAndLoadData();
@@ -143,60 +171,104 @@ export default function AdminDashboard() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'info':
-        return <Bell className="h-4 w-4 text-blue-500" />;
+        return <AlertCircle className="h-5 w-5 text-blue-500" />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-orange-500" />;
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <Bell className="h-4 w-4 text-gray-500" />;
+        return <Bell className="h-5 w-5 text-gray-500" />;
     }
   };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'property':
-        return <Building className="h-4 w-4 text-blue-500" />;
+        return <Building className="h-5 w-5 text-blue-500" />;
       case 'tenant':
-        return <Users className="h-4 w-4 text-green-500" />;
+        return <Users className="h-5 w-5 text-green-500" />;
       case 'maintenance':
-        return <Wrench className="h-4 w-4 text-orange-500" />;
+        return <Wrench className="h-5 w-5 text-orange-500" />;
       case 'payment':
-        return <DollarSign className="h-4 w-4 text-green-500" />;
+        return <DollarSign className="h-5 w-5 text-purple-500" />;
       case 'document':
-        return <FileText className="h-4 w-4 text-purple-500" />;
+        return <FileText className="h-5 w-5 text-pink-500" />;
       default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
+        return <Activity className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.link) {
+      router.push(notification.link);
+    } else {
+      toast.info(`Notification: ${notification.title}`);
+    }
+  };
+
+  const handleActivityClick = (activity: ActivityItem) => {
+    if (activity.link) {
+      router.push(activity.link);
+    } else {
+      toast.info(`Activity: ${activity.action}`);
+    }
+  };
+
+  const handleStatsCardClick = (type: string) => {
+    switch (type) {
+      case 'properties':
+        router.push('/dashboard/properties');
+        break;
+      case 'tenants':
+        router.push('/dashboard/tenants');
+        break;
+      case 'maintenance':
+        router.push('/dashboard/maintenance');
+        break;
+      case 'revenue':
+        router.push('/dashboard/analytics');
+        break;
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'add-property':
+        router.push('/dashboard/properties');
+        toast.info('Navigate to Properties page to add a new property');
+        break;
+      case 'onboard-tenant':
+        router.push('/dashboard/tenants');
+        toast.info('Navigate to Tenants page to onboard a new tenant');
+        break;
+      case 'create-ticket':
+        router.push('/dashboard/maintenance');
+        toast.info('Navigate to Maintenance page to create a new ticket');
+        break;
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xl">N</span>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                  <p className="text-gray-600 text-sm">System administration and management</p>
-                </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-gray-600">Full system control and management</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 px-3 py-1">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </Badge>
               <Button 
                 variant="outline" 
-                onClick={() => router.push('/dashboard/settings')} 
+                onClick={() => router.push('/dashboard/settings')}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
               >
                 <Settings className="h-4 w-4 mr-2" />
@@ -236,9 +308,12 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Stats Overview */}
+        {/* Stats Overview - Clickable Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300">
+          <Card 
+            className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-blue-100 hover:to-blue-200" 
+            onClick={() => handleStatsCardClick('properties')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -253,7 +328,10 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl transition-all duration-300">
+          <Card 
+            className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-green-100 hover:to-green-200" 
+            onClick={() => handleStatsCardClick('tenants')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -268,7 +346,10 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-300">
+          <Card 
+            className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-orange-100 hover:to-orange-200" 
+            onClick={() => handleStatsCardClick('maintenance')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -283,7 +364,10 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300">
+          <Card 
+            className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-purple-100 hover:to-purple-200" 
+            onClick={() => handleStatsCardClick('revenue')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -300,7 +384,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Notifications */}
+          {/* Recent Notifications - Clickable */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -311,7 +395,15 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {notifications.map((notification) => (
-                  <div key={notification.id} className={`flex items-start space-x-3 p-3 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'}`}>
+                  <div 
+                    key={notification.id} 
+                    className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      notification.read 
+                        ? 'bg-gray-50 border-gray-200 hover:bg-gray-100' 
+                        : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                    }`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
                     <div className="flex-shrink-0">
                       {getNotificationIcon(notification.type)}
                     </div>
@@ -323,13 +415,14 @@ export default function AdminDashboard() {
                     {!notification.read && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
+          {/* Recent Activity - Clickable */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -340,7 +433,21 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className={`flex items-start space-x-3 p-3 rounded-lg border ${activity.type === 'maintenance' ? 'bg-orange-50 border-orange-200' : activity.type === 'payment' ? 'bg-green-50 border-green-200' : activity.type === 'property' ? 'bg-blue-50 border-blue-200' : activity.type === 'tenant' ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
+                  <div 
+                    key={activity.id} 
+                    className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      activity.type === 'maintenance' 
+                        ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' 
+                        : activity.type === 'payment' 
+                        ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                        : activity.type === 'property' 
+                        ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+                        : activity.type === 'tenant' 
+                        ? 'bg-purple-50 border-purple-200 hover:bg-purple-100' 
+                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                    }`}
+                    onClick={() => handleActivityClick(activity)}
+                  >
                     <div className="flex-shrink-0">
                       {getActivityIcon(activity.type)}
                     </div>
@@ -353,6 +460,7 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-500">{activity.user}</p>
                       </div>
                     </div>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
                   </div>
                 ))}
               </div>
@@ -469,7 +577,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Functional Buttons */}
         <Card className="mt-8 border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-lg font-semibold">
@@ -479,15 +587,26 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button className="h-12 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
+              <Button 
+                className="h-12 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={() => handleQuickAction('add-property')}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Property
               </Button>
-              <Button variant="outline" className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white">
+              <Button 
+                variant="outline" 
+                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white"
+                onClick={() => handleQuickAction('onboard-tenant')}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Onboard Tenant
               </Button>
-              <Button variant="outline" className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white">
+              <Button 
+                variant="outline" 
+                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white"
+                onClick={() => handleQuickAction('create-ticket')}
+              >
                 <Wrench className="h-4 w-4 mr-2" />
                 Create Ticket
               </Button>
