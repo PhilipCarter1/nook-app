@@ -107,7 +107,7 @@ export default function DashboardContent() {
               </Badge>
               <Button 
                 variant="outline" 
-                onClick={() => toast.info('Settings coming soon!')}
+                onClick={() => router.push('/dashboard/settings')}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <Settings className="h-4 w-4 mr-2" />
@@ -160,7 +160,7 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/tenants')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
@@ -174,7 +174,7 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/maintenance')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
@@ -188,7 +188,7 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/payments')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -202,7 +202,7 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/documents')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
@@ -216,7 +216,7 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => toast.info('Coming soon!')}>
+          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white" onClick={() => router.push('/dashboard/analytics')}>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">

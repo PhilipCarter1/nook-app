@@ -52,6 +52,47 @@ export default function MaintenancePage() {
 
   const loadTickets = async () => {
     try {
+      // TEMPORARY: Use simulated data
+      setTickets([
+        {
+          id: '1',
+          title: 'Leaky Faucet in Unit 3A',
+          description: 'Kitchen faucet is dripping constantly, needs repair',
+          priority: 'medium',
+          status: 'open',
+          property_id: '1',
+          tenant_id: '1',
+          assigned_to: '',
+          created_at: '2024-01-15T10:30:00Z',
+          updated_at: '2024-01-15T10:30:00Z'
+        },
+        {
+          id: '2',
+          title: 'Broken Air Conditioning',
+          description: 'AC unit not cooling properly, temperature stays at 80°F',
+          priority: 'high',
+          status: 'in_progress',
+          property_id: '2',
+          tenant_id: '2',
+          assigned_to: 'maintenance-team',
+          created_at: '2024-01-14T14:20:00Z',
+          updated_at: '2024-01-15T09:15:00Z'
+        },
+        {
+          id: '3',
+          title: 'Electrical Outlet Not Working',
+          description: 'Outlet in bedroom stopped working, no power',
+          priority: 'urgent',
+          status: 'open',
+          property_id: '1',
+          tenant_id: '3',
+          assigned_to: '',
+          created_at: '2024-01-16T08:45:00Z',
+          updated_at: '2024-01-16T08:45:00Z'
+        }
+      ]);
+      
+      /* Comment out actual Supabase code for now
       const supabase = createClient();
       const { data, error } = await supabase
         .from('maintenance_tickets')
@@ -65,6 +106,7 @@ export default function MaintenancePage() {
       }
 
       setTickets(data || []);
+      */
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to load maintenance tickets');
@@ -77,6 +119,32 @@ export default function MaintenancePage() {
     e.preventDefault();
     
     try {
+      // TEMPORARY: Add to local state
+      const ticket = {
+        id: Date.now().toString(),
+        title: newTicket.title,
+        description: newTicket.description,
+        priority: newTicket.priority as 'low' | 'medium' | 'high' | 'urgent',
+        status: 'open' as const,
+        property_id: newTicket.property_id,
+        tenant_id: newTicket.tenant_id,
+        assigned_to: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      setTickets([ticket, ...tickets]);
+      setShowForm(false);
+      setNewTicket({
+        title: '',
+        description: '',
+        priority: 'medium',
+        property_id: '',
+        tenant_id: ''
+      });
+      toast.success('Maintenance ticket created successfully');
+      
+      /* Comment out actual Supabase code for now
       const supabase = createClient();
       const { error } = await supabase
         .from('maintenance_tickets')
@@ -100,6 +168,7 @@ export default function MaintenancePage() {
         tenant_id: ''
       });
       loadTickets();
+      */
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to create ticket');
@@ -135,14 +204,17 @@ export default function MaintenancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Maintenance</h1>
             <p className="text-gray-600">Track and manage maintenance requests</p>
           </div>
-          <Button onClick={() => setShowForm(true)}>
+          <Button 
+            onClick={() => setShowForm(true)}
+            className="bg-nook-purple-600 hover:bg-nook-purple-500"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Ticket
           </Button>
@@ -150,7 +222,7 @@ export default function MaintenancePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -159,12 +231,14 @@ export default function MaintenancePage() {
                     {tickets.filter(t => t.status === 'open').length}
                   </p>
                 </div>
-                <AlertTriangle className="h-8 w-8 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -173,12 +247,14 @@ export default function MaintenancePage() {
                     {tickets.filter(t => t.status === 'in_progress').length}
                   </p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-yellow-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -187,19 +263,23 @@ export default function MaintenancePage() {
                     {tickets.filter(t => t.status === 'completed').length}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Tickets</p>
                   <p className="text-2xl font-bold text-gray-900">{tickets.length}</p>
                 </div>
-                <Wrench className="h-8 w-8 text-nook-purple-600" />
+                <div className="w-12 h-12 bg-nook-purple-100 rounded-lg flex items-center justify-center">
+                  <Wrench className="h-6 w-6 text-nook-purple-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -208,7 +288,7 @@ export default function MaintenancePage() {
         {/* Tickets List */}
         <div className="space-y-4">
           {tickets.map((ticket) => (
-            <Card key={ticket.id} className="hover:shadow-md transition-shadow">
+            <Card key={ticket.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -254,12 +334,15 @@ export default function MaintenancePage() {
         </div>
 
         {tickets.length === 0 && (
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No maintenance tickets</h3>
               <p className="text-gray-600 mb-4">Get started by creating your first maintenance ticket.</p>
-              <Button onClick={() => setShowForm(true)}>
+              <Button 
+                onClick={() => setShowForm(true)}
+                className="bg-nook-purple-600 hover:bg-nook-purple-500"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Ticket
               </Button>

@@ -46,6 +46,44 @@ export default function TenantsPage() {
 
   const loadTenants = async () => {
     try {
+      // TEMPORARY: Use simulated data
+      setTenants([
+        {
+          id: '1',
+          name: 'John Smith',
+          email: 'john.smith@email.com',
+          phone: '+1 (555) 123-4567',
+          property_id: '1',
+          lease_start: '2024-01-01',
+          lease_end: '2024-12-31',
+          status: 'active',
+          rent_amount: 2500
+        },
+        {
+          id: '2',
+          name: 'Sarah Johnson',
+          email: 'sarah.johnson@email.com',
+          phone: '+1 (555) 234-5678',
+          property_id: '2',
+          lease_start: '2024-02-01',
+          lease_end: '2025-01-31',
+          status: 'active',
+          rent_amount: 3200
+        },
+        {
+          id: '3',
+          name: 'Mike Davis',
+          email: 'mike.davis@email.com',
+          phone: '+1 (555) 345-6789',
+          property_id: '1',
+          lease_start: '2024-03-01',
+          lease_end: '2025-02-28',
+          status: 'pending',
+          rent_amount: 2800
+        }
+      ]);
+      
+      /* Comment out actual Supabase code for now
       const supabase = createClient();
       const { data, error } = await supabase
         .from('tenants')
@@ -59,6 +97,7 @@ export default function TenantsPage() {
       }
 
       setTenants(data || []);
+      */
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to load tenants');
@@ -71,6 +110,33 @@ export default function TenantsPage() {
     e.preventDefault();
     
     try {
+      // TEMPORARY: Add to local state
+      const tenant = {
+        id: Date.now().toString(),
+        name: newTenant.name,
+        email: newTenant.email,
+        phone: newTenant.phone,
+        property_id: newTenant.property_id,
+        lease_start: newTenant.lease_start,
+        lease_end: newTenant.lease_end,
+        rent_amount: parseFloat(newTenant.rent_amount),
+        status: 'active' as const
+      };
+      
+      setTenants([tenant, ...tenants]);
+      setShowAddForm(false);
+      setNewTenant({
+        name: '',
+        email: '',
+        phone: '',
+        property_id: '',
+        lease_start: '',
+        lease_end: '',
+        rent_amount: ''
+      });
+      toast.success('Tenant added successfully');
+      
+      /* Comment out actual Supabase code for now
       const supabase = createClient();
       const { error } = await supabase
         .from('tenants')
@@ -97,6 +163,7 @@ export default function TenantsPage() {
         rent_amount: ''
       });
       loadTenants();
+      */
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to add tenant');
@@ -126,21 +193,24 @@ export default function TenantsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Tenants</h1>
             <p className="text-gray-600">Manage your tenant information</p>
           </div>
-          <Button onClick={() => setShowAddForm(true)}>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="bg-nook-purple-600 hover:bg-nook-purple-500"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Tenant
           </Button>
         </div>
 
         {/* Search and Filters */}
-        <Card className="mb-6">
+        <Card className="mb-6 border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex gap-4">
               <div className="flex-1">
@@ -170,9 +240,9 @@ export default function TenantsPage() {
         </Card>
 
         {/* Tenants List */}
-        <div className="grid gap-6">
+        <div className="space-y-4">
           {filteredTenants.map((tenant) => (
-            <Card key={tenant.id} className="hover:shadow-md transition-shadow">
+            <Card key={tenant.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -212,14 +282,17 @@ export default function TenantsPage() {
         </div>
 
         {filteredTenants.length === 0 && (
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No tenants found</h3>
               <p className="text-gray-600 mb-4">
                 {searchTerm ? 'Try adjusting your search terms.' : 'Get started by adding your first tenant.'}
               </p>
-              <Button onClick={() => setShowAddForm(true)}>
+              <Button 
+                onClick={() => setShowAddForm(true)}
+                className="bg-nook-purple-600 hover:bg-nook-purple-500"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Tenant
               </Button>
