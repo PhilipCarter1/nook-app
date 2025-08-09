@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { log } from '@/lib/logger';
 
 interface ValidationState {
@@ -25,14 +25,14 @@ export default function PremiumSignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [step, setStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'tenant' as 'tenant' | 'landlord' | 'admin',
+    role: 'admin' as 'admin', // Default to admin for trial starters
   });
 
   const [validation, setValidation] = useState({
@@ -41,7 +41,6 @@ export default function PremiumSignUpForm() {
     email: { isValid: true, message: '' },
     password: { isValid: true, message: '' },
     confirmPassword: { isValid: true, message: '' },
-    role: { isValid: true, message: '' },
   });
 
   const [hasInteracted, setHasInteracted] = useState({
@@ -50,7 +49,6 @@ export default function PremiumSignUpForm() {
     email: false,
     password: false,
     confirmPassword: false,
-    role: false,
   });
 
   const validateEmail = (email: string): { isValid: boolean; message: string } => {
@@ -125,11 +123,9 @@ export default function PremiumSignUpForm() {
                validation.lastName.isValid && hasInteracted.lastName &&
                formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
       case 2:
-        return formData.role !== 'tenant'; // Check if role has been changed from default
-      case 3:
         return validation.email.isValid && hasInteracted.email &&
                formData.email.trim() !== '';
-      case 4:
+      case 3:
         return validation.password.isValid && hasInteracted.password &&
                validation.confirmPassword.isValid && hasInteracted.confirmPassword &&
                formData.password.trim() !== '' && formData.confirmPassword.trim() !== '';
@@ -138,20 +134,20 @@ export default function PremiumSignUpForm() {
     }
   };
 
-  const handleNextStep = () => {
-    if (step === 1) {
+  const handleNext = () => {
+    if (currentStep === 1) {
       updateValidation('email', formData.email);
       setHasInteracted(prev => ({ ...prev, email: true }));
       if (validation.email.isValid && formData.email.trim() !== '') {
-        setStep(2);
+        setCurrentStep(2);
       }
-    } else if (step === 2) {
+    } else if (currentStep === 2) {
       updateValidation('password', formData.password);
       updateValidation('confirmPassword', formData.confirmPassword);
       setHasInteracted(prev => ({ ...prev, password: true, confirmPassword: true }));
       if (validation.password.isValid && validation.confirmPassword.isValid && 
           formData.password.trim() !== '' && formData.confirmPassword.trim() !== '') {
-        setStep(3);
+        setCurrentStep(3);
       }
     }
   };
@@ -243,19 +239,8 @@ export default function PremiumSignUpForm() {
       console.log('Account created successfully!');
       toast.success('Account created successfully! Welcome to Nook.');
       
-      // Redirect based on role
-      switch (formData.role) {
-        case 'admin':
-          router.push('/dashboard/admin');
-          break;
-        case 'landlord':
-          router.push('/dashboard/landlord');
-          break;
-        case 'tenant':
-        default:
-          router.push('/dashboard/tenant');
-          break;
-      }
+      // All trial starters become admins
+      router.push('/dashboard/admin');
       
       /* Comment out actual Supabase code for now
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -302,275 +287,159 @@ export default function PremiumSignUpForm() {
   };
 
   const renderStep = () => {
-    switch (step) {
+    switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="text-center mb-6">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-nook-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Get started with Nook</h2>
-              <p className="text-gray-600 mt-2">Enter your email to create your account</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email Address
-              </Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                </div>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`pl-10 pr-10 ${
-                    hasInteracted.email && !validation.email.isValid
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : hasInteracted.email && validation.email.isValid
-                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                      : ''
-                  }`}
-                  placeholder="john@example.com"
-                  required
-                  autoFocus
-                />
-                {hasInteracted.email && (
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    {validation.email.isValid ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                    )}
-                  </div>
-                )}
-              </div>
-              {hasInteracted.email && !validation.email.isValid && (
-                <p className="text-xs text-red-500">{validation.email.message}</p>
-              )}
-            </div>
-
-            <Button 
-              onClick={handleNextStep}
-              className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
-              disabled={!validation.email.isValid || formData.email.trim() === ''}
-            >
-              Continue
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="text-center mb-6">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
-                <Lock className="h-6 w-6 text-nook-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Create your password</h2>
-              <p className="text-gray-600 mt-2">Choose a strong password to secure your account</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Password
-              </Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-4 w-4 text-gray-400" />
-                </div>
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`pl-10 pr-10 ${
-                    hasInteracted.password && !validation.password.isValid
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : hasInteracted.password && validation.password.isValid
-                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                      : ''
-                  }`}
-                  placeholder="Create a password"
-                  required
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
-              </div>
-              {hasInteracted.password && !validation.password.isValid && (
-                <p className="text-xs text-red-500">{validation.password.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-4 w-4 text-gray-400" />
-                </div>
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={`pl-10 pr-10 ${
-                    hasInteracted.confirmPassword && !validation.confirmPassword.isValid
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : hasInteracted.confirmPassword && validation.confirmPassword.isValid
-                      ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                      : ''
-                  }`}
-                  placeholder="Confirm your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
-              </div>
-              {hasInteracted.confirmPassword && !validation.confirmPassword.isValid && (
-                <p className="text-xs text-red-500">{validation.confirmPassword.message}</p>
-              )}
-            </div>
-
-            <Button 
-              onClick={handleNextStep}
-              className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
-              disabled={!validation.password.isValid || !validation.confirmPassword.isValid || 
-                       formData.password.trim() === '' || formData.confirmPassword.trim() === ''}
-            >
-              Continue
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="text-center mb-6">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
-                <User className="h-6 w-6 text-nook-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Tell us about yourself</h2>
-              <p className="text-gray-600 mt-2">We'll personalize your experience</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+          <>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Name</h2>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                  First Name
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className={`pr-10 ${
-                      hasInteracted.firstName && !validation.firstName.isValid
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : hasInteracted.firstName && validation.firstName.isValid
-                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                        : ''
-                    }`}
-                    placeholder="John"
-                    required
-                    autoFocus
-                  />
-                  {hasInteracted.firstName && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      {validation.firstName.isValid ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  )}
-                </div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  className={hasInteracted.firstName && !validation.firstName.isValid ? 'border-red-500' : ''}
+                  required
+                />
                 {hasInteracted.firstName && !validation.firstName.isValid && (
                   <p className="text-xs text-red-500">{validation.firstName.message}</p>
                 )}
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-                  Last Name
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className={`pr-10 ${
-                      hasInteracted.lastName && !validation.lastName.isValid
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : hasInteracted.lastName && validation.lastName.isValid
-                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                        : ''
-                    }`}
-                    placeholder="Doe"
-                    required
-                  />
-                  {hasInteracted.lastName && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      {validation.lastName.isValid ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  )}
-                </div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  className={hasInteracted.lastName && !validation.lastName.isValid ? 'border-red-500' : ''}
+                  required
+                />
                 {hasInteracted.lastName && !validation.lastName.isValid && (
                   <p className="text-xs text-red-500">{validation.lastName.message}</p>
                 )}
               </div>
             </div>
-
-            <Button 
-              type="submit"
-              className="w-full bg-nook-purple-600 hover:bg-nook-purple-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl" 
-              disabled={isLoading || !isStepValid(3)}
-              onClick={() => {
-                alert('Create Account button clicked!');
-                console.log('Create Account button clicked!');
-              }}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating account...
-                </div>
-              ) : (
-                'Create Account'
-              )}
+            <Button onClick={handleNext} className="w-full mt-6 bg-nook-purple-600 hover:bg-nook-purple-500">
+              Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-          </div>
+          </>
         );
-
+      case 2:
+        return (
+          <>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Email</h2>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={`pl-10 ${hasInteracted.email && !validation.email.isValid ? 'border-red-500' : ''}`}
+                  placeholder="john@example.com"
+                  required
+                />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+              {hasInteracted.email && !validation.email.isValid && (
+                <p className="text-xs text-red-500">{validation.email.message}</p>
+              )}
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button variant="outline" onClick={() => setCurrentStep(1)} className="flex-1">
+                Back
+              </Button>
+              <Button onClick={handleNext} className="flex-1 bg-nook-purple-600 hover:bg-nook-purple-500">
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Set Password</h2>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className={`pl-10 pr-10 ${hasInteracted.password && !validation.password.isValid ? 'border-red-500' : ''}`}
+                    placeholder="Min 8 characters"
+                    required
+                  />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+                {hasInteracted.password && !validation.password.isValid && (
+                  <p className="text-xs text-red-500">{validation.password.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className={`pl-10 pr-10 ${hasInteracted.confirmPassword && !validation.confirmPassword.isValid ? 'border-red-500' : ''}`}
+                    required
+                  />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+                {hasInteracted.confirmPassword && !validation.confirmPassword.isValid && (
+                  <p className="text-xs text-red-500">{validation.confirmPassword.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button variant="outline" onClick={() => setCurrentStep(2)} className="flex-1">
+                Back
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-nook-purple-600 hover:bg-nook-purple-500"
+                disabled={isLoading || !isStepValid(3)}
+                onClick={() => console.log('Create Account button clicked!')}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                )}
+                Start Free Trial
+              </Button>
+            </div>
+          </>
+        );
       default:
         return null;
     }

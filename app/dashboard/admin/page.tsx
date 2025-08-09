@@ -126,7 +126,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">Properties</h3>
-                  <p className="text-gray-600 text-sm">Manage all properties</p>
+                  <p className="text-gray-600 text-sm">Add and manage properties</p>
                 </div>
               </div>
             </CardContent>
@@ -139,8 +139,8 @@ export default function AdminDashboard() {
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Users</h3>
-                  <p className="text-gray-600 text-sm">Manage all users and tenants</p>
+                  <h3 className="font-semibold text-gray-900 text-lg">Tenants</h3>
+                  <p className="text-gray-600 text-sm">Onboard and manage tenants</p>
                 </div>
               </div>
             </CardContent>
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">Maintenance</h3>
-                  <p className="text-gray-600 text-sm">Monitor all maintenance requests</p>
+                  <p className="text-gray-600 text-sm">Track and manage maintenance</p>
                 </div>
               </div>
             </CardContent>
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">Payments</h3>
-                  <p className="text-gray-600 text-sm">Track all payment activity</p>
+                  <p className="text-gray-600 text-sm">Track rent and payments</p>
                 </div>
               </div>
             </CardContent>
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
-                  <p className="text-gray-600 text-sm">Manage all documents</p>
+                  <p className="text-gray-600 text-sm">Manage leases and documents</p>
                 </div>
               </div>
             </CardContent>
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">Analytics</h3>
-                  <p className="text-gray-600 text-sm">System-wide analytics</p>
+                  <p className="text-gray-600 text-sm">View portfolio performance</p>
                 </div>
               </div>
             </CardContent>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
         {/* Admin Status */}
         <Card className="mt-8 border-0 shadow-lg bg-white">
           <CardHeader>
-            <CardTitle className="text-gray-900">System Status</CardTitle>
+            <CardTitle className="text-gray-900">Trial Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -217,8 +217,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-green-800">System Online</h3>
-                  <p className="text-sm text-green-700">All systems are operational</p>
+                  <h3 className="text-sm font-medium text-green-800">Free Trial Active</h3>
+                  <p className="text-sm text-green-700">You have full admin access to set up your property management system</p>
                 </div>
               </div>
               <div className="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -228,8 +228,19 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-blue-800">Admin Access</h3>
-                  <p className="text-sm text-blue-700">Full administrative privileges enabled</p>
+                  <h3 className="text-sm font-medium text-blue-800">Admin & Landlord Access</h3>
+                  <p className="text-sm text-blue-700">Add properties, onboard tenants, and manage your portfolio</p>
+                </div>
+              </div>
+              <div className="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Building className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-purple-800">Property Management</h3>
+                  <p className="text-sm text-purple-700">Start by adding your first property and onboarding tenants</p>
                 </div>
               </div>
             </div>
