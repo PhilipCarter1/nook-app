@@ -19,7 +19,9 @@ import {
   Clock,
   User,
   Building,
-  ArrowLeft
+  ArrowLeft,
+  Search,
+  X
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -40,6 +42,7 @@ export default function MaintenancePage() {
   const [tickets, setTickets] = useState<MaintenanceTicket[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [newTicket, setNewTicket] = useState({
     title: '',
     description: '',
@@ -105,7 +108,7 @@ export default function MaintenancePage() {
 
       if (error) {
         console.error('Error loading tickets:', error);
-        toast.error('Failed to load maintenance tickets');
+        toast.error('Failed to load tickets');
         return;
       }
 
@@ -113,7 +116,7 @@ export default function MaintenancePage() {
       */
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Failed to load maintenance tickets');
+      toast.error('Failed to load tickets');
     } finally {
       setLoading(false);
     }
@@ -122,6 +125,11 @@ export default function MaintenancePage() {
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!newTicket.title || !newTicket.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     try {
       // TEMPORARY: Add to local state
       const ticket = {
@@ -130,8 +138,8 @@ export default function MaintenancePage() {
         description: newTicket.description,
         priority: newTicket.priority as 'low' | 'medium' | 'high' | 'urgent',
         status: 'open' as const,
-        property_id: newTicket.property_id,
-        tenant_id: newTicket.tenant_id,
+        property_id: newTicket.property_id || '1',
+        tenant_id: newTicket.tenant_id || '1',
         assigned_to: '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -146,15 +154,18 @@ export default function MaintenancePage() {
         property_id: '',
         tenant_id: ''
       });
-      toast.success('Maintenance ticket created successfully');
+      toast.success('Maintenance ticket created successfully!');
       
       /* Comment out actual Supabase code for now
       const supabase = createClient();
       const { error } = await supabase
         .from('maintenance_tickets')
         .insert([{
-          ...newTicket,
-          status: 'open'
+          title: newTicket.title,
+          description: newTicket.description,
+          priority: newTicket.priority,
+          property_id: newTicket.property_id,
+          tenant_id: newTicket.tenant_id
         }]);
 
       if (error) {
@@ -162,7 +173,7 @@ export default function MaintenancePage() {
         return;
       }
 
-      toast.success('Maintenance ticket created successfully');
+      toast.success('Maintenance ticket created successfully!');
       setShowForm(false);
       setNewTicket({
         title: '',
@@ -181,165 +192,201 @@ export default function MaintenancePage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent':
+        return 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200';
+      case 'high':
+        return 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border-orange-200';
+      case 'medium':
+        return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'open': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'open':
+        return 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200';
+      case 'in_progress':
+        return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200';
+      case 'completed':
+        return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200';
+      case 'cancelled':
+        return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const filteredTickets = tickets.filter(ticket =>
+    ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nook-purple-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nook-purple-600"></div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => router.push('/dashboard/admin')}
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Maintenance</h1>
-              <p className="text-gray-600">Track and manage maintenance requests</p>
+      {/* Header */}
+      <div className="bg-white shadow-lg border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-8">
+            <div className="flex items-center space-x-6">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/dashboard/admin')}
+                className="border-nook-purple-200 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-300 transition-all duration-200 shadow-sm"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Maintenance</h1>
+                <p className="text-gray-600 text-lg">Track and manage maintenance requests</p>
+              </div>
             </div>
+            <Button 
+              onClick={() => setShowForm(true)}
+              className="bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              New Ticket
+            </Button>
           </div>
-          <Button 
-            onClick={() => setShowForm(true)}
-            className="bg-nook-purple-600 hover:bg-nook-purple-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Ticket
-          </Button>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Open Tickets</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-blue-600">Open Tickets</p>
+                  <p className="text-2xl font-bold text-blue-900">
                     {tickets.filter(t => t.status === 'open').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="h-6 w-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <AlertTriangle className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">In Progress</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-yellow-600">In Progress</p>
+                  <p className="text-2xl font-bold text-yellow-900">
                     {tickets.filter(t => t.status === 'in_progress').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <Clock className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm font-medium text-green-600">Completed</p>
+                  <p className="text-2xl font-bold text-green-900">
                     {tickets.filter(t => t.status === 'completed').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <CheckCircle className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-nook-purple-50 to-purple-100">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Tickets</p>
-                  <p className="text-2xl font-bold text-gray-900">{tickets.length}</p>
+                  <p className="text-sm font-medium text-nook-purple-600">Total Tickets</p>
+                  <p className="text-2xl font-bold text-nook-purple-900">{tickets.length}</p>
                 </div>
-                <div className="w-12 h-12 bg-nook-purple-100 rounded-lg flex items-center justify-center">
-                  <Wrench className="h-6 w-6 text-nook-purple-600" />
+                <div className="w-12 h-12 bg-nook-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <Wrench className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Search */}
+        <div className="mb-8">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search tickets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500"
+            />
+          </div>
+        </div>
+
         {/* Tickets List */}
-        <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <Card key={ticket.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white">
-              <CardContent className="p-6">
+        <div className="space-y-6">
+          {filteredTickets.map((ticket) => (
+            <Card key={ticket.id} className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white group">
+              <CardContent className="p-8">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{ticket.title}</h3>
-                      <Badge className={getPriorityColor(ticket.priority)}>
-                        {ticket.priority}
-                      </Badge>
-                      <Badge className={getStatusColor(ticket.status)}>
-                        {ticket.status.replace('_', ' ')}
-                      </Badge>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-nook-purple-100 to-purple-100 rounded-xl flex items-center justify-center shadow-lg">
+                        <Wrench className="h-6 w-6 text-nook-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-nook-purple-600 transition-colors duration-200">{ticket.title}</h3>
+                        <div className="flex gap-2 mt-2">
+                          <Badge className={`${getPriorityColor(ticket.priority)} font-semibold px-3 py-1`}>
+                            {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)} Priority
+                          </Badge>
+                          <Badge className={`${getStatusColor(ticket.status)} font-semibold px-3 py-1`}>
+                            {ticket.status.replace('_', ' ').charAt(0).toUpperCase() + ticket.status.replace('_', ' ').slice(1)}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-gray-600 mb-3">{ticket.description}</p>
+                    <p className="text-gray-600 text-lg mb-4">{ticket.description}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Building className="h-4 w-4" />
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-nook-purple-500" />
+                        {new Date(ticket.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center">
+                        <Building className="h-4 w-4 mr-2 text-nook-purple-500" />
                         Property #{ticket.property_id}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
+                      <div className="flex items-center">
+                        <User className="h-4 w-4 mr-2 text-nook-purple-500" />
                         Tenant #{ticket.tenant_id}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(ticket.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      View Details
+                  <div className="flex gap-2 ml-4">
+                    <Button variant="outline" size="sm" className="border-nook-purple-200 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-300">
+                      <Wrench className="h-4 w-4" />
                     </Button>
-                    {ticket.status === 'open' && (
-                      <Button variant="outline" size="sm">
-                        Assign
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -347,96 +394,93 @@ export default function MaintenancePage() {
           ))}
         </div>
 
-        {tickets.length === 0 && (
-          <Card className="border-0 shadow-lg">
+        {filteredTickets.length === 0 && (
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50">
             <CardContent className="p-12 text-center">
-              <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No maintenance tickets</h3>
-              <p className="text-gray-600 mb-4">Get started by creating your first maintenance ticket.</p>
+              <div className="w-20 h-20 bg-gradient-to-br from-nook-purple-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wrench className="h-10 w-10 text-nook-purple-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">No maintenance tickets found</h3>
+              <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">Get started by creating your first maintenance ticket to begin tracking repairs and issues</p>
               <Button 
                 onClick={() => setShowForm(true)}
-                className="bg-nook-purple-600 hover:bg-nook-purple-500"
+                className="bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Ticket
+                <Plus className="h-5 w-5 mr-2" />
+                Create Your First Ticket
               </Button>
             </CardContent>
           </Card>
         )}
-
-        {/* New Ticket Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle>Create Maintenance Ticket</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmitTicket} className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={newTicket.title}
-                      onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={newTicket.description}
-                      onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select value={newTicket.priority} onValueChange={(value) => setNewTicket({...newTicket, priority: value as any})}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="property_id">Property ID</Label>
-                    <Input
-                      id="property_id"
-                      value={newTicket.property_id}
-                      onChange={(e) => setNewTicket({...newTicket, property_id: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tenant_id">Tenant ID</Label>
-                    <Input
-                      id="tenant_id"
-                      value={newTicket.tenant_id}
-                      onChange={(e) => setNewTicket({...newTicket, tenant_id: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" className="flex-1">
-                      Create Ticket
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
+
+      {/* Add Ticket Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md border-0 shadow-2xl bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-gray-200">
+              <CardTitle className="text-2xl font-bold text-gray-900">Create Maintenance Ticket</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowForm(false)}
+                className="hover:bg-gray-100 rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <form onSubmit={handleSubmitTicket} className="space-y-6">
+                <div>
+                  <Label htmlFor="title" className="text-sm font-semibold text-gray-700 mb-2 block">Ticket Title</Label>
+                  <Input
+                    id="title"
+                    value={newTicket.title}
+                    onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
+                    placeholder="Enter ticket title"
+                    required
+                    className="border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description" className="text-sm font-semibold text-gray-700 mb-2 block">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newTicket.description}
+                    onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                    placeholder="Describe the issue in detail"
+                    required
+                    className="border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500"
+                    rows={4}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="priority" className="text-sm font-semibold text-gray-700 mb-2 block">Priority</Label>
+                  <Select value={newTicket.priority} onValueChange={(value) => setNewTicket({...newTicket, priority: value})}>
+                    <SelectTrigger className="border-gray-300 focus:border-nook-purple-500 focus:ring-nook-purple-500">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <Button type="submit" className="flex-1 bg-gradient-to-r from-nook-purple-600 to-purple-600 hover:from-nook-purple-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
+                    Create Ticket
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400">
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 } 
