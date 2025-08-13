@@ -236,7 +236,7 @@ export default function PremiumSignUpForm() {
               <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
                 <User className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Your Name</h2>
+              <h2 className="text-2xl font-bold text-nook-purple-700">Your Name</h2>
               <p className="text-gray-600 mt-2">Let's start with your basic information</p>
             </div>
             <div className="space-y-4">
@@ -290,7 +290,7 @@ export default function PremiumSignUpForm() {
               <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
                 <Mail className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Your Email</h2>
+              <h2 className="text-2xl font-bold text-nook-purple-700">Your Email</h2>
               <p className="text-gray-600 mt-2">We'll use this for your account</p>
             </div>
             <div className="space-y-2">
@@ -338,7 +338,7 @@ export default function PremiumSignUpForm() {
               <div className="mx-auto w-12 h-12 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-xl flex items-center justify-center mb-4">
                 <Lock className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Set Password</h2>
+              <h2 className="text-2xl font-bold text-nook-purple-700">Set Password</h2>
               <p className="text-gray-600 mt-2">Create a secure password for your account</p>
             </div>
             <div className="space-y-4">

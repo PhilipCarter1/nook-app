@@ -15,96 +15,86 @@ export function Footer() {
               Modern property management platform for landlords and tenants.
             </p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Product
-            </h3>
-            <ul className="mt-4 space-y-2">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-nook-purple-700 dark:text-white">Company</h3>
+            <ul className="space-y-2">
               <li>
-                <Link
-                  href="/features"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  Features
-                </Link>
+                <a href="/about" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  About Us
+                </a>
               </li>
               <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/legal-assistant"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  Legal Assistant
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Company
-            </h3>
-            <ul className="mt-4 space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/careers"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
+                <a href="/careers" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
                   Careers
-                </Link>
+                </a>
+              </li>
+              <li>
+                <a href="/contact" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Contact
+                </a>
               </li>
             </ul>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Legal
-            </h3>
-            <ul className="mt-4 space-y-2">
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-nook-purple-700 dark:text-white">Product</h3>
+            <ul className="space-y-2">
               <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
+                <a href="/features" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="/pricing" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="/integrations" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Integrations
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-nook-purple-700 dark:text-white">Support</h3>
+            <ul className="space-y-2">
+              <li>
+                <a href="/help" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="/docs" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Documentation
+                </a>
+              </li>
+              <li>
+                <a href="/status" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
+                  Status
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-nook-purple-700 dark:text-white">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <a href="/privacy" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
                   Privacy Policy
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
+                <a href="/terms" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
                   Terms of Service
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  href="/cookies"
-                  className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
+                <a href="/cookies" className="text-sm text-gray-600 hover:text-nook-purple-700 dark:text-gray-300 dark:hover:text-white">
                   Cookie Policy
-                </Link>
+                </a>
               </li>
             </ul>
           </div>

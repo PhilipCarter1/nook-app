@@ -224,7 +224,7 @@ export default function TenantsPage() {
                 Back to Dashboard
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Tenant Management</h1>
+                <h1 className="text-3xl font-bold text-nook-purple-700 tracking-tight">Tenant Management</h1>
                 <p className="text-gray-600 text-lg">Onboard and manage tenants for your properties</p>
               </div>
             </div>
@@ -285,24 +285,38 @@ export default function TenantsPage() {
                         <Users className="h-6 w-6 text-nook-purple-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-nook-purple-600 transition-colors duration-200">{tenant.name}</h3>
+                        <h3 className="text-xl font-bold text-nook-purple-700 group-hover:text-nook-purple-600 transition-colors duration-200">{tenant.name}</h3>
                         <Badge className={`${getStatusColor(tenant.status)} font-semibold px-3 py-1`}>
                           {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
                         </Badge>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
                         <Mail className="h-4 w-4 mr-3 text-nook-purple-500" />
-                        <span className="font-medium text-gray-700">{tenant.email}</span>
+                        <span className="font-medium text-nook-purple-700">{tenant.email}</span>
                       </div>
-                      <div className="flex items-center bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
                         <Phone className="h-4 w-4 mr-3 text-nook-purple-500" />
-                        <span className="font-medium text-gray-700">{tenant.phone}</span>
+                        <span className="font-medium text-nook-purple-700">{tenant.phone}</span>
                       </div>
-                      <div className="flex items-center bg-gray-50 rounded-lg p-3">
-                        <Calendar className="h-4 w-4 mr-3 text-nook-purple-500" />
-                        <span className="font-medium text-gray-700">${tenant.rent_amount.toLocaleString()}/month</span>
+                      <div className="flex items-center bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+                        <Building className="h-4 w-4 mr-3 text-nook-purple-500" />
+                        <span className="font-medium text-nook-purple-700">Property {tenant.property_id}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      <div className="text-center p-3 bg-gradient-to-br from-nook-purple-50 to-purple-100 rounded-lg border border-nook-purple-200">
+                        <p className="text-sm font-medium text-nook-purple-600">Rent Amount</p>
+                        <p className="text-xl font-bold text-nook-purple-700">${tenant.rent_amount}</p>
+                      </div>
+                      <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                        <p className="text-sm font-medium text-blue-600">Lease Start</p>
+                        <p className="text-lg font-bold text-blue-700">{new Date(tenant.lease_start).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                        <p className="text-sm font-medium text-green-600">Lease End</p>
+                        <p className="text-lg font-bold text-green-700">{new Date(tenant.lease_end).toLocaleDateString()}</p>
                       </div>
                     </div>
                   </div>
@@ -326,7 +340,7 @@ export default function TenantsPage() {
               <div className="w-20 h-20 bg-gradient-to-br from-nook-purple-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Users className="h-10 w-10 text-nook-purple-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No tenants found</h3>
+              <h3 className="text-2xl font-bold text-nook-purple-700 mb-3">No tenants found</h3>
               <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">Get started by onboarding your first tenant to begin managing your property portfolio</p>
               <Button 
                 onClick={() => setShowAddForm(true)}
@@ -345,7 +359,7 @@ export default function TenantsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md border-0 shadow-2xl bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-gray-200">
-              <CardTitle className="text-2xl font-bold text-gray-900">Onboard New Tenant</CardTitle>
+              <CardTitle className="text-2xl font-bold text-nook-purple-700">Onboard New Tenant</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"

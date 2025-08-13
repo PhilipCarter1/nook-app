@@ -251,8 +251,8 @@ export default function DocumentsPage() {
                 Back to Dashboard
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Documents</h1>
-                <p className="text-gray-600 text-lg">Store and manage important documents</p>
+                <h1 className="text-3xl font-bold text-nook-purple-700 tracking-tight">Documents</h1>
+                <p className="text-gray-600 mt-2">Store and manage important documents</p>
               </div>
             </div>
             <Button 
@@ -282,8 +282,8 @@ export default function DocumentsPage() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-2">
-                <span className="text-sm font-medium text-gray-600">Total Documents:</span>
-                <span className="ml-2 text-lg font-bold text-nook-purple-600">{documents.length}</span>
+                <span className="text-sm font-medium text-nook-purple-600">Total Documents:</span>
+                <span className="ml-2 text-lg font-bold text-nook-purple-700">{documents.length}</span>
               </div>
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function DocumentsPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-bold text-gray-900 group-hover:text-nook-purple-600 transition-colors duration-200">{document.name}</h3>
+                          <h3 className="text-xl font-bold text-nook-purple-700 group-hover:text-nook-purple-600 transition-colors duration-200">{document.name}</h3>
                           <Badge className={`${getTypeColor(document.type)} font-semibold px-3 py-1`}>
                             {document.type.charAt(0).toUpperCase() + document.type.slice(1)}
                           </Badge>
@@ -351,7 +351,7 @@ export default function DocumentsPage() {
               <div className="w-20 h-20 bg-gradient-to-br from-nook-purple-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FileText className="h-10 w-10 text-nook-purple-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No documents found</h3>
+              <h3 className="text-2xl font-bold text-nook-purple-700 mb-3">No documents found</h3>
               <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">Get started by uploading your first document to begin organizing your important files</p>
               <Button 
                 onClick={() => setShowUpload(true)}
@@ -370,7 +370,7 @@ export default function DocumentsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md border-0 shadow-2xl bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-gray-200">
-              <CardTitle className="text-2xl font-bold text-gray-900">Upload Document</CardTitle>
+              <CardTitle className="text-2xl font-bold text-nook-purple-700">Upload Document</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"

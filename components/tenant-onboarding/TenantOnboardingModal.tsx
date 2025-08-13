@@ -229,33 +229,33 @@ export default function TenantOnboardingModal({
         {step === 1 && (
           <div className="space-y-6">
             {/* Property Overview */}
-            <Card className="border-0 shadow-sm bg-gray-50">
+            <Card className="border-0 shadow-sm bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Building className="h-5 w-5 text-nook-purple-600" />
                     <div>
-                      <h3 className="font-semibold text-gray-900">{property.name}</h3>
-                      <p className="text-sm text-gray-600">{property.address}</p>
+                      <h3 className="font-semibold text-nook-purple-800">{property.name}</h3>
+                      <p className="text-sm text-nook-purple-600">{property.address}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">{property.units}</p>
-                    <p className="text-xs text-gray-600">Total Units</p>
+                    <p className="text-2xl font-bold text-nook-purple-700">{property.units}</p>
+                    <p className="text-xs text-nook-purple-600">Total Units</p>
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-4">
                   <div className="text-center">
-                    <p className="text-lg font-bold text-green-600">{property.tenants?.length || 0}</p>
-                    <p className="text-xs text-gray-600">Current Tenants</p>
+                    <p className="text-lg font-bold text-green-700">{property.tenants?.length || 0}</p>
+                    <p className="text-xs text-green-600">Current Tenants</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-blue-600">{getAvailableUnitsForSelection().length}</p>
-                    <p className="text-xs text-gray-600">Available Units</p>
+                    <p className="text-lg font-bold text-blue-700">{getAvailableUnitsForSelection().length}</p>
+                    <p className="text-xs text-blue-600">Available Units</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-purple-600">{getOccupancyRate()}%</p>
-                    <p className="text-xs text-gray-600">Occupancy Rate</p>
+                    <p className="text-lg font-bold text-purple-700">{getOccupancyRate()}%</p>
+                    <p className="text-xs text-purple-600">Occupancy Rate</p>
                   </div>
                 </div>
               </CardContent>
@@ -264,7 +264,7 @@ export default function TenantOnboardingModal({
             {/* Add Tenant Form */}
             <Card className="border-0 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Add New Tenant</CardTitle>
+                <CardTitle className="text-lg text-nook-purple-800">Add New Tenant</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddTenant} className="space-y-4">
@@ -386,7 +386,7 @@ export default function TenantOnboardingModal({
                           <Users className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{tenant.name}</p>
+                          <p className="font-semibold text-nook-purple-700">{tenant.name}</p>
                           <div className="flex items-center space-x-2 text-sm text-gray-600">
                             <Mail className="h-3 w-3" />
                             <span>{tenant.email}</span>

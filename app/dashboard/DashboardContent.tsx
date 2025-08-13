@@ -96,7 +96,7 @@ export default function DashboardContent() {
                   <span className="text-white font-bold text-xl">N</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Nook</h1>
+                  <h1 className="text-2xl font-bold text-nook-purple-700">Nook</h1>
                   <p className="text-gray-600 text-sm">Property Management</p>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default function DashboardContent() {
         <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-nook-purple-50 to-blue-50">
           <CardContent className="p-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome, {user?.name || 'User'}!</h2>
+              <h2 className="text-3xl font-bold text-nook-purple-700 mb-3">Welcome, {user?.name || 'User'}!</h2>
               <p className="text-gray-600 mb-6 text-lg">Your Nook account is ready. Start managing your properties.</p>
               <div className="flex justify-center space-x-4">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
@@ -153,7 +153,7 @@ export default function DashboardContent() {
                   <Building className="h-6 w-6 text-nook-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Properties</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Properties</h3>
                   <p className="text-gray-600 text-sm">Manage your properties</p>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function DashboardContent() {
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Tenants</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Tenants</h3>
                   <p className="text-gray-600 text-sm">Manage tenant information</p>
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function DashboardContent() {
                   <Wrench className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Maintenance</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Maintenance</h3>
                   <p className="text-gray-600 text-sm">Track and manage maintenance requests</p>
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function DashboardContent() {
                   <CreditCard className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Payments</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Payments</h3>
                   <p className="text-gray-600 text-sm">Manage rent and other payments</p>
                 </div>
               </div>
@@ -209,7 +209,7 @@ export default function DashboardContent() {
                   <FileText className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Documents</h3>
                   <p className="text-gray-600 text-sm">Store and manage important documents</p>
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function DashboardContent() {
                   <BarChart className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-lg">Analytics</h3>
+                  <h3 className="font-semibold text-nook-purple-700 text-lg">Analytics</h3>
                   <p className="text-gray-600 text-sm">Gain insights into your portfolio</p>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function DashboardContent() {
         {/* Getting Started */}
         <Card className="border-0 shadow-lg bg-white">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-900">Getting Started</CardTitle>
+            <CardTitle className="text-xl font-semibold text-nook-purple-700">Getting Started</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserRole } from '@/lib/types';
 import { Bell, Menu, Sparkles } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Navbar() {
   // Handle case where AuthProvider is not available (public pages)
@@ -53,15 +54,17 @@ export function Navbar() {
   const currentNavigation = role ? navigation[role] : [];
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md shadow-sm">
+    <nav className="fixed top-0 z-50 w-full border-b border-gray-700 bg-gray-900/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-nook-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900">
+              <img 
+                src="/nook-logo.svg" 
+                alt="Nook" 
+                className="h-8 w-8"
+              />
+              <span className="text-lg font-bold text-nook-purple-300">
                 Nook
               </span>
             </Link>
@@ -71,7 +74,7 @@ export function Navbar() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200"
+                    className="text-sm font-medium text-gray-200 hover:text-nook-purple-300 transition-colors duration-200"
                   >
                     {item.name}
                   </Link>
@@ -82,11 +85,16 @@ export function Navbar() {
           <div className="flex items-center space-x-3">
             {user ? (
               <>
+                <ThemeToggle 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-gray-200 hover:text-nook-purple-300" 
+                />
                 <RoleSwitcher />
-                <Button variant="ghost" size="sm" onClick={signOut} className="text-sm">
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-sm text-gray-200 hover:text-nook-purple-300">
                   Sign Out
                 </Button>
-                <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 text-gray-200 hover:text-nook-purple-300">
                   <Bell className="h-4 w-4" />
                   <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full"></span>
                 </Button>
@@ -105,18 +113,18 @@ export function Navbar() {
             ) : (
               <>
                 <div className="hidden sm:flex items-center space-x-4">
-                  <Link href="/features" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                  <Link href="/features" className="text-sm font-medium text-gray-200 hover:text-nook-purple-300 transition-colors duration-200">
                     Features
                   </Link>
-                  <Link href="/demo" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                  <Link href="/demo" className="text-sm font-medium text-gray-200 hover:text-nook-purple-300 transition-colors duration-200">
                     Demo
                   </Link>
-                  <Link href="/contact" className="text-sm font-medium text-gray-700 hover:text-nook-purple-600 transition-colors duration-200">
+                  <Link href="/contact" className="text-sm font-medium text-gray-200 hover:text-nook-purple-300 transition-colors duration-200">
                     Contact
                   </Link>
                 </div>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-sm">Sign In</Button>
+                  <Button variant="ghost" size="sm" className="text-sm text-gray-200 hover:text-nook-purple-300">Sign In</Button>
                 </Link>
                 <Link href="/signup">
                   <Button 

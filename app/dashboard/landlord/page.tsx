@@ -29,6 +29,7 @@ import {
   Home,
   MapPin
 } from 'lucide-react';
+import { PendingDocumentsQueue, PendingDocument } from '@/components/documents/PendingDocumentsQueue';
 
 interface User {
   id: string;
@@ -72,12 +73,14 @@ export default function LandlordDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>([]);
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalUnits: 0,
     occupiedUnits: 0,
     monthlyRevenue: 0,
-    pendingMaintenance: 0
+    pendingMaintenance: 0,
+    pendingDocuments: 0
   });
 
   useEffect(() => {
@@ -179,13 +182,51 @@ export default function LandlordDashboard() {
           }
         ]);
 
+        // Simulate pending documents
+        setPendingDocuments([
+          {
+            id: 'doc-1',
+            name: 'Lease Agreement - Sarah Johnson',
+            tenantName: 'Sarah Johnson',
+            propertyName: 'Sunset Apartments',
+            unitNumber: 'A-101',
+            type: 'lease',
+            urgency: 'high',
+            uploadedAt: '2024-01-15T10:30:00Z',
+            status: 'pending'
+          },
+          {
+            id: 'doc-2',
+            name: 'ID Verification - Mike Chen',
+            tenantName: 'Mike Chen',
+            propertyName: 'Sunset Apartments',
+            unitNumber: 'B-205',
+            type: 'id_verification',
+            urgency: 'medium',
+            uploadedAt: '2024-01-14T14:20:00Z',
+            status: 'pending'
+          },
+          {
+            id: 'doc-3',
+            name: 'Income Proof - Emily Rodriguez',
+            tenantName: 'Emily Rodriguez',
+            propertyName: 'Sunset Apartments',
+            unitNumber: 'C-312',
+            type: 'income_proof',
+            urgency: 'high',
+            uploadedAt: '2024-01-13T09:15:00Z',
+            status: 'pending'
+          }
+        ]);
+
         // Simulate stats
         setStats({
           totalProperties: 3,
           totalUnits: 26,
           occupiedUnits: 20,
           monthlyRevenue: 31200,
-          pendingMaintenance: 2
+          pendingMaintenance: 2,
+          pendingDocuments: 3
         });
 
         setLoading(false);
@@ -243,6 +284,45 @@ export default function LandlordDashboard() {
     }
   };
 
+  // Document approval handlers
+  const handleDocumentApprove = async (documentId: string) => {
+    try {
+      // In a real app, this would call an API to approve the document
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Document approved successfully');
+    } catch (error) {
+      toast.error('Failed to approve document');
+    }
+  };
+
+  const handleDocumentReject = async (documentId: string, reason: string) => {
+    try {
+      // In a real app, this would call an API to reject the document
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Document rejected');
+    } catch (error) {
+      toast.error('Failed to reject document');
+    }
+  };
+
+  const handleDocumentRequestChanges = async (documentId: string, changes: string[]) => {
+    try {
+      // In a real app, this would call an API to request changes
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Changes requested successfully');
+    } catch (error) {
+      toast.error('Failed to request changes');
+    }
+  };
+
+  const handleViewDocument = (documentId: string) => {
+    // In a real app, this would open the document viewer
+    router.push(`/dashboard/documents/${documentId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -252,9 +332,9 @@ export default function LandlordDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-3">
@@ -262,15 +342,32 @@ export default function LandlordDashboard() {
                 <span className="text-white font-bold text-xl">N</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Landlord Dashboard</h1>
-                <p className="text-gray-600 text-sm">Manage your properties and tenants</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Landlord Dashboard</h1>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">Manage your properties and tenants</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="secondary" className="bg-nook-purple-100 text-nook-purple-800 border-nook-purple-200">Landlord</Badge>
-              <Button variant="outline" onClick={() => router.push('/dashboard/settings')} className="text-nook-purple-600 border-nook-purple-200 hover:bg-nook-purple-50">
+              <Badge variant="secondary" className="bg-nook-purple-100 text-nook-purple-800 border-nook-purple-200 dark:bg-nook-purple-900/30 dark:text-nook-purple-300 dark:border-nook-purple-600">Landlord</Badge>
+              <Button variant="outline" onClick={() => router.push('/dashboard/settings')} className="text-nook-purple-600 border-nook-purple-200 hover:bg-nook-purple-50 dark:text-nook-purple-300 dark:border-nook-purple-600 dark:hover:bg-nook-purple-900/20">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  try {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    toast.success('Signed out successfully!');
+                    router.push('/login');
+                  } catch (error) {
+                    toast.error('Failed to sign out. Please try again.');
+                  }
+                }}
+                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -280,21 +377,21 @@ export default function LandlordDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <Card className="mb-8 border-0 shadow-lg bg-white">
+        <Card className="mb-8 border-0 shadow-lg bg-white dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="p-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome, {user?.name}!</h2>
-              <p className="text-gray-600 mb-4">Manage your property portfolio with professional tools.</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome, {user?.name}!</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Manage your property portfolio with professional tools.</p>
               <div className="flex justify-center space-x-4">
-                <Badge variant="outline" className="bg-nook-purple-100 text-nook-purple-800 border-nook-purple-200">
+                <Badge variant="outline" className="bg-nook-purple-100 text-nook-purple-800 border-nook-purple-200 dark:bg-nook-purple-900/30 dark:text-nook-purple-300 dark:border-nook-purple-600">
                   <Building className="h-4 w-4 mr-1" />
                   Property Manager
                 </Badge>
-                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   Portfolio Growth
                 </Badge>
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-600">
                   <Users className="h-4 w-4 mr-1" />
                   Tenant Management
                 </Badge>
@@ -364,6 +461,20 @@ export default function LandlordDashboard() {
           <Card className="border-0 shadow-md bg-white">
             <CardContent className="p-6">
               <div className="flex items-center">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                  <FileText className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Pending Documents</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.pendingDocuments}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-md bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center">
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                   <DollarSign className="h-6 w-6 text-green-600" />
                 </div>
@@ -375,6 +486,18 @@ export default function LandlordDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Items to Approve */}
+        {stats.pendingDocuments > 0 && (
+          <PendingDocumentsQueue
+            documents={pendingDocuments}
+            onApprove={handleDocumentApprove}
+            onReject={handleDocumentReject}
+            onRequestChanges={handleDocumentRequestChanges}
+            onViewDocument={handleViewDocument}
+            className="mb-8"
+          />
+        )}
 
         {/* Notifications and Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -455,7 +578,7 @@ export default function LandlordDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">{property.name}</h3>
+                        <h3 className="font-semibold text-nook-purple-700 text-lg">{property.name}</h3>
                         <p className="text-gray-600 text-sm flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
                           {property.address}
@@ -468,11 +591,11 @@ export default function LandlordDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm font-medium text-gray-600">Units</p>
-                        <p className="text-lg font-bold text-gray-900">{property.occupiedUnits}/{property.units}</p>
+                        <p className="text-lg font-bold text-nook-purple-700">{property.occupiedUnits}/{property.units}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-600">Monthly Rent</p>
-                        <p className="text-lg font-bold text-gray-900">${property.monthlyRent.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-nook-purple-700">${property.monthlyRent.toLocaleString()}</p>
                       </div>
                     </div>
                   </CardContent>

@@ -124,7 +124,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
             <User className="h-6 w-6 text-nook-purple-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Welcome back</CardTitle>
+          <CardTitle className="text-2xl font-bold text-nook-purple-700">Welcome back</CardTitle>
           <p className="text-gray-600 mt-2">Sign in to your Nook account</p>
         </CardHeader>
         <CardContent>

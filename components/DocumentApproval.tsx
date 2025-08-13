@@ -82,7 +82,7 @@ export function DocumentApproval({ document, onUpdate }: DocumentApprovalProps) 
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Uploaded</p>
-              <p>{format(new Date(document.createdAt), 'PPp')}</p>
+              <p>{format(new Date(document.uploadedAt), 'PPp')}</p>
             </div>
           </div>
 

@@ -187,7 +187,7 @@ export function SearchBar({ placeholder = "Search properties, tenants, documents
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-nook-purple-700 truncate">
                           {result.title}
                         </p>
                         {result.badge && (

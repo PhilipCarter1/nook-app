@@ -22,7 +22,7 @@ export function LoadingPage({ message = "Please wait while we set up your accoun
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         />
         <motion.h2 
-          className="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+          className="text-xl font-semibold text-nook-purple-700 dark:text-white mb-2"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}

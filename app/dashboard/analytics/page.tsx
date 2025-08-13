@@ -121,8 +121,8 @@ export default function AnalyticsPage() {
                 Back to Dashboard
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Analytics</h1>
-                <p className="text-gray-600 text-lg">Track your property performance and insights</p>
+                <h1 className="text-3xl font-bold text-nook-purple-700 tracking-tight">Analytics</h1>
+                <p className="text-gray-600 mt-2">Gain insights into your portfolio performance</p>
               </div>
             </div>
           </div>
@@ -132,13 +132,13 @@ export default function AnalyticsPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-nook-purple-50 to-purple-100">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-nook-purple-50 to-purple-100 border border-nook-purple-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-nook-purple-600">Total Properties</p>
-                  <p className="text-2xl font-bold text-nook-purple-900">{analytics.totalProperties}</p>
+                  <p className="text-2xl font-bold text-nook-purple-700">{analytics.totalProperties}</p>
                 </div>
                 <div className="w-12 h-12 bg-nook-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Building className="h-6 w-6 text-white" />
@@ -147,12 +147,12 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-blue-600">Total Tenants</p>
-                  <p className="text-2xl font-bold text-blue-900">{analytics.totalTenants}</p>
+                  <p className="text-2xl font-bold text-blue-700">{analytics.totalTenants}</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Users className="h-6 w-6 text-white" />
@@ -161,12 +161,12 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-green-900">${analytics.totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-700">${analytics.totalRevenue.toLocaleString()}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
                   <DollarSign className="h-6 w-6 text-white" />
@@ -175,15 +175,15 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-orange-600">Occupancy Rate</p>
-                  <p className="text-2xl font-bold text-orange-900">{analytics.occupancyRate}%</p>
+                  <p className="text-sm font-medium text-yellow-600">Occupancy Rate</p>
+                  <p className="text-2xl font-bold text-yellow-700">{analytics.occupancyRate}%</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Activity className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
           {/* Revenue Overview */}
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-nook-purple-700 flex items-center gap-2">
                 <BarChart className="h-5 w-5 text-nook-purple-600" />
                 Revenue Overview
               </CardTitle>
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
           {/* Property Performance */}
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-nook-purple-700 flex items-center gap-2">
                 <PieChart className="h-5 w-5 text-nook-purple-600" />
                 Property Performance
               </CardTitle>
@@ -264,7 +264,7 @@ export default function AnalyticsPage() {
         <div className="mt-8">
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-nook-purple-700 flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-nook-purple-600" />
                 Growth Metrics
               </CardTitle>

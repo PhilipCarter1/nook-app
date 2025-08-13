@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { PendingDocumentsQueue, PendingDocument } from '@/components/documents/PendingDocumentsQueue';
+import { createClient } from '@/lib/supabase/client';
 
 interface User {
   id: string;
@@ -62,11 +64,13 @@ export default function AdminDashboard() {
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
+  const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>([]);
   const [stats, setStats] = useState({
     totalProperties: 12,
     totalTenants: 24,
     pendingMaintenance: 3,
     totalRevenue: 75000,
+    pendingDocuments: 5
   });
 
   useEffect(() => {
@@ -176,6 +180,65 @@ export default function AdminDashboard() {
           link: '/dashboard/documents'
         }
       ]);
+
+      // Simulate pending documents
+      setPendingDocuments([
+        {
+          id: 'doc-1',
+          name: 'Lease Agreement - Sarah Johnson',
+          tenantName: 'Sarah Johnson',
+          propertyName: 'Sunset Apartments',
+          unitNumber: 'A-101',
+          type: 'lease',
+          urgency: 'high',
+          uploadedAt: '2024-01-15T10:30:00Z',
+          status: 'pending'
+        },
+        {
+          id: 'doc-2',
+          name: 'ID Verification - Mike Chen',
+          tenantName: 'Mike Chen',
+          propertyName: 'Sunset Apartments',
+          unitNumber: 'B-205',
+          type: 'id_verification',
+          urgency: 'medium',
+          uploadedAt: '2024-01-14T14:20:00Z',
+          status: 'pending'
+        },
+        {
+          id: 'doc-3',
+          name: 'Income Proof - Emily Rodriguez',
+          tenantName: 'Emily Rodriguez',
+          propertyName: 'Sunset Apartments',
+          unitNumber: 'C-312',
+          type: 'income_proof',
+          urgency: 'high',
+          uploadedAt: '2024-01-13T09:15:00Z',
+          status: 'pending'
+        },
+        {
+          id: 'doc-4',
+          name: 'Proof of Address - David Kim',
+          tenantName: 'David Kim',
+          propertyName: 'Sunset Apartments',
+          unitNumber: 'A-203',
+          type: 'proof_of_address',
+          urgency: 'low',
+          uploadedAt: '2024-01-12T16:45:00Z',
+          status: 'pending'
+        },
+        {
+          id: 'doc-5',
+          name: 'References - Lisa Thompson',
+          tenantName: 'Lisa Thompson',
+          propertyName: 'Sunset Apartments',
+          unitNumber: 'B-108',
+          type: 'references',
+          urgency: 'medium',
+          uploadedAt: '2024-01-11T11:30:00Z',
+          status: 'pending'
+        }
+      ]);
     };
 
     checkAuthAndLoadData();
@@ -267,14 +330,53 @@ export default function AdminDashboard() {
     }
   };
 
+  // Document approval handlers
+  const handleDocumentApprove = async (documentId: string) => {
+    try {
+      // In a real app, this would call an API to approve the document
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Document approved successfully');
+    } catch (error) {
+      toast.error('Failed to approve document');
+    }
+  };
+
+  const handleDocumentReject = async (documentId: string, reason: string) => {
+    try {
+      // In a real app, this would call an API to reject the document
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Document rejected');
+    } catch (error) {
+      toast.error('Failed to reject document');
+    }
+  };
+
+  const handleDocumentRequestChanges = async (documentId: string, changes: string[]) => {
+    try {
+      // In a real app, this would call an API to request changes
+      setPendingDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      setStats(prev => ({ ...prev, pendingDocuments: prev.pendingDocuments - 1 }));
+      toast.success('Changes requested successfully');
+    } catch (error) {
+      toast.error('Failed to request changes');
+    }
+  };
+
+  const handleViewDocument = (documentId: string) => {
+    // In a real app, this would open the document viewer
+    router.push(`/dashboard/documents/${documentId}`);
+  };
+
   // Get limited notifications and activities
   const displayedNotifications = showAllNotifications ? notifications : notifications.slice(0, 3);
   const displayedActivities = showAllActivities ? recentActivity : recentActivity.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
@@ -283,8 +385,8 @@ export default function AdminDashboard() {
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                  <p className="text-gray-600 text-sm">Full system control and management</p>
+                  <h1 className="text-2xl font-bold text-nook-purple-700 dark:text-nook-purple-300">Admin Dashboard</h1>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">Full system control and management</p>
                 </div>
               </div>
             </div>
@@ -292,10 +394,27 @@ export default function AdminDashboard() {
               <Button 
                 variant="outline" 
                 onClick={() => router.push('/dashboard/settings')}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-500 transition-all duration-200"
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  try {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    toast.success('Signed out successfully!');
+                    router.push('/login');
+                  } catch (error) {
+                    toast.error('Failed to sign out. Please try again.');
+                  }
+                }}
+                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -305,24 +424,24 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50">
+        <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
           <CardContent className="p-8">
             <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
                 <Shield className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user?.name}!</h2>
-              <p className="text-gray-600 mb-6 text-lg">Full system access and administrative controls at your fingertips.</p>
+              <h2 className="text-3xl font-bold text-nook-purple-700 dark:text-nook-purple-300 mb-2">Welcome back, {user?.name}!</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg">Full system access and administrative controls at your fingertips.</p>
               <div className="flex justify-center space-x-4">
-                <Badge variant="outline" className="bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 px-4 py-2">
+                <Badge variant="outline" className="bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 dark:from-red-900/20 dark:to-red-800/20 dark:text-red-300 dark:border-red-600 px-4 py-2">
                   <Shield className="h-4 w-4 mr-2" />
                   Admin Access
                 </Badge>
-                <Badge variant="outline" className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300 px-4 py-2">
+                <Badge variant="outline" className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300 dark:from-blue-900/20 dark:to-blue-800/20 dark:text-blue-300 dark:border-blue-600 px-4 py-2">
                   <Zap className="h-4 w-4 mr-2" />
                   Full Control
                 </Badge>
-                <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 px-4 py-2">
+                <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 dark:from-purple-900/20 dark:to-purple-800/20 dark:text-purple-300 dark:border-purple-600 px-4 py-2">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   System Management
                 </Badge>
@@ -334,15 +453,15 @@ export default function AdminDashboard() {
         {/* Stats Overview - Clickable Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card
-            className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-blue-100 hover:to-blue-200"
+            className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 dark:hover:from-blue-800/30 dark:hover:to-blue-700/30"
             onClick={() => handleStatsCardClick('properties')}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">Total Properties</p>
-                  <p className="text-3xl font-bold text-blue-900">{stats.totalProperties}</p>
-                  <p className="text-xs text-blue-600 mt-1">+2 this month</p>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-300 mb-1">Total Properties</p>
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.totalProperties}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">+2 this month</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Building className="h-6 w-6 text-white" />
@@ -352,15 +471,15 @@ export default function AdminDashboard() {
           </Card>
 
           <Card
-            className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-green-100 hover:to-green-200"
+            className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-green-100 hover:to-green-200 dark:from-green-900/20 dark:to-green-800/20 dark:hover:from-green-800/30 dark:hover:to-green-700/30"
             onClick={() => handleStatsCardClick('tenants')}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">Total Tenants</p>
-                  <p className="text-3xl font-bold text-green-900">{stats.totalTenants}</p>
-                  <p className="text-xs text-green-600 mt-1">+5 this month</p>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-300 mb-1">Total Tenants</p>
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.totalTenants}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">+5 this month</p>
                 </div>
                 <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Users className="h-6 w-6 text-white" />
@@ -370,15 +489,15 @@ export default function AdminDashboard() {
           </Card>
 
           <Card
-            className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-orange-100 hover:to-orange-200"
+            className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-orange-100 hover:to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20 dark:hover:from-orange-800/30 dark:hover:to-orange-700/30"
             onClick={() => handleStatsCardClick('maintenance')}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-orange-600 mb-1">Pending Maintenance</p>
-                  <p className="text-3xl font-bold text-orange-900">{stats.pendingMaintenance}</p>
-                  <p className="text-xs text-orange-600 mt-1">3 open tickets</p>
+                  <p className="text-sm font-medium text-orange-600 dark:text-orange-300 mb-1">Pending Maintenance</p>
+                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">{stats.pendingMaintenance}</p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">3 open tickets</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Wrench className="h-6 w-6 text-white" />
@@ -388,15 +507,15 @@ export default function AdminDashboard() {
           </Card>
 
           <Card
-            className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-purple-100 hover:to-purple-200"
+            className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-purple-100 hover:to-purple-200 dark:from-purple-900/20 dark:to-purple-800/20 dark:hover:from-purple-800/30 dark:hover:to-purple-700/30"
             onClick={() => handleStatsCardClick('analytics')}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">Total Revenue</p>
-                  <p className="text-3xl font-bold text-purple-900">${stats.totalRevenue.toLocaleString()}</p>
-                  <p className="text-xs text-purple-600 mt-1">+12% this month</p>
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-300 mb-1">Total Revenue</p>
+                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">${stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">+12% this month</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                   <DollarSign className="h-6 w-6 text-white" />
@@ -406,16 +525,157 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Main Dashboard Tiles */}
+        <Card className="mt-8 border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
+              <Building className="h-5 w-5 mr-2 text-nook-purple-600 dark:text-nook-purple-400" />
+              Dashboard Modules
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Properties Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 dark:hover:from-blue-800/30 dark:hover:to-blue-700/30" onClick={() => router.push('/dashboard/properties')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <Building className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-nook-purple-700 dark:text-nook-purple-300 text-lg">Properties</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Manage your properties</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Tenants Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 dark:from-green-900/20 dark:to-green-800/20 dark:hover:from-green-800/30 dark:hover:to-green-700/30" onClick={() => router.push('/dashboard/tenants')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-nook-purple-700 dark:text-nook-purple-300 text-lg">Tenants</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Manage tenant information</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Maintenance Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20 dark:hover:from-orange-800/30 dark:hover:to-orange-700/30" onClick={() => router.push('/dashboard/maintenance')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <Wrench className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-nook-purple-700 dark:text-nook-purple-300 text-lg">Maintenance</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Track and manage maintenance requests</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-orange-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Payments Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 dark:from-purple-900/20 dark:to-purple-800/20 dark:hover:from-purple-800/30 dark:hover:to-purple-700/30" onClick={() => router.push('/dashboard/payments')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <DollarSign className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-nook-purple-700 dark:text-nook-purple-300 text-lg">Payments</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Manage rent and other payments</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-purple-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Analytics Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 dark:from-indigo-900/20 dark:to-indigo-800/20 dark:hover:from-indigo-800/30 dark:hover:to-indigo-700/30" onClick={() => router.push('/dashboard/analytics')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <TrendingUp className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-nook-purple-700 dark:text-nook-purple-300 text-lg">Analytics</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">View performance insights</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-indigo-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Documents Tile */}
+              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 dark:from-pink-900/20 dark:to-pink-800/20 dark:hover:from-pink-800/30 dark:hover:to-pink-700/30" onClick={() => router.push('/dashboard/documents')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+                      <FileText className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Documents</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Manage documents and contracts</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-pink-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pending Documents Stat Card */}
+        {stats.pendingDocuments > 0 && (
+          <div className="mb-8">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100 hover:shadow-xl transition-all duration-300 cursor-pointer hover:from-red-100 hover:to-red-200 dark:from-red-900/20 dark:to-red-800/20 dark:hover:from-red-800/30 dark:hover:to-red-700/30" onClick={() => router.push('/dashboard/documents')}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-red-600 dark:text-red-300 mb-1">Documents Pending Approval</p>
+                    <p className="text-3xl font-bold text-red-900 dark:text-red-100">{stats.pendingDocuments}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">Requires immediate attention</p>
+                  </div>
+                  <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Items to Approve */}
+        {stats.pendingDocuments > 0 && (
+          <PendingDocumentsQueue
+            documents={pendingDocuments}
+            onApprove={handleDocumentApprove}
+            onReject={handleDocumentReject}
+            onRequestChanges={handleDocumentRequestChanges}
+            onViewDocument={handleViewDocument}
+            className="mt-8"
+          />
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Notifications - Clickable */}
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center justify-between text-lg font-semibold">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold dark:text-white">
                 <div className="flex items-center">
-                  <Bell className="h-5 w-5 mr-2 text-nook-purple-600" />
+                  <Bell className="h-5 w-5 mr-2 text-nook-purple-600 dark:text-nook-purple-400" />
                   Recent Notifications
                 </div>
-                <Badge className="bg-nook-purple-100 text-nook-purple-700">
+                <Badge className="bg-nook-purple-100 text-nook-purple-700 dark:bg-nook-purple-900/30 dark:text-nook-purple-300">
                   {notifications.filter(n => !n.read).length} new
                 </Badge>
               </CardTitle>
@@ -436,7 +696,7 @@ export default function AdminDashboard() {
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                      <p className="text-sm font-medium text-nook-purple-700">{notification.title}</p>
                       <p className="text-sm text-gray-600">{notification.message}</p>
                       <p className="text-xs text-gray-500 mt-1">{notification.timestamp}</p>
                     </div>
@@ -507,7 +767,7 @@ export default function AdminDashboard() {
                       {getActivityIcon(activity.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                      <p className="text-sm font-medium text-nook-purple-700">{activity.action}</p>
                       <p className="text-sm text-gray-600">{activity.description}</p>
                       <div className="flex items-center space-x-2 mt-1">
                         <p className="text-xs text-gray-500">{activity.timestamp}</p>
@@ -545,120 +805,11 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Main Dashboard Tiles */}
-        <Card className="mt-8 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center text-lg font-semibold">
-              <Building className="h-5 w-5 mr-2 text-nook-purple-600" />
-              Dashboard Modules
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Properties Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200" onClick={() => router.push('/dashboard/properties')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <Building className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Properties</h3>
-                      <p className="text-gray-600 text-sm">Manage your properties</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Tenants Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200" onClick={() => router.push('/dashboard/tenants')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <Users className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Tenants</h3>
-                      <p className="text-gray-600 text-sm">Manage tenant information</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Maintenance Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200" onClick={() => router.push('/dashboard/maintenance')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <Wrench className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Maintenance</h3>
-                      <p className="text-gray-600 text-sm">Track and manage maintenance requests</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-orange-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Payments Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200" onClick={() => router.push('/dashboard/payments')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <DollarSign className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Payments</h3>
-                      <p className="text-gray-600 text-sm">Manage rent and other payments</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Analytics Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200" onClick={() => router.push('/dashboard/analytics')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <TrendingUp className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Analytics</h3>
-                      <p className="text-gray-600 text-sm">View performance insights</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-indigo-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Documents Tile */}
-              <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200" onClick={() => router.push('/dashboard/documents')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
-                      <FileText className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">Documents</h3>
-                      <p className="text-gray-600 text-sm">Manage documents and contracts</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-pink-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Quick Actions - Functional Buttons */}
-        <Card className="mt-8 border-0 shadow-lg">
+        <Card className="mt-8 border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center text-lg font-semibold">
-              <Zap className="h-5 w-5 mr-2 text-nook-purple-600" />
+            <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
+              <Zap className="h-5 w-5 mr-2 text-nook-purple-600 dark:text-nook-purple-400" />
               Quick Actions
             </CardTitle>
           </CardHeader>
@@ -673,7 +824,7 @@ export default function AdminDashboard() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white"
+                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-500 transition-all duration-200 bg-white dark:bg-gray-700"
                 onClick={() => handleQuickAction('add-tenant')}
               >
                 <Users className="h-4 w-4 mr-2" />
@@ -681,7 +832,7 @@ export default function AdminDashboard() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 bg-white"
+                className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-500 transition-all duration-200 bg-white dark:bg-gray-700"
                 onClick={() => handleQuickAction('create-maintenance')}
               >
                 <Wrench className="h-4 w-4 mr-2" />

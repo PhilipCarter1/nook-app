@@ -46,19 +46,23 @@ export function ConversationList({
           return (
             <button
               key={conversation.id}
-              className={`w-full p-4 text-left hover:bg-gray-50 ${
+              className={`w-full p-5 text-left hover:bg-gray-50 ${
                 isSelected ? 'bg-gray-50' : ''
               }`}
               onClick={() => onSelectConversation(conversation.id)}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{otherParticipant?.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {conversation.lastMessage?.content}
+              <div className="flex items-start justify-between">
+                <div className="flex-1 pr-3">
+                  <h3 className="font-medium mb-2">{otherParticipant?.name}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {conversation.lastMessage?.content 
+                      ? (conversation.lastMessage.content.length > 100 
+                          ? conversation.lastMessage.content.substring(0, 100) + '...'
+                          : conversation.lastMessage.content)
+                      : 'No messages yet'}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <p className="text-sm text-gray-500">
                     {conversation.lastMessage
                       ? formatDateTime(new Date(conversation.lastMessage.created_at))

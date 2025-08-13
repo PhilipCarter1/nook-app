@@ -13,7 +13,7 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm",
+          "border border-nook-purple-300 bg-white text-nook-purple-700 hover:bg-nook-purple-50 hover:text-nook-purple-800 hover:border-nook-purple-400 shadow-sm",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -23,7 +23,7 @@ const buttonVariants = cva(
         warning: "bg-yellow-600 text-white hover:bg-yellow-700 shadow-sm",
         error: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
         info: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
-        subtle: "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+        subtle: "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600",
         gradient: "bg-gradient-to-r from-nook-purple-500 via-purple-500 to-pink-500 text-white hover:from-nook-purple-600 hover:via-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl",
       },
       size: {

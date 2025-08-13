@@ -173,7 +173,7 @@ export default function PremiumLoginForm() {
           >
             <Mail className="w-8 h-8 text-nook-purple-600 dark:text-nook-purple-400" />
           </motion.div>
-          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardTitle className="text-2xl font-bold text-nook-purple-700 dark:text-white">
             Welcome back
           </CardTitle>
           <p className="text-gray-600 dark:text-gray-400 mt-2">

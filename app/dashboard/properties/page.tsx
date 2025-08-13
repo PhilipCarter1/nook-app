@@ -240,7 +240,7 @@ export default function PropertiesPage() {
                     <Building className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">{property.name}</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-nook-purple-700">{property.name}</CardTitle>
                     <div className="flex items-center space-x-2 mt-1">
                       <MapPin className="h-3 w-3 text-gray-400" />
                       <p className="text-sm text-gray-600">{property.address}</p>
@@ -256,13 +256,13 @@ export default function PropertiesPage() {
               <div className="space-y-4">
                 {/* Property Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">{property.units}</p>
-                    <p className="text-xs text-gray-600">Total Units</p>
+                  <div className="text-center p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                    <p className="text-2xl font-bold text-nook-purple-700">{property.units}</p>
+                    <p className="text-xs text-nook-purple-600 font-medium">Total Units</p>
                   </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-900">{getTenantCount(property.tenants)}</p>
-                    <p className="text-xs text-blue-600">Tenants</p>
+                  <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                    <p className="text-2xl font-bold text-blue-700">{getTenantCount(property.tenants)}</p>
+                    <p className="text-xs text-blue-600 font-medium">Tenants</p>
                   </div>
                 </div>
 
@@ -270,28 +270,28 @@ export default function PropertiesPage() {
                 {property.tenants && property.tenants.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-gray-900">Current Tenants</h4>
-                      <Badge variant="outline" className="text-xs">
+                      <h4 className="text-sm font-semibold text-nook-purple-700">Current Tenants</h4>
+                      <Badge variant="outline" className="text-xs border-nook-purple-200 text-nook-purple-700">
                         {property.tenants.length} tenant{property.tenants.length !== 1 ? 's' : ''}
                       </Badge>
                     </div>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {property.tenants.slice(0, 3).map((tenant) => (
-                        <div key={tenant.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div key={tenant.id} className="flex items-center justify-between p-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
                           <div className="flex items-center space-x-2">
-                            <Users className="h-3 w-3 text-gray-400" />
+                            <Users className="h-3 w-3 text-nook-purple-500" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
-                              <p className="text-xs text-gray-500">{tenant.email}</p>
+                              <p className="text-sm font-medium text-nook-purple-800">{tenant.name}</p>
+                              <p className="text-xs text-nook-purple-600">{tenant.email}</p>
                             </div>
                           </div>
                           <Badge 
                             className={`text-xs ${
                               tenant.status === 'active' 
-                                ? 'bg-green-100 text-green-700 border-green-200' 
+                                ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200' 
                                 : tenant.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                : 'bg-gray-100 text-gray-700 border-gray-200'
+                                ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 border-yellow-200'
+                                : 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 border-gray-200'
                             }`}
                           >
                             {tenant.status}
@@ -299,7 +299,7 @@ export default function PropertiesPage() {
                         </div>
                       ))}
                       {property.tenants.length > 3 && (
-                        <p className="text-xs text-gray-500 text-center">
+                        <p className="text-xs text-nook-purple-500 text-center font-medium">
                           +{property.tenants.length - 3} more tenant{property.tenants.length - 3 !== 1 ? 's' : ''}
                         </p>
                       )}
@@ -316,7 +316,7 @@ export default function PropertiesPage() {
                       setSelectedProperty(property);
                       setShowTenantModal(true);
                     }}
-                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="flex-1 border-nook-purple-300 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-400 hover:text-nook-purple-800 transition-all duration-200"
                   >
                     <UserPlus className="h-3 w-3 mr-1" />
                     Onboard Tenants
@@ -325,7 +325,7 @@ export default function PropertiesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => router.push(`/dashboard/properties/${property.id}`)}
-                    className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="flex-1 border-nook-purple-300 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-400 hover:text-nook-purple-800 transition-all duration-200"
                   >
                     <Eye className="h-3 w-3 mr-1" />
                     View Details

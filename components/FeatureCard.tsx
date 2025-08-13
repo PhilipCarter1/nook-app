@@ -67,7 +67,7 @@ export function FeatureCard({
           {icon}
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-nook-purple-700 dark:text-white">
             {title}
           </h3>
           {isBeta && (

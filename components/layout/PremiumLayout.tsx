@@ -251,10 +251,12 @@ export function PremiumLayout({
                 transition={{ duration: 0.5 }}
                 className="flex items-center space-x-3"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                <img 
+                  src="/nook-logo.svg" 
+                  alt="Nook" 
+                  className="w-8 h-8"
+                />
+                <span className="text-xl font-bold text-nook-purple-700 dark:text-white">
                   Nook
                 </span>
               </motion.div>
@@ -278,7 +280,7 @@ export function PremiumLayout({
                   <User className="w-4 h-4 text-nook-purple-600 dark:text-nook-purple-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-medium text-nook-purple-700 dark:text-white truncate">
                     {user?.email}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
@@ -319,10 +321,12 @@ export function PremiumLayout({
               {/* Mobile sidebar content */}
               <div className="flex h-16 items-center justify-between px-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  <img 
+                    src="/nook-logo.svg" 
+                    alt="Nook" 
+                    className="w-8 h-8"
+                  />
+                  <span className="text-xl font-bold text-nook-purple-700 dark:text-white">
                     Nook
                   </span>
                 </div>
@@ -427,7 +431,7 @@ export function PremiumLayout({
                   </div>
                   <span className="hidden lg:flex lg:items-center">
                     <span className="sr-only">Your profile</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white" aria-hidden="true">
+                    <span className="text-sm font-medium text-nook-purple-700 dark:text-white" aria-hidden="true">
                       {user?.email}
                     </span>
                   </span>
@@ -462,9 +466,11 @@ export function PremiumLayout({
               <div className="py-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-gradient-to-br from-nook-purple-600 to-purple-600 rounded flex items-center justify-center">
-                      <Building2 className="w-3 h-3 text-white" />
-                    </div>
+                    <img 
+                      src="/nook-logo.svg" 
+                      alt="Nook" 
+                      className="w-6 h-6"
+                    />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       © 2024 Nook. All rights reserved.
                     </span>

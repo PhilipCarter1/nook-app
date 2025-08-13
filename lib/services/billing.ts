@@ -1,433 +1,341 @@
 import { getClient } from '@/lib/supabase/client';
-import { log } from '@/lib/logger';
+import { toast } from 'sonner';
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
+  description: string;
   price: number;
+  billingCycle: 'monthly' | 'yearly';
   features: string[];
   maxProperties: number;
   maxUnits: number;
-  maxUsers: number;
+  maxTenants: number;
   stripePriceId: string;
-  // Starter plan allows admin to become landlord
-  allowsLandlordRole: boolean;
-  // Admin can be landlord for smaller plans
-  adminCanBeLandlord: boolean;
+  popular?: boolean;
 }
 
-export const subscriptionPlans: SubscriptionPlan[] = [
+export interface UserSubscription {
+  id: string;
+  userId: string;
+  planId: string;
+  status: 'active' | 'canceled' | 'past_due' | 'unpaid';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+}
+
+export interface BillingUsage {
+  propertiesCount: number;
+  unitsCount: number;
+  tenantsCount: number;
+  documentsCount: number;
+  storageUsed: number; // in MB
+  storageLimit: number; // in MB
+}
+
+// Define the 3 subscription plans
+export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'starter',
     name: 'Starter',
+    description: 'Perfect for small landlords with 1-10 properties',
     price: 29,
+    billingCycle: 'monthly',
     features: [
-      'Up to 5 properties',
-      'Up to 20 units',
-      'Basic maintenance tracking',
-      'Payment processing',
+      'Up to 10 properties',
+      'Up to 50 units',
+      'Up to 100 tenants',
+      'Document management',
+      'Basic reporting',
       'Email support',
+      'Mobile app access'
     ],
-    maxProperties: 5,
-    maxUnits: 20,
-    maxUsers: 3,
-    stripePriceId: 'price_starter',
-    // Starter plan allows admin to also function as landlord
-    allowsLandlordRole: true,
-    // Admin can be landlord for smaller plans
-    adminCanBeLandlord: true,
+    maxProperties: 10,
+    maxUnits: 50,
+    maxTenants: 100,
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || 'price_starter'
   },
   {
     id: 'professional',
     name: 'Professional',
+    description: 'Ideal for growing property management companies',
     price: 79,
+    billingCycle: 'monthly',
     features: [
-      'Up to 25 properties',
-      'Up to 100 units',
-      'Advanced maintenance tracking',
-      'Document management',
-      'Financial reporting',
+      'Up to 50 properties',
+      'Up to 500 units',
+      'Up to 1000 tenants',
+      'Advanced document workflow',
+      'Comprehensive reporting',
       'Priority support',
+      'API access',
+      'Custom branding',
+      'Bulk operations'
     ],
-    maxProperties: 25,
-    maxUnits: 100,
-    maxUsers: 10,
-    stripePriceId: 'price_professional',
-    // Professional plan allows admin to also function as landlord
-    allowsLandlordRole: true,
-    // Admin can be landlord for professional plans
-    adminCanBeLandlord: true,
+    maxProperties: 50,
+    maxUnits: 500,
+    maxTenants: 1000,
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_PRICE_ID || 'price_professional',
+    popular: true
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
+    description: 'For large property management firms with multiple apartment blocks',
     price: 199,
+    billingCycle: 'monthly',
     features: [
       'Unlimited properties',
       'Unlimited units',
-      'Full feature access',
+      'Unlimited tenants',
+      'Advanced AI features',
       'Custom integrations',
-      'Dedicated support',
+      'Dedicated account manager',
+      '24/7 phone support',
+      'White-label solution',
       'Advanced analytics',
+      'Multi-location management'
     ],
-    maxProperties: -1, // Unlimited
-    maxUnits: -1, // Unlimited
-    maxUsers: -1, // Unlimited
-    stripePriceId: 'price_enterprise',
-    // Enterprise plan allows admin to also function as landlord
-    allowsLandlordRole: true,
-    // Admin can be landlord for enterprise plans
-    adminCanBeLandlord: true,
-  },
+    maxProperties: -1, // unlimited
+    maxUnits: -1, // unlimited
+    maxTenants: -1, // unlimited
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID || 'price_enterprise'
+  }
 ];
 
-export interface Subscription {
-  id: string;
-  organization_id: string;
-  stripe_subscription_id: string;
-  plan_id: string;
-  status: 'active' | 'canceled' | 'past_due';
-  current_period_start: string;
-  current_period_end: string;
-  cancel_at_period_end: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export async function getSubscription(organizationId: string): Promise<Subscription | null> {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('organization_id', organizationId)
-    .eq('status', 'active')
-    .single();
-
-  if (error) {
-    log.error('Error fetching subscription:', error as Error);
-    return null;
-  }
-
-  return data;
-}
-
-export async function createSubscription(organizationId: string, planId: string, stripeSubscriptionId: string): Promise<Subscription> {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .insert({
-      organization_id: organizationId,
-      plan_id: planId,
-      stripe_subscription_id: stripeSubscriptionId,
-      status: 'active',
-      current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-      cancel_at_period_end: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-export async function updateSubscription(subscriptionId: string, updates: Partial<Subscription>): Promise<Subscription> {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', subscriptionId)
-    .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-export async function getOrganizationSubscription(organizationId: string) {
-  // TODO: Implement actual subscription fetching
-  return {
-    plan: 'professional',
-    status: 'active',
-    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-  };
-}
-
-export async function updateOrganizationSubscription(
-  organizationId: string,
-  planId: string,
-  billingCycle: 'monthly' | 'annual'
-) {
-  const plan = subscriptionPlans.find(p => p.id === planId);
-  if (!plan) throw new Error('Invalid plan');
-
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .upsert({
-      organization_id: organizationId,
-      plan_id: planId,
-      status: 'active',
-      current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      billing_cycle: billingCycle,
-      amount: plan.price,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-export async function getOrganizationUsage(organizationId: string) {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .from('organizations')
-    .select(`
-      *,
-      properties:properties (id),
-      members:organization_members (
-        id,
-        role
-      )
-    `)
-    .eq('id', organizationId)
-    .single();
-
-  if (error) throw error;
-
-  const propertyCount = data.properties.length;
-  const unitCount = data.properties.reduce((acc: number, prop: any) => acc + (prop.units?.length || 0), 0);
-  const superCount = data.members.filter((m: any) => m.role === 'super').length;
-  const adminCount = data.members.filter((m: any) => m.role === 'admin').length;
-
-  return {
-    propertyCount,
-    unitCount,
-    superCount,
-    adminCount,
-  };
-}
-
-export async function calculateSubscriptionCost(
-  organizationId: string,
-  planId: string,
-  billingCycle: 'monthly' | 'annual'
-) {
-  const plan = subscriptionPlans.find(p => p.id === planId);
-  if (!plan) throw new Error('Invalid plan');
-
-  const usage = await getOrganizationUsage(organizationId);
-  
-  // Calculate base plan cost
-  let totalCost = plan.price;
-  if (billingCycle === 'annual') {
-    totalCost = totalCost * 12 * 0.8; // 20% discount for annual billing
-  }
-
-  // Calculate additional user costs
-  const additionalSupers = Math.max(0, usage.superCount - plan.maxUsers);
-  const additionalAdmins = Math.max(0, usage.adminCount - plan.maxUsers);
-
-  totalCost += additionalSupers * 15;
-  totalCost += additionalAdmins * 20;
-
-  return {
-    basePlanCost: plan.price,
-    additionalUsersCost: (additionalSupers * 15) + (additionalAdmins * 20),
-    totalCost,
-    billingCycle,
-    usage,
-  };
-} 
-
-// Function to check if user can function as landlord (without role change)
-export async function canFunctionAsLandlord(userId: string): Promise<{ canBeLandlord: boolean; reason?: string }> {
+// Get user's current subscription
+export async function getUserSubscription(userId: string): Promise<{ success: boolean; subscription?: UserSubscription; error?: string }> {
   const supabase = getClient();
   
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('role, subscription_plan, subscription_status')
-      .eq('id', userId)
+    const { data: subscription, error } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
       .single();
 
-    if (error || !user) {
-      return { canBeLandlord: false, reason: 'User not found' };
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      return { success: false, error: 'Failed to fetch subscription' };
     }
 
-    // Admin users can function as landlords
-    if (user.role === 'admin') {
-      // Check if user has an active subscription
-      if (user.subscription_status !== 'active') {
-        return { canBeLandlord: false, reason: 'Active subscription required to function as landlord' };
-      }
-
-      // Check if subscription plan allows admin to be landlord
-      const plan = subscriptionPlans.find(p => p.id === user.subscription_plan);
-      if (!plan || !plan.adminCanBeLandlord) {
-        return { canBeLandlord: false, reason: 'Current subscription plan does not allow admin landlord functionality' };
-      }
-
-      return { canBeLandlord: true };
-    }
-
-    // Landlord users can function as landlords
-    if (user.role === 'landlord') {
-      return { canBeLandlord: true };
-    }
-
-    return { canBeLandlord: false, reason: 'Only admin and landlord users can function as landlords' };
+    return { success: true, subscription: subscription || null };
   } catch (error) {
-    console.error('Error checking landlord functionality:', error);
-    return { canBeLandlord: false, reason: 'Error checking eligibility' };
-  }
-}
-
-// Function to get user's landlord capabilities
-export async function getUserLandlordCapabilities(userId: string): Promise<{
-  canInviteTenants: boolean;
-  canManageProperties: boolean;
-  canViewAnalytics: boolean;
-  maxProperties: number;
-  maxUnits: number;
-}> {
-  const supabase = getClient();
-  
-  try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('role, subscription_plan')
-      .eq('id', userId)
-      .single();
-
-    if (error || !user) {
-      return {
-        canInviteTenants: false,
-        canManageProperties: false,
-        canViewAnalytics: false,
-        maxProperties: 0,
-        maxUnits: 0,
-      };
-    }
-
-    const plan = subscriptionPlans.find(p => p.id === user.subscription_plan);
-    const isAdmin = user.role === 'admin';
-    const isLandlord = user.role === 'landlord';
-    const canBeLandlord = isAdmin || isLandlord;
-
-    return {
-      canInviteTenants: canBeLandlord && plan?.allowsLandlordRole === true,
-      canManageProperties: canBeLandlord && plan?.allowsLandlordRole === true,
-      canViewAnalytics: canBeLandlord && plan?.allowsLandlordRole === true,
-      maxProperties: plan?.maxProperties || 0,
-      maxUnits: plan?.maxUnits || 0,
-    };
-  } catch (error) {
-    console.error('Error getting landlord capabilities:', error);
-    return {
-      canInviteTenants: false,
-      canManageProperties: false,
-      canViewAnalytics: false,
-      maxProperties: 0,
-      maxUnits: 0,
-    };
-  }
-}
-
-// Function to upgrade user role based on subscription plan (for larger organizations)
-export async function upgradeUserRole(userId: string, planId: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = getClient();
-  
-  try {
-    // Get the subscription plan
-    const plan = subscriptionPlans.find(p => p.id === planId);
-    if (!plan) {
-      return { success: false, error: 'Invalid subscription plan' };
-    }
-
-    // Check if plan allows landlord role
-    if (!plan.allowsLandlordRole) {
-      return { success: false, error: 'This plan does not allow landlord role' };
-    }
-
-    // Get current user
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('role, trial_status')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !user) {
-      return { success: false, error: 'User not found' };
-    }
-
-    // Only allow admin users to upgrade to landlord (for larger organizations)
-    if (user.role !== 'admin') {
-      return { success: false, error: 'Only admin users can upgrade to landlord' };
-    }
-
-    // Update user role to landlord
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ 
-        role: 'landlord',
-        subscription_plan: planId,
-        subscription_status: 'active',
-        trial_status: user.trial_status === 'active' ? 'converted' : user.trial_status
-      })
-      .eq('id', userId);
-
-    if (updateError) {
-      return { success: false, error: 'Failed to upgrade user role' };
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error upgrading user role:', error);
+    console.error('Error fetching user subscription:', error);
     return { success: false, error: 'Internal server error' };
   }
 }
 
-// Function to check if user can upgrade to landlord (for larger organizations)
-export async function canUpgradeToLandlord(userId: string): Promise<{ canUpgrade: boolean; reason?: string }> {
+// Get user's current usage
+export async function getUserUsage(userId: string): Promise<{ success: boolean; usage?: BillingUsage; error?: string }> {
   const supabase = getClient();
   
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('role, subscription_plan, subscription_status')
-      .eq('id', userId)
-      .single();
+    // Get properties count
+    const { count: propertiesCount } = await supabase
+      .from('properties')
+      .select('*', { count: 'exact', head: true })
+      .eq('landlord_id', userId);
 
-    if (error || !user) {
-      return { canUpgrade: false, reason: 'User not found' };
+    // Get property IDs first
+    const { data: properties, error: propertiesError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('landlord_id', userId);
+
+    if (propertiesError) {
+      return { success: false, error: 'Failed to fetch properties' };
     }
 
-    // Only admin users can upgrade to landlord (for larger organizations)
-    if (user.role !== 'admin') {
-      return { canUpgrade: false, reason: 'Only admin users can upgrade to landlord' };
+    const propertyIds = properties.map(p => p.id);
+
+    // Get units count
+    const { count: unitsCount } = await supabase
+      .from('units')
+      .select('*', { count: 'exact', head: true })
+      .in('property_id', propertyIds);
+
+    // Get tenants count
+    const { count: tenantsCount } = await supabase
+      .from('tenants')
+      .select('*', { count: 'exact', head: true })
+      .in('property_id', propertyIds);
+
+    // Get documents count
+    const { count: documentsCount } = await supabase
+      .from('documents')
+      .select('*', { count: 'exact', head: true })
+      .in('property_id', propertyIds);
+
+    // Calculate storage usage (simplified for now)
+    const storageUsed = (documentsCount || 0) * 2; // Assume 2MB per document
+    const storageLimit = 1000; // 1GB limit for all plans
+
+    const usage: BillingUsage = {
+      propertiesCount: propertiesCount || 0,
+      unitsCount: unitsCount || 0,
+      tenantsCount: tenantsCount || 0,
+      documentsCount: documentsCount || 0,
+      storageUsed,
+      storageLimit
+    };
+
+    return { success: true, usage };
+  } catch (error) {
+    console.error('Error fetching user usage:', error);
+    return { success: false, error: 'Internal server error' };
+  }
+}
+
+// Check if user can upgrade to a specific plan
+export async function canUpgradeToPlan(userId: string, planId: string): Promise<{ success: boolean; canUpgrade: boolean; reason?: string; error?: string }> {
+  try {
+    const [subscriptionResult, usageResult] = await Promise.all([
+      getUserSubscription(userId),
+      getUserUsage(userId)
+    ]);
+
+    if (!subscriptionResult.success || !usageResult.success) {
+      return { success: false, canUpgrade: false, error: 'Failed to fetch user data' };
     }
 
-    // Check if user has an active subscription
-    if (user.subscription_status !== 'active') {
-      return { canUpgrade: false, reason: 'Active subscription required to upgrade to landlord' };
+    const currentPlan = subscriptionResult.subscription ? 
+      SUBSCRIPTION_PLANS.find(p => p.id === subscriptionResult.subscription?.planId) : null;
+    
+    const targetPlan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
+    
+    if (!targetPlan) {
+      return { success: false, canUpgrade: false, error: 'Invalid plan' };
     }
 
-    // Check if subscription plan allows landlord role
-    const plan = subscriptionPlans.find(p => p.id === user.subscription_plan);
-    if (!plan || !plan.allowsLandlordRole) {
-      return { canUpgrade: false, reason: 'Current subscription plan does not allow landlord role' };
+    // Check if user is already on this plan or higher
+    if (currentPlan && getPlanTier(currentPlan.id) >= getPlanTier(planId)) {
+      return { 
+        success: true, 
+        canUpgrade: false, 
+        reason: 'You are already on this plan or higher' 
+      };
     }
 
-    return { canUpgrade: true };
+    // Check if current usage exceeds target plan limits
+    if (usageResult.usage) {
+      if (targetPlan.maxProperties !== -1 && usageResult.usage.propertiesCount > targetPlan.maxProperties) {
+        return { 
+          success: true, 
+          canUpgrade: false, 
+          reason: `Current properties (${usageResult.usage.propertiesCount}) exceed plan limit (${targetPlan.maxProperties})` 
+        };
+      }
+
+      if (targetPlan.maxUnits !== -1 && usageResult.usage.unitsCount > targetPlan.maxUnits) {
+        return { 
+          success: true, 
+          canUpgrade: false, 
+          reason: `Current units (${usageResult.usage.unitsCount}) exceed plan limit (${targetPlan.maxUnits})` 
+        };
+      }
+
+      if (targetPlan.maxTenants !== -1 && usageResult.usage.tenantsCount > targetPlan.maxTenants) {
+        return { 
+          success: true, 
+          canUpgrade: false, 
+          reason: `Current tenants (${usageResult.usage.tenantsCount}) exceed plan limit (${targetPlan.maxTenants})` 
+        };
+      }
+    }
+
+    return { success: true, canUpgrade: true };
   } catch (error) {
     console.error('Error checking upgrade eligibility:', error);
-    return { canUpgrade: false, reason: 'Error checking eligibility' };
+    return { success: false, canUpgrade: false, error: 'Internal server error' };
+  }
+}
+
+// Helper function to get plan tier (for comparison)
+function getPlanTier(planId: string): number {
+  switch (planId) {
+    case 'starter': return 1;
+    case 'professional': return 2;
+    case 'enterprise': return 3;
+    default: return 0;
+  }
+}
+
+// Create Stripe checkout session for subscription
+export async function createCheckoutSession(planId: string, userId: string, successUrl: string, cancelUrl: string): Promise<{ success: boolean; sessionId?: string; error?: string }> {
+  try {
+    const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
+    if (!plan) {
+      return { success: false, error: 'Invalid plan' };
+    }
+
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        planId,
+        userId,
+        successUrl,
+        cancelUrl,
+        stripePriceId: plan.stripePriceId
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return { success: false, error: data.error || 'Failed to create checkout session' };
+    }
+
+    return { success: true, sessionId: data.sessionId };
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    return { success: false, error: 'Internal server error' };
+  }
+}
+
+// Cancel subscription
+export async function cancelSubscription(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch('/api/cancel-subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return { success: false, error: data.error || 'Failed to cancel subscription' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+    return { success: false, error: 'Internal server error' };
+  }
+}
+
+// Get billing history
+export async function getBillingHistory(userId: string): Promise<{ success: boolean; invoices?: any[]; error?: string }> {
+  try {
+    const response = await fetch(`/api/billing-history?userId=${userId}`);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return { success: false, error: data.error || 'Failed to fetch billing history' };
+    }
+
+    return { success: true, invoices: data.invoices };
+  } catch (error) {
+    console.error('Error fetching billing history:', error);
+    return { success: false, error: 'Internal server error' };
   }
 } 

@@ -192,7 +192,7 @@ export default function SignUpForm() {
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-nook-purple-100 flex items-center justify-center">
             <User className="h-6 w-6 text-nook-purple-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Create your account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-nook-purple-700">Create your account</CardTitle>
           <p className="text-gray-600 mt-2">Join thousands of property managers using Nook</p>
         </CardHeader>
         <CardContent>

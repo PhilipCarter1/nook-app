@@ -350,7 +350,7 @@ export default function PremiumAdminDashboard() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <h1 className="text-4xl font-bold tracking-tight text-nook-purple-700 dark:text-white">
               Admin Dashboard
             </h1>
             <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
@@ -389,7 +389,7 @@ export default function PremiumAdminDashboard() {
                 <stat.icon className="h-4 w-4 text-nook-purple-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-nook-purple-700 dark:text-white">
                   {stat.value}
                 </div>
                 <div className="flex items-center justify-between mt-2">
@@ -538,7 +538,7 @@ export default function PremiumAdminDashboard() {
                         {getActivityIcon(activity.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-nook-purple-700 dark:text-white">
                           {activity.action}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">

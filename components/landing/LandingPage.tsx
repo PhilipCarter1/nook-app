@@ -96,7 +96,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mt-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl"
+              className="mt-6 text-4xl font-bold tracking-tight text-nook-purple-700 sm:text-5xl lg:text-6xl"
             >
               Modern Property Management{' '}
               <span className="text-nook-purple-600">Made Simple</span>
@@ -141,7 +141,7 @@ export default function LandingPage() {
             >
               <Link 
                 href="/demo" 
-                className="text-base font-semibold leading-6 text-gray-900 hover:text-nook-purple-600 transition-colors duration-200 inline-flex items-center"
+                className="text-base font-semibold leading-6 text-nook-purple-700 hover:text-nook-purple-600 transition-colors duration-200 inline-flex items-center"
               >
                 Watch Demo <span aria-hidden="true" className="ml-1">→</span>
               </Link>
@@ -216,7 +216,7 @@ export default function LandingPage() {
             className="mx-auto max-w-2xl lg:text-center mb-12"
           >
             <h2 className="text-base font-semibold leading-7 text-nook-purple-600">What our customers say</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            <p className="mt-2 text-3xl font-bold tracking-tight text-nook-purple-700 sm:text-4xl">
               Trusted by property managers nationwide
             </p>
           </motion.div>
@@ -239,7 +239,7 @@ export default function LandingPage() {
                   </div>
                   <p className="text-gray-600 mb-4">"{testimonial.content}"</p>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                    <p className="font-semibold text-nook-purple-700">{testimonial.name}</p>
                     <p className="text-sm text-gray-500">{testimonial.role} at {testimonial.company}</p>
                   </div>
                 </motion.div>
@@ -260,7 +260,7 @@ export default function LandingPage() {
             className="mx-auto max-w-2xl lg:text-center"
           >
             <h2 className="text-base font-semibold leading-7 text-nook-purple-600">Everything you need</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            <p className="mt-2 text-3xl font-bold tracking-tight text-nook-purple-700 sm:text-4xl">
               A complete property management solution
             </p>
             <p className="mt-4 text-lg leading-8 text-gray-600">
@@ -286,7 +286,7 @@ export default function LandingPage() {
                       <div className={`p-2 rounded-lg bg-gray-50 group-hover:bg-nook-purple-50 transition-colors duration-200`}>
                         <feature.icon className={`h-5 w-5 ${feature.color}`} />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">{feature.name}</h3>
+                      <h3 className="text-lg font-semibold text-nook-purple-700">{feature.name}</h3>
                     </div>
                     <p className="text-gray-600 mb-3 text-sm">{feature.description}</p>
                     <div className="flex items-center text-nook-purple-600 font-medium text-sm">
@@ -319,7 +319,7 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="mx-auto max-w-2xl text-center"
         >
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-nook-purple-700 sm:text-4xl">
             Ready to transform your property management?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-gray-600">
@@ -334,7 +334,7 @@ export default function LandingPage() {
             </Link>
             <Link 
               href="/contact" 
-              className="text-base font-semibold leading-6 text-gray-900 hover:text-nook-purple-600 transition-colors duration-200"
+              className="text-base font-semibold leading-6 text-nook-purple-700 hover:text-nook-purple-600 transition-colors duration-200"
             >
               Contact sales <span aria-hidden="true">→</span>
             </Link>

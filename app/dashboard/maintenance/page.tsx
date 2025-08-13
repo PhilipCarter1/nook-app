@@ -249,8 +249,8 @@ export default function MaintenancePage() {
                 Back to Dashboard
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Maintenance</h1>
-                <p className="text-gray-600 text-lg">Track and manage maintenance requests</p>
+                <h1 className="text-3xl font-bold text-nook-purple-700 tracking-tight">Maintenance</h1>
+                <p className="text-gray-600 mt-2">Track and manage maintenance requests</p>
               </div>
             </div>
             <Button 
@@ -268,12 +268,12 @@ export default function MaintenancePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-blue-600">Open Tickets</p>
-                  <p className="text-2xl font-bold text-blue-900">
+                  <p className="text-2xl font-bold text-blue-700">
                     {tickets.filter(t => t.status === 'open').length}
                   </p>
                 </div>
@@ -284,12 +284,12 @@ export default function MaintenancePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-yellow-600">In Progress</p>
-                  <p className="text-2xl font-bold text-yellow-900">
+                  <p className="text-2xl font-bold text-yellow-700">
                     {tickets.filter(t => t.status === 'in_progress').length}
                   </p>
                 </div>
@@ -300,12 +300,12 @@ export default function MaintenancePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-600">Completed</p>
-                  <p className="text-2xl font-bold text-green-900">
+                  <p className="text-2xl font-bold text-green-700">
                     {tickets.filter(t => t.status === 'completed').length}
                   </p>
                 </div>
@@ -316,12 +316,12 @@ export default function MaintenancePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-nook-purple-50 to-purple-100">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-nook-purple-50 to-purple-100 border border-nook-purple-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-nook-purple-600">Total Tickets</p>
-                  <p className="text-2xl font-bold text-nook-purple-900">{tickets.length}</p>
+                  <p className="text-2xl font-bold text-nook-purple-700">{tickets.length}</p>
                 </div>
                 <div className="w-12 h-12 bg-nook-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Wrench className="h-6 w-6 text-white" />
@@ -356,7 +356,7 @@ export default function MaintenancePage() {
                         <Wrench className="h-6 w-6 text-nook-purple-600" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-nook-purple-600 transition-colors duration-200">{ticket.title}</h3>
+                        <h3 className="text-xl font-bold text-nook-purple-700 group-hover:text-nook-purple-600 transition-colors duration-200">{ticket.title}</h3>
                         <div className="flex gap-2 mt-2">
                           <Badge className={`${getPriorityColor(ticket.priority)} font-semibold px-3 py-1`}>
                             {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)} Priority
@@ -400,7 +400,7 @@ export default function MaintenancePage() {
               <div className="w-20 h-20 bg-gradient-to-br from-nook-purple-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Wrench className="h-10 w-10 text-nook-purple-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No maintenance tickets found</h3>
+              <h3 className="text-2xl font-bold text-nook-purple-700 mb-3">No maintenance tickets found</h3>
               <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">Get started by creating your first maintenance ticket to begin tracking repairs and issues</p>
               <Button 
                 onClick={() => setShowForm(true)}
@@ -419,7 +419,7 @@ export default function MaintenancePage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md border-0 shadow-2xl bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 border-b border-gray-200">
-              <CardTitle className="text-2xl font-bold text-gray-900">Create Maintenance Ticket</CardTitle>
+              <CardTitle className="text-2xl font-bold text-nook-purple-700">Create Maintenance Ticket</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"

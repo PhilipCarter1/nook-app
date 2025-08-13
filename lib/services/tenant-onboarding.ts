@@ -1,6 +1,5 @@
 import { getClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { canFunctionAsLandlord } from './billing';
 
 export interface TenantInvitation {
   id: string;
@@ -34,10 +33,20 @@ export async function inviteTenant(
   const supabase = getClient();
   
   try {
-    // Check if user can function as landlord
-    const landlordCheck = await canFunctionAsLandlord(userId);
-    if (!landlordCheck.canBeLandlord) {
-      return { success: false, error: landlordCheck.reason || 'Not authorized to invite tenants' };
+    // Check if user exists and has appropriate role
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    // Only landlords and admins can invite tenants
+    if (user.role !== 'landlord' && user.role !== 'admin') {
+      return { success: false, error: 'Not authorized to invite tenants' };
     }
 
     // Verify user owns or manages the property
@@ -52,16 +61,6 @@ export async function inviteTenant(
     }
 
     // Check if user is the landlord/owner of the property OR is an admin
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !user) {
-      return { success: false, error: 'User not found' };
-    }
-
     const isAdmin = user.role === 'admin';
     const isPropertyOwner = property.landlord_id === userId || property.owner_id === userId;
     

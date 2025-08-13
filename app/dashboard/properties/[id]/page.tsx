@@ -178,8 +178,9 @@ export default function PropertyDetailsPage() {
   if (!property) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Property not found</h1>
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-nook-purple-700">Property not found</h1>
+          <p className="text-gray-600 mt-2">The property you're looking for doesn't exist.</p>
           <Button onClick={() => router.back()} className="mt-4">
             Go Back
           </Button>
@@ -203,7 +204,7 @@ export default function PropertyDetailsPage() {
               Back to Properties
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{property.name}</h1>
+              <h1 className="text-3xl font-bold text-nook-purple-700">{property.name}</h1>
               <div className="flex items-center space-x-2 mt-1">
                 <MapPin className="h-4 w-4 text-gray-400" />
                 <p className="text-gray-600">{property.address}</p>
@@ -222,48 +223,48 @@ export default function PropertyDetailsPage() {
 
       {/* Property Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600">Total Units</p>
-                <p className="text-3xl font-bold text-blue-900">{property.units}</p>
+                <p className="text-3xl font-bold text-blue-700">{property.units}</p>
               </div>
               <Building className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600">Occupied</p>
-                <p className="text-3xl font-bold text-green-900">{property.tenants?.length || 0}</p>
+                <p className="text-3xl font-bold text-green-700">{property.tenants?.length || 0}</p>
               </div>
               <Users className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-600">Occupancy Rate</p>
-                <p className="text-3xl font-bold text-purple-900">{getOccupancyRate()}%</p>
+                <p className="text-3xl font-bold text-purple-700">{getOccupancyRate()}%</p>
               </div>
               <Settings className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-orange-600">Monthly Revenue</p>
-                <p className="text-3xl font-bold text-orange-900">${getTotalRevenue().toLocaleString()}</p>
+                <p className="text-3xl font-bold text-orange-700">${getTotalRevenue().toLocaleString()}</p>
               </div>
               <DollarSign className="h-8 w-8 text-orange-500" />
             </div>
@@ -309,8 +310,8 @@ export default function PropertyDetailsPage() {
           {filteredTenants.length === 0 ? (
             <div className="text-center py-8">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No tenants found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 text-sm font-medium text-nook-purple-700">No tenants found</h3>
+              <p className="mt-1 text-sm text-nook-purple-600">
                 {searchTerm || filterStatus !== 'all' 
                   ? 'Try adjusting your search or filters.' 
                   : 'Get started by onboarding your first tenant.'}
@@ -335,13 +336,13 @@ export default function PropertyDetailsPage() {
                           <Users className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">{tenant.name}</h3>
-                          <div className="flex items-center space-x-1 text-sm text-gray-500">
+                          <h3 className="font-semibold text-nook-purple-800">{tenant.name}</h3>
+                          <div className="flex items-center space-x-1 text-sm text-nook-purple-600">
                             <Mail className="h-3 w-3" />
                             <span>{tenant.email}</span>
                           </div>
                           {tenant.phone && (
-                            <div className="flex items-center space-x-1 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1 text-sm text-nook-purple-600">
                               <Phone className="h-3 w-3" />
                               <span>{tenant.phone}</span>
                             </div>
@@ -351,10 +352,10 @@ export default function PropertyDetailsPage() {
                       <Badge 
                         className={`${
                           tenant.status === 'active' 
-                            ? 'bg-green-100 text-green-700 border-green-200' 
+                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200' 
                             : tenant.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                            ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 border-yellow-200'
+                            : 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 border-gray-200'
                         }`}
                       >
                         {tenant.status}
@@ -364,30 +365,30 @@ export default function PropertyDetailsPage() {
                     <div className="mt-4 space-y-2">
                       {tenant.unit_id && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Unit:</span>
-                          <span className="font-medium">{tenant.unit_id.replace('unit-', 'Unit ')}</span>
+                          <span className="text-nook-purple-600">Unit:</span>
+                          <span className="font-medium text-nook-purple-700">{tenant.unit_id.replace('unit-', 'Unit ')}</span>
                         </div>
                       )}
                       {tenant.rent_amount && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Rent:</span>
-                          <span className="font-medium">${tenant.rent_amount.toLocaleString()}</span>
+                          <span className="text-nook-purple-600">Rent:</span>
+                          <span className="font-medium text-nook-purple-700">${tenant.rent_amount.toLocaleString()}</span>
                         </div>
                       )}
                       {tenant.lease_start && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Lease Start:</span>
-                          <span className="font-medium">{new Date(tenant.lease_start).toLocaleDateString()}</span>
+                          <span className="text-nook-purple-600">Lease Start:</span>
+                          <span className="font-medium text-nook-purple-700">{new Date(tenant.lease_start).toLocaleDateString()}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="flex space-x-2 mt-4 pt-4 border-t border-gray-200">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1 border-nook-purple-300 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-400 hover:text-nook-purple-800 transition-all duration-200">
                         <Eye className="h-3 w-3 mr-1" />
                         View
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1 border-nook-purple-300 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-400 hover:text-nook-purple-800 transition-all duration-200">
                         <Edit className="h-3 w-3 mr-1" />
                         Edit
                       </Button>
