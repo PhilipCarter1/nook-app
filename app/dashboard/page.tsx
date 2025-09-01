@@ -1,8 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import React, { useEffect } from 'react';
-
-export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
