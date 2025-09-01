@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { GDPRCompliance } from '@/components/security/GDPRCompliance';
 import { 
   User, 
   Bell, 
@@ -695,6 +696,11 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* GDPR Compliance */}
+            {activeTab === 'privacy' && (
+              <GDPRCompliance />
             )}
           </div>
 
