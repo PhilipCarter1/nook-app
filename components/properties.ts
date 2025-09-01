@@ -243,9 +243,9 @@ export class PropertyService {
 
       const stats = {
         total: data?.length || 0,
-        available: data?.filter(p => p.status === 'available').length || 0,
-        occupied: data?.filter(p => p.status === 'occupied').length || 0,
-        maintenance: data?.filter(p => p.status === 'maintenance').length || 0,
+        available: data?.filter((p: any) => p.status === 'available').length || 0,
+        occupied: data?.filter((p: any) => p.status === 'occupied').length || 0,
+        maintenance: data?.filter((p: any) => p.status === 'maintenance').length || 0,
       };
 
       return stats;
