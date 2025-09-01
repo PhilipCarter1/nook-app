@@ -38,20 +38,41 @@ NEXT_PUBLIC_APP_DESCRIPTION=Modern Property Management Platform
 1. Go to your Supabase dashboard: https://supabase.com/dashboard
 2. Select your project
 3. Go to Settings → API
-4. Copy the following:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY`
+4. Copy the following (IMPORTANT: These are DIFFERENT values):
+
+   **Project URL** (looks like: `https://abcdefghijklmnop.supabase.co`)
+   - Copy this EXACT URL → `NEXT_PUBLIC_SUPABASE_URL`
+
+   **anon public** key (starts with `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`)
+   - This is a LONG JWT token → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+   **service_role** key (starts with `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`)
+   - This is a DIFFERENT long JWT token → `SUPABASE_SERVICE_ROLE_KEY`
+
+   ⚠️ **CRITICAL**: These three values should be COMPLETELY DIFFERENT from each other!
 
 ### Step 2: Add to Vercel
 1. Go to your Vercel dashboard: https://vercel.com/dashboard
 2. Select your nook-app project
 3. Go to Settings → Environment Variables
-4. Add each variable:
+4. Add each variable (make sure they are DIFFERENT):
+
+   **Variable 1:**
    - Name: `NEXT_PUBLIC_SUPABASE_URL`
-   - Value: `https://your-project.supabase.co`
+   - Value: `https://abcdefghijklmnop.supabase.co` (your actual project URL)
    - Environment: Production, Preview, Development
-5. Repeat for all variables
+
+   **Variable 2:**
+   - Name: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Value: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (your actual anon key)
+   - Environment: Production, Preview, Development
+
+   **Variable 3:**
+   - Name: `SUPABASE_SERVICE_ROLE_KEY`
+   - Value: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (your actual service role key)
+   - Environment: Production, Preview, Development
+
+   ⚠️ **DOUBLE-CHECK**: Each value should be completely different!
 
 ### Step 3: Redeploy
 1. Go to Deployments tab

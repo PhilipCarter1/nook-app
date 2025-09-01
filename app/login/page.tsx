@@ -80,10 +80,24 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
+      // Debug: Log environment variables (first few characters only for security)
+      console.log('Environment check:');
+      console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('SUPABASE_URL starts with:', process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + '...');
+      console.log('ANON_KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+      console.log('ANON_KEY starts with:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...');
+
       // Check if environment variables are available
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.error('Missing Supabase environment variables');
         toast.error('Configuration error. Please contact support.');
+        return;
+      }
+
+      // Check if the values are the same (common mistake)
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Environment variables have the same value - this is incorrect');
+        toast.error('Configuration error: Environment variables are misconfigured. Please check your Vercel settings.');
         return;
       }
 
@@ -101,8 +115,10 @@ export default function LoginPage() {
           toast.error('Invalid email or password');
         } else if (signInError.message.includes('Email not confirmed')) {
           toast.error('Please verify your email address before signing in');
+        } else if (signInError.message.includes('Invalid API key')) {
+          toast.error('Configuration error: Invalid Supabase API key');
         } else {
-          toast.error('Authentication failed. Please try again.');
+          toast.error('Authentication failed: ' + signInError.message);
         }
         return;
       }
