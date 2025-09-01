@@ -31,7 +31,7 @@ export default function Error({
             We apologize for the inconvenience. Please try again or contact support if the problem persists.
           </p>
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
+            <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
               Go Home
             </Button>
             <Button onClick={() => reset()}>
