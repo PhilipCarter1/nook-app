@@ -34,14 +34,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const getUser = async () => {
       try {
+        console.log('🔍 AuthProvider: Getting user...');
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
+          console.error('❌ AuthProvider: Auth error:', authError);
           log.error('Auth error:', authError);
           throw authError;
         }
 
+        console.log('✅ AuthProvider: Auth user found:', authUser?.email);
+
         if (authUser) {
+          console.log('🔍 AuthProvider: Fetching user data from public.users...');
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -49,9 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
           
           if (userError) {
+            console.error('❌ AuthProvider: Error fetching user data:', userError);
             log.error('Error fetching user data:', userError);
             throw userError;
           }
+
+          console.log('✅ AuthProvider: User data found:', userData);
 
           if (userData) {
             if (mounted) {

@@ -136,8 +136,11 @@ export default function LoginPage() {
       }
       
       console.log('Login successful!');
+      console.log('User data:', data.user);
       toast.success('Welcome back to Nook!');
+      console.log('About to redirect to /dashboard...');
       router.push('/dashboard');
+      console.log('Redirect command sent');
     } catch (err: any) {
       console.error('Login error:', err);
       toast.error('Something went wrong. Please try again.');
