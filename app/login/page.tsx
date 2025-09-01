@@ -80,6 +80,13 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
+      // Check if environment variables are available
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Missing Supabase environment variables');
+        toast.error('Configuration error. Please contact support.');
+        return;
+      }
+
       const supabase = createClient();
       
       console.log('Attempting to sign in with:', formData.email);
@@ -95,7 +102,7 @@ export default function LoginPage() {
         } else if (signInError.message.includes('Email not confirmed')) {
           toast.error('Please verify your email address before signing in');
         } else {
-          toast.error('Something went wrong. Please try again.');
+          toast.error('Authentication failed. Please try again.');
         }
         return;
       }
@@ -237,4 +244,4 @@ export default function LoginPage() {
       </Card>
     </div>
   );
-} 
+}
