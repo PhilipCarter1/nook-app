@@ -12,7 +12,7 @@ import { Menu } from 'lucide-react';
 interface MobileSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
+  userRole: 'landlord' | 'property_manager' | 'admin' | 'super' | 'tenant';
 }
 
 const navigation = {
@@ -23,6 +23,13 @@ const navigation = {
     { name: 'Maintenance', href: '/maintenance' },
   ],
   landlord: [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Properties', href: '/properties' },
+    { name: 'Tenants', href: '/tenants' },
+    { name: 'Payments', href: '/payments' },
+    { name: 'Maintenance', href: '/maintenance' },
+  ],
+  property_manager: [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Properties', href: '/properties' },
     { name: 'Tenants', href: '/tenants' },

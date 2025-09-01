@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 
 interface TopNavProps {
-  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
+  userRole: 'landlord' | 'property_manager' | 'admin' | 'super' | 'tenant';
   onMenuClick: () => void;
 }
 

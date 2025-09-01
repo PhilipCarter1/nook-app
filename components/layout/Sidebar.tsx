@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MainNav } from './MainNav';
 
 interface SidebarProps {
-  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
+  userRole: 'landlord' | 'property_manager' | 'admin' | 'super' | 'tenant';
   className?: string;
 }
 

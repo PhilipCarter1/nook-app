@@ -24,6 +24,7 @@ interface NavItem {
 type NavItems = {
   admin: NavItem[];
   landlord: NavItem[];
+  property_manager: NavItem[];
   tenant: NavItem[];
   super: NavItem[];
 };
@@ -39,6 +40,14 @@ export function RoleBasedNav() {
       { href: '/admin/settings', label: 'Settings', icon: Settings },
     ],
     landlord: [
+      { href: '/landlord/dashboard', label: 'Dashboard', icon: Building2 },
+      { href: '/landlord/properties', label: 'Properties', icon: Building2 },
+      { href: '/landlord/tenants', label: 'Tenants', icon: Users },
+      { href: '/landlord/maintenance', label: 'Maintenance', icon: MessageSquare },
+      { href: '/landlord/payments', label: 'Payments', icon: CreditCard },
+      { href: '/landlord/documents', label: 'Documents', icon: FileText },
+    ],
+    property_manager: [
       { href: '/landlord/dashboard', label: 'Dashboard', icon: Building2 },
       { href: '/landlord/properties', label: 'Properties', icon: Building2 },
       { href: '/landlord/tenants', label: 'Tenants', icon: Users },

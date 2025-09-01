@@ -229,7 +229,7 @@ export default function CustomerReadySignUpForm() {
 
       // Try simple signup first without metadata
       console.log('Trying simple signup without metadata...');
-      let { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password
       });

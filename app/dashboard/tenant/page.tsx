@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+
+export const dynamic = 'force-dynamic';
 import { TenantOnly } from '@/components/guards/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

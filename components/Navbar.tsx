@@ -38,6 +38,14 @@ export function Navbar() {
       { name: 'Maintenance', href: '/maintenance' },
       { name: 'Documents', href: '/documents' },
     ],
+    property_manager: [
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Properties', href: '/properties' },
+      { name: 'Tenants', href: '/tenants' },
+      { name: 'Payments', href: '/payments' },
+      { name: 'Maintenance', href: '/maintenance' },
+      { name: 'Documents', href: '/documents' },
+    ],
     super: [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Properties', href: '/properties' },

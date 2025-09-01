@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 interface MainNavProps {
-  userRole: 'landlord' | 'admin' | 'super' | 'tenant';
+  userRole: 'landlord' | 'property_manager' | 'admin' | 'super' | 'tenant';
 }
 
 const navigation = {
@@ -94,6 +94,48 @@ const navigation = {
     {
       name: 'Settings',
       href: '/admin/settings',
+      icon: Settings,
+    },
+  ],
+  property_manager: [
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: Home,
+    },
+    {
+      name: 'Properties',
+      href: '/dashboard/properties',
+      icon: Building2,
+    },
+    {
+      name: 'Tenants',
+      href: '/dashboard/tenants',
+      icon: Users,
+    },
+    {
+      name: 'Maintenance',
+      href: '/dashboard/maintenance',
+      icon: Wrench,
+    },
+    {
+      name: 'Documents',
+      href: '/dashboard/documents',
+      icon: FileText,
+    },
+    {
+      name: 'Payments',
+      href: '/dashboard/payments',
+      icon: DollarSign,
+    },
+    {
+      name: 'Analytics',
+      href: '/dashboard/analytics',
+      icon: BarChart,
+    },
+    {
+      name: 'Settings',
+      href: '/dashboard/settings',
       icon: Settings,
     },
   ],
