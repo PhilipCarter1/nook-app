@@ -86,34 +86,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
-            const { data: newUserData, error: createError } = await supabase
-              .from('users')
-              .insert([
-                {
+            console.log('🔍 AuthProvider: User not found in public.users, creating new user...');
+            
+            try {
+              const { data: newUserData, error: createError } = await supabase
+                .from('users')
+                .insert([
+                  {
+                    id: authUser.id,
+                    email: authUser.email,
+                    name: authUser.email?.split('@')[0] || 'User', // Extract name from email
+                    role: 'tenant',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }
+                ])
+                .select()
+                .single();
+
+              if (createError) {
+                console.error('❌ AuthProvider: Error creating user data:', createError);
+                log.error('Error creating user data:', createError);
+                
+                // Don't throw error, instead create a minimal user object
+                console.log('🔄 AuthProvider: Creating fallback user object...');
+                const fallbackUser = {
                   id: authUser.id,
                   email: authUser.email,
-                  name: authUser.email?.split('@')[0] || 'User', // Extract name from email
+                  name: authUser.email?.split('@')[0] || 'User',
                   role: 'tenant',
                   created_at: new Date().toISOString(),
                   updated_at: new Date().toISOString(),
+                };
+                
+                if (mounted) {
+                  setUser({ ...authUser, ...fallbackUser } as UserWithAuth);
+                  setRole('tenant' as UserRole);
+                  setLoading(false);
+                  router.push('/dashboard/tenant');
                 }
-              ])
-              .select()
-              .single();
+                return;
+              }
 
-            if (createError) {
-              console.error('❌ AuthProvider: Error creating user data:', createError);
-              log.error('Error creating user data:', createError);
-              throw createError;
-            }
+              console.log('✅ AuthProvider: New user created:', newUserData);
 
-            console.log('✅ AuthProvider: New user created:', newUserData);
-
-            if (newUserData && mounted) {
-              setUser({ ...authUser, ...newUserData } as UserWithAuth);
-              setRole(newUserData.role as UserRole);
-              setLoading(false);
-              router.push('/dashboard/tenant');
+              if (newUserData && mounted) {
+                setUser({ ...authUser, ...newUserData } as UserWithAuth);
+                setRole(newUserData.role as UserRole);
+                setLoading(false);
+                router.push('/dashboard/tenant');
+              }
+            } catch (error) {
+              console.error('❌ AuthProvider: Unexpected error during user creation:', error);
+              log.error('Unexpected error during user creation:', error as Error);
+              
+              // Create fallback user object
+              const fallbackUser = {
+                id: authUser.id,
+                email: authUser.email,
+                name: authUser.email?.split('@')[0] || 'User',
+                role: 'tenant',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+              
+              if (mounted) {
+                setUser({ ...authUser, ...fallbackUser } as UserWithAuth);
+                setRole('tenant' as UserRole);
+                setLoading(false);
+                router.push('/dashboard/tenant');
+              }
             }
           }
         } else {
