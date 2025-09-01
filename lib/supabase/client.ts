@@ -144,5 +144,11 @@ export function getClient() {
   return supabase;
 }
 
-// Export createClient for backward compatibility
-export const createClient = () => createClientComponentClient<Database>();
+// Export createClient for backward compatibility - use singleton pattern
+let clientInstance: any = null;
+export const createClient = () => {
+  if (!clientInstance) {
+    clientInstance = createClientComponentClient<Database>();
+  }
+  return clientInstance;
+};
