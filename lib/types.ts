@@ -19,7 +19,7 @@ export interface User {
   organization_id?: string;
 }
 
-export type UserRole = 'tenant' | 'landlord' | 'admin' | 'super';
+export type UserRole = 'tenant' | 'landlord' | 'property_manager' | 'admin' | 'super';
 
 export interface UserProfile {
   id: string;
