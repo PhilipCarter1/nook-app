@@ -95,8 +95,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   {
                     id: authUser.id,
                     email: authUser.email,
-                    name: authUser.email?.split('@')[0] || 'User', // Extract name from email
+                    first_name: authUser.email?.split('@')[0] || 'User',
+                    last_name: '',
+                    name: authUser.email?.split('@')[0] || 'User',
                     role: 'tenant',
+                    avatar_url: null,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
                   }
@@ -112,9 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.log('🔄 AuthProvider: Creating fallback user object...');
                 const fallbackUser = {
                   id: authUser.id,
-                  email: authUser.email,
+                  email: authUser.email || '',
+                  first_name: authUser.email?.split('@')[0] || 'User',
+                  last_name: '',
                   name: authUser.email?.split('@')[0] || 'User',
                   role: 'tenant',
+                  avatar_url: null,
                   created_at: new Date().toISOString(),
                   updated_at: new Date().toISOString(),
                 };
@@ -143,9 +149,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               // Create fallback user object
               const fallbackUser = {
                 id: authUser.id,
-                email: authUser.email,
+                email: authUser.email || '',
+                first_name: authUser.email?.split('@')[0] || 'User',
+                last_name: '',
                 name: authUser.email?.split('@')[0] || 'User',
                 role: 'tenant',
+                avatar_url: null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               };
