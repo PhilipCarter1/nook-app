@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -71,12 +71,16 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚨 FORM SUBMITTED! 🚨');
+    console.log('Form data:', formData);
     
     if (!isFormValid()) {
+      console.log('❌ Form validation failed');
       toast.error('Please fill in all required fields');
       return;
     }
     
+    console.log('✅ Form validation passed, starting login process...');
     setIsLoading(true);
     
     try {
@@ -101,7 +105,10 @@ export default function LoginPage() {
         return;
       }
 
-      const supabase = createClient();
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
       
       console.log('Attempting to sign in with:', formData.email);
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
