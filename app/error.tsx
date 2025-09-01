@@ -15,6 +15,10 @@ export default function Error({
   useEffect(() => {
     // Log the error to an error reporting service
     log.error('Application error occurred:', error as Error);
+    console.error('🚨 APPLICATION ERROR 🚨');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error digest:', error.digest);
   }, [error]);
 
   return (
