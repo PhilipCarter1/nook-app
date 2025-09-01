@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export const dynamic = 'force-dynamic';
 import { TenantOnly } from '@/components/guards/RoleGuard';
@@ -29,6 +29,35 @@ import { useAuth } from '@/components/providers/auth-provider';
 export default function TenantDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  
+  // User-specific data - will be empty for new customers (clean slate)
+  const [tenantData, setTenantData] = useState({
+    rentAmount: 0,
+    nextDueDate: '',
+    paymentStatus: 'pending',
+    maintenanceTickets: 0
+  });
+
+  useEffect(() => {
+    if (user) {
+      loadTenantData();
+    }
+  }, [user]);
+
+  const loadTenantData = async () => {
+    try {
+      // TODO: Replace with actual Supabase queries for user-specific data
+      // For now, new customers will see empty data (clean slate)
+      setTenantData({
+        rentAmount: 0,
+        nextDueDate: '',
+        paymentStatus: 'pending',
+        maintenanceTickets: 0
+      });
+    } catch (error) {
+      console.error('Error loading tenant data:', error);
+    }
+  };
 
   return (
     <TenantOnly>
@@ -105,7 +134,7 @@ export default function TenantDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Rent</p>
-                    <p className="text-2xl font-bold text-nook-purple-700 dark:text-nook-purple-300">$2,400</p>
+                    <p className="text-2xl font-bold text-nook-purple-700 dark:text-nook-purple-300">${tenantData.rentAmount.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -119,7 +148,7 @@ export default function TenantDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Days Until Rent Due</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">12</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{tenantData.nextDueDate || 'N/A'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -133,7 +162,7 @@ export default function TenantDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Open Tickets</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">2</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{tenantData.maintenanceTickets}</p>
                   </div>
                 </div>
               </CardContent>
@@ -147,7 +176,7 @@ export default function TenantDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Documents</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">5</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{tenantData.paymentStatus}</p>
                   </div>
                 </div>
               </CardContent>

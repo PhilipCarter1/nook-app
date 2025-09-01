@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export const dynamic = 'force-dynamic';
 import { LandlordOnly } from '@/components/guards/RoleGuard';
@@ -31,6 +31,35 @@ import { useAuth } from '@/components/providers/auth-provider';
 export default function LandlordDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  
+  // User-specific data - will be empty for new customers (clean slate)
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    totalTenants: 0,
+    totalRevenue: 0,
+    occupancyRate: 0
+  });
+
+  useEffect(() => {
+    if (user) {
+      loadUserStats();
+    }
+  }, [user]);
+
+  const loadUserStats = async () => {
+    try {
+      // TODO: Replace with actual Supabase queries for user-specific data
+      // For now, new customers will see empty stats (clean slate)
+      setStats({
+        totalProperties: 0,
+        totalTenants: 0,
+        totalRevenue: 0,
+        occupancyRate: 0
+      });
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+    }
+  };
 
   return (
     <LandlordOnly>
@@ -77,22 +106,37 @@ export default function LandlordDashboard() {
                   Welcome back, {user?.user_metadata?.full_name || user?.email || 'Landlord'}!
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">
-                  Here's an overview of your property portfolio and recent activity.
+                  {stats.totalProperties === 0 
+                    ? "Welcome to Nook! Start by adding your first property to begin managing your portfolio."
+                    : "Here's an overview of your property portfolio and recent activity."
+                  }
                 </p>
-                <div className="flex justify-center space-x-4">
-                  <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    Growing Portfolio
-                  </Badge>
-                  <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    Revenue Tracking
-                  </Badge>
-                  <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
-                    <BarChart className="h-4 w-4 mr-1" />
-                    Analytics
-                  </Badge>
-                </div>
+                {stats.totalProperties === 0 ? (
+                  <div className="flex justify-center">
+                    <Button 
+                      onClick={() => router.push('/dashboard/properties')}
+                      className="bg-nook-purple-600 hover:bg-nook-purple-700 text-white px-8 py-3 text-lg"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Add Your First Property
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex justify-center space-x-4">
+                    <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      Growing Portfolio
+                    </Badge>
+                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      Revenue Tracking
+                    </Badge>
+                    <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
+                      <BarChart className="h-4 w-4 mr-1" />
+                      Analytics
+                    </Badge>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -107,7 +151,7 @@ export default function LandlordDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Properties</p>
-                    <p className="text-2xl font-bold text-nook-purple-700 dark:text-nook-purple-300">12</p>
+                    <p className="text-2xl font-bold text-nook-purple-700 dark:text-nook-purple-300">{stats.totalProperties}</p>
                   </div>
                 </div>
               </CardContent>
@@ -121,7 +165,7 @@ export default function LandlordDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Tenants</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">28</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.totalTenants}</p>
                   </div>
                 </div>
               </CardContent>
@@ -135,7 +179,7 @@ export default function LandlordDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Monthly Revenue</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">$45,200</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">${stats.totalRevenue.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -149,7 +193,7 @@ export default function LandlordDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Open Tickets</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">7</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.occupancyRate}%</p>
                   </div>
                 </div>
               </CardContent>
