@@ -92,17 +92,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 {
                   id: authUser.id,
                   email: authUser.email,
+                  name: authUser.email?.split('@')[0] || 'User', // Extract name from email
                   role: 'tenant',
                   created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
                 }
               ])
               .select()
               .single();
 
             if (createError) {
+              console.error('❌ AuthProvider: Error creating user data:', createError);
               log.error('Error creating user data:', createError);
               throw createError;
             }
+
+            console.log('✅ AuthProvider: New user created:', newUserData);
 
             if (newUserData && mounted) {
               setUser({ ...authUser, ...newUserData } as UserWithAuth);
