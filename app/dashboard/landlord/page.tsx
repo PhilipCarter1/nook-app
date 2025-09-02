@@ -47,6 +47,11 @@ export default function LandlordDashboard() {
 
   const loadUserStats = async () => {
     try {
+      if (!user) {
+        console.error('No user found');
+        return;
+      }
+
       const supabase = createClient();
       
       // Get properties owned by this landlord
@@ -64,7 +69,7 @@ export default function LandlordDashboard() {
       const { data: tenants, error: tenantsError } = await supabase
         .from('tenants')
         .select('id, status')
-        .in('unit_id', properties?.map(p => p.id) || []);
+        .in('unit_id', properties?.map((p: any) => p.id) || []);
 
       if (tenantsError) {
         console.error('Error loading tenants:', tenantsError);
@@ -73,7 +78,7 @@ export default function LandlordDashboard() {
       // Calculate stats
       const totalProperties = properties?.length || 0;
       const totalTenants = tenants?.length || 0;
-      const totalRevenue = properties?.reduce((sum, p) => sum + (p.monthly_rent || 0), 0) || 0;
+      const totalRevenue = properties?.reduce((sum: number, p: any) => sum + (p.monthly_rent || 0), 0) || 0;
       const occupancyRate = totalProperties > 0 ? Math.round((totalTenants / totalProperties) * 100) : 0;
 
       setStats({

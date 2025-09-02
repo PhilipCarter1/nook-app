@@ -13,13 +13,11 @@ import {
   Settings,
   Calendar,
   DollarSign,
-  AlertCircle,
   MapPin,
   Phone,
   Mail,
   Clock,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';

@@ -8,9 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Users, Plus, Search, Mail, Phone, Calendar, Edit, Trash2, ArrowLeft, Building, X, FileText } from 'lucide-react';
+import { Users, Plus, Search, Mail, Phone, Edit, Trash2, ArrowLeft, Building, X, FileText } from 'lucide-react';
 import DocumentRequestModal from '@/components/landlord/DocumentRequestModal';
 
 interface Tenant {
@@ -200,11 +199,6 @@ export default function TenantsPage() {
 
   const handleRequestDocuments = (tenant: Tenant) => {
     setSelectedTenantsForDocuments([tenant]);
-    setShowDocumentRequestModal(true);
-  };
-
-  const handleRequestDocumentsFromMultiple = () => {
-    setSelectedTenantsForDocuments(filteredTenants);
     setShowDocumentRequestModal(true);
   };
 

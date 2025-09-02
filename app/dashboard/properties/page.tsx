@@ -96,7 +96,7 @@ export default function PropertiesPage() {
 
       // Get tenants for each property
       const propertiesWithTenants = await Promise.all(
-        (properties || []).map(async (property) => {
+        (properties || []).map(async (property: any) => {
           const { data: tenants, error: tenantsError } = await supabase
             .from('tenants')
             .select(`
