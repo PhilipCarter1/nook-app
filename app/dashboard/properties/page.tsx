@@ -52,7 +52,9 @@ export default function PropertiesPage() {
   const [newProperty, setNewProperty] = useState({
     name: '',
     address: '',
-    units: ''
+    units: '',
+    propertyType: '',
+    monthlyRent: ''
   });
 
   useEffect(() => {
@@ -61,57 +63,66 @@ export default function PropertiesPage() {
 
   const loadProperties = async () => {
     try {
-      // TEMPORARY: Use simulated data with tenants
-      setProperties([
-        {
-          id: '1',
-          name: 'Sunset Apartments',
-          address: '123 Main St, City, State',
-          units: 24,
-          created_at: new Date().toISOString(),
-          tenants: [
-            {
-              id: '1',
-              name: 'John Smith',
-              email: 'john.smith@email.com',
-              phone: '+1 (555) 123-4567',
-              status: 'active',
-              unit_id: 'unit-1',
-              lease_start: '2024-01-01',
-              lease_end: '2024-12-31'
-            },
-            {
-              id: '2',
-              name: 'Sarah Johnson',
-              email: 'sarah.johnson@email.com',
-              phone: '+1 (555) 234-5678',
-              status: 'active',
-              unit_id: 'unit-2',
-              lease_start: '2024-02-01',
-              lease_end: '2025-01-31'
-            }
-          ]
-        },
-        {
-          id: '2',
-          name: 'Riverside Condos',
-          address: '456 Oak Ave, City, State',
-          units: 12,
-          created_at: new Date().toISOString(),
-          tenants: [
-            {
-              id: '3',
-              name: 'Mike Davis',
-              email: 'mike.davis@email.com',
-              phone: '+1 (555) 345-6789',
-              status: 'pending',
-              unit_id: 'unit-3',
-              lease_start: '2024-03-01',
-              lease_end: '2025-02-28'
-            }
-          ]
-        }
-      ]);
+      const supabase = createClient();
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No user found');
+        setLoading(false);
+        return;
+      }
+
+      // Get properties owned by this landlord
+      const { data: properties, error: propertiesError } = await supabase
+        .from('properties')
+        .select(`
+          id,
+          name,
+          address,
+          units,
+          created_at,
+          landlord_id
+        `)
+        .eq('landlord_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (propertiesError) {
+        console.error('Error loading properties:', propertiesError);
+        toast.error('Failed to load properties');
+        setLoading(false);
+        return;
+      }
+
+      // Get tenants for each property
+      const propertiesWithTenants = await Promise.all(
+        (properties || []).map(async (property) => {
+          const { data: tenants, error: tenantsError } = await supabase
+            .from('tenants')
+            .select(`
+              id,
+              name,
+              email,
+              phone,
+              status,
+              unit_id,
+              lease_start,
+              lease_end
+            `)
+            .eq('property_id', property.id);
+
+          if (tenantsError) {
+            console.error('Error loading tenants for property:', property.id, tenantsError);
+          }
+
+          return {
+            ...property,
+            tenants: tenants || []
+          };
+        })
+      );
+
+      setProperties(propertiesWithTenants);
     } catch (error) {
       console.error('Error loading properties:', error);
       toast.error('Failed to load properties');
@@ -129,19 +140,40 @@ export default function PropertiesPage() {
     }
 
     try {
-      // TEMPORARY: Add to local state
-      const property = {
-        id: Date.now().toString(),
-        name: newProperty.name,
-        address: newProperty.address,
-        units: parseInt(newProperty.units),
-        created_at: new Date().toISOString(),
-        tenants: []
-      };
+      const supabase = createClient();
       
-      setProperties([property, ...properties]);
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to add properties');
+        return;
+      }
+
+      // Save property to database
+      const { data: property, error } = await supabase
+        .from('properties')
+        .insert({
+          name: newProperty.name,
+          address: newProperty.address,
+          units: parseInt(newProperty.units),
+          landlord_id: user.id,
+          property_type: newProperty.propertyType || 'apartment',
+          monthly_rent: newProperty.monthlyRent ? parseFloat(newProperty.monthlyRent) : null
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding property:', error);
+        toast.error('Failed to add property');
+        return;
+      }
+
+      // Reload properties to show the new one
+      await loadProperties();
+      
       setShowAddModal(false);
-      setNewProperty({ name: '', address: '', units: '' });
+      setNewProperty({ name: '', address: '', units: '', propertyType: '', monthlyRent: '' });
       toast.success('Property added successfully!');
     } catch (error) {
       console.error('Error adding property:', error);
@@ -373,6 +405,33 @@ export default function PropertiesPage() {
                 onChange={(e) => setNewProperty({ ...newProperty, units: e.target.value })}
                 placeholder="24"
                 required
+              />
+            </div>
+            <div>
+              <Label htmlFor="propertyType">Property Type</Label>
+              <Select value={newProperty.propertyType} onValueChange={(value) => setNewProperty({ ...newProperty, propertyType: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="house">House</SelectItem>
+                  <SelectItem value="apartment">Apartment</SelectItem>
+                  <SelectItem value="condo">Condo</SelectItem>
+                  <SelectItem value="townhouse">Townhouse</SelectItem>
+                  <SelectItem value="duplex">Duplex</SelectItem>
+                  <SelectItem value="studio">Studio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="monthlyRent">Monthly Rent (per unit)</Label>
+              <Input
+                id="monthlyRent"
+                type="number"
+                step="0.01"
+                value={newProperty.monthlyRent}
+                onChange={(e) => setNewProperty({ ...newProperty, monthlyRent: e.target.value })}
+                placeholder="2500.00"
               />
             </div>
             <div className="flex space-x-2 pt-4">

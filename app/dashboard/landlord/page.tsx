@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LandlordDashboard() {
   const { user } = useAuth();
@@ -46,13 +47,40 @@ export default function LandlordDashboard() {
 
   const loadUserStats = async () => {
     try {
-      // TODO: Replace with actual Supabase queries for user-specific data
-      // For now, new customers will see empty stats (clean slate)
+      const supabase = createClient();
+      
+      // Get properties owned by this landlord
+      const { data: properties, error: propertiesError } = await supabase
+        .from('properties')
+        .select('id, monthly_rent')
+        .eq('landlord_id', user.id);
+
+      if (propertiesError) {
+        console.error('Error loading properties:', propertiesError);
+        return;
+      }
+
+      // Get tenants for these properties
+      const { data: tenants, error: tenantsError } = await supabase
+        .from('tenants')
+        .select('id, status')
+        .in('unit_id', properties?.map(p => p.id) || []);
+
+      if (tenantsError) {
+        console.error('Error loading tenants:', tenantsError);
+      }
+
+      // Calculate stats
+      const totalProperties = properties?.length || 0;
+      const totalTenants = tenants?.length || 0;
+      const totalRevenue = properties?.reduce((sum, p) => sum + (p.monthly_rent || 0), 0) || 0;
+      const occupancyRate = totalProperties > 0 ? Math.round((totalTenants / totalProperties) * 100) : 0;
+
       setStats({
-        totalProperties: 0,
-        totalTenants: 0,
-        totalRevenue: 0,
-        occupancyRate: 0
+        totalProperties,
+        totalTenants,
+        totalRevenue,
+        occupancyRate
       });
     } catch (error) {
       console.error('Error loading user stats:', error);

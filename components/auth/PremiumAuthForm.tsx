@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/components/providers/auth-provider';
 import { 
   Mail, 
   Lock, 
@@ -34,6 +35,7 @@ interface ValidationState {
 
 export default function PremiumAuthForm() {
   const router = useRouter();
+  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -157,41 +159,29 @@ export default function PremiumAuthForm() {
     const loadingToast = toast.loading('Signing you in...');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: signinData.email,
-        password: signinData.password,
-      });
-
+      await signIn(signinData.email, signinData.password);
+      
       toast.dismiss(loadingToast);
-
-      if (error) {
-        console.error('Sign in error:', error);
-        
-        // Handle specific error cases
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password. Please check your credentials and try again.');
-        } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Please check your email and confirm your account before signing in.');
-        } else if (error.message.includes('Too many requests')) {
-          toast.error('Too many login attempts. Please wait a moment and try again.');
-        } else {
-          toast.error(`Sign in failed: ${error.message}`);
-        }
-        return;
-      }
-
-      if (data.user) {
-        toast.success('Welcome back! Signing you in...');
-        
-        // Small delay to show success message
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      }
+      toast.success('Welcome back! Signing you in...');
+      
+      // Small delay to show success message
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
     } catch (err: any) {
-      console.error('Unexpected sign in error:', err);
+      console.error('Sign in error:', err);
       toast.dismiss(loadingToast);
-      toast.error('An unexpected error occurred. Please try again.');
+      
+      // Handle specific error cases
+      if (err.message.includes('Invalid email or password')) {
+        toast.error('Invalid email or password. Please check your credentials and try again.');
+      } else if (err.message.includes('Email not confirmed')) {
+        toast.error('Please check your email and confirm your account before signing in.');
+      } else if (err.message.includes('Too many requests')) {
+        toast.error('Too many login attempts. Please wait a moment and try again.');
+      } else {
+        toast.error(`Sign in failed: ${err.message}`);
+      }
     } finally {
       setIsLoading(false);
     }

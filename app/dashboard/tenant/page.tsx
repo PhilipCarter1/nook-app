@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
+import TenantDocumentRequests from '@/components/tenant/TenantDocumentRequests';
 
 export default function TenantDashboard() {
   const { user } = useAuth();
@@ -340,6 +341,13 @@ export default function TenantDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Document Requests */}
+          {user?.id && (
+            <div className="mt-8">
+              <TenantDocumentRequests tenantId={user.id} />
+            </div>
+          )}
         </div>
       </div>
     </TenantOnly>

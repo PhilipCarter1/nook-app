@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Users, Plus, Search, Mail, Phone, Calendar, Edit, Trash2, ArrowLeft, Building, X } from 'lucide-react';
+import { Users, Plus, Search, Mail, Phone, Calendar, Edit, Trash2, ArrowLeft, Building, X, FileText } from 'lucide-react';
+import DocumentRequestModal from '@/components/landlord/DocumentRequestModal';
 
 interface Tenant {
   id: string;
@@ -30,6 +31,8 @@ export default function TenantsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showDocumentRequestModal, setShowDocumentRequestModal] = useState(false);
+  const [selectedTenantsForDocuments, setSelectedTenantsForDocuments] = useState<Tenant[]>([]);
   const [newTenant, setNewTenant] = useState({
     name: '',
     email: '',
@@ -195,6 +198,16 @@ export default function TenantsPage() {
     }
   };
 
+  const handleRequestDocuments = (tenant: Tenant) => {
+    setSelectedTenantsForDocuments([tenant]);
+    setShowDocumentRequestModal(true);
+  };
+
+  const handleRequestDocumentsFromMultiple = () => {
+    setSelectedTenantsForDocuments(filteredTenants);
+    setShowDocumentRequestModal(true);
+  };
+
   const filteredTenants = tenants.filter(tenant =>
     tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     tenant.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -321,6 +334,14 @@ export default function TenantsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleRequestDocuments(tenant)}
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="sm" className="border-nook-purple-200 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-300">
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -429,6 +450,16 @@ export default function TenantsPage() {
           </Card>
         </div>
       )}
+
+      {/* Document Request Modal */}
+      <DocumentRequestModal
+        isOpen={showDocumentRequestModal}
+        onClose={() => setShowDocumentRequestModal(false)}
+        tenants={selectedTenantsForDocuments}
+        onRequestCreated={() => {
+          // Optionally refresh data or show success message
+        }}
+      />
     </div>
   );
 } 
