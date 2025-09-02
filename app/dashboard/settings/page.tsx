@@ -22,26 +22,11 @@ import {
   ArrowLeft,
   Settings,
   Mail,
-  Smartphone,
   Eye,
   Moon,
-  Building2,
-  Users,
-  FileText,
-  Lock,
   Key,
-  AlertTriangle,
-  CheckCircle,
-  X,
-  Plus,
   Trash2,
   Download,
-  Upload,
-  Calendar,
-  DollarSign,
-  MapPin,
-  Phone,
-  Mail as MailIcon,
   ExternalLink,
   Info
 } from 'lucide-react';
@@ -83,7 +68,7 @@ interface SecuritySettings {
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme, mounted } = useTheme();
-  const { user, role } = useAuth();
+  const { role } = useAuth();
   
   // Set light mode as default if no theme is set
   useEffect(() => {
