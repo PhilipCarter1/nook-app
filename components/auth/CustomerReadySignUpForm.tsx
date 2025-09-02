@@ -227,17 +227,30 @@ export default function CustomerReadySignUpForm() {
         }
       });
 
-      // Try simple signup first without metadata
-      console.log('Trying simple signup without metadata...');
+      // Try signup with metadata
+      console.log('Trying signup with metadata...');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            role: formData.role
+          }
+        }
       });
 
       console.log('Simple signup result:', { authData, signUpError });
 
       if (signUpError) {
-        console.error('Simple signup failed:', signUpError);
+        console.error('Signup failed:', signUpError);
+        console.error('Signup error details:', {
+          message: signUpError.message,
+          status: signUpError.status,
+          statusText: signUpError.statusText
+        });
         alert(`Signup error: ${signUpError.message}`);
         toast.dismiss(loadingToast);
         toast.error(`Failed to create account: ${signUpError.message}`);

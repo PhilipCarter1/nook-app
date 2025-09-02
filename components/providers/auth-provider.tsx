@@ -117,6 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
               if (createError) {
                 console.error('❌ AuthProvider: Error creating user data:', createError);
+                console.error('❌ AuthProvider: Error details:', {
+                  message: createError.message,
+                  code: createError.code,
+                  details: createError.details,
+                  hint: createError.hint
+                });
                 log.error('Error creating user data:', createError);
                 
                 // Don't throw error, instead create a minimal user object
