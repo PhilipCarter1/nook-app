@@ -1,6 +1,5 @@
-import React from 'react';
-import CustomerReadySignUpForm from '@/components/auth/CustomerReadySignUpForm';
+import PremiumAuthForm from '@/components/auth/PremiumAuthForm';
 
 export default function SignUpPage() {
-  return <CustomerReadySignUpForm />;
+  return <PremiumAuthForm />;
 } 

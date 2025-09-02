@@ -248,8 +248,7 @@ export default function CustomerReadySignUpForm() {
         console.error('Signup failed:', signUpError);
         console.error('Signup error details:', {
           message: signUpError.message,
-          status: signUpError.status,
-          statusText: signUpError.statusText
+          status: signUpError.status
         });
         alert(`Signup error: ${signUpError.message}`);
         toast.dismiss(loadingToast);
