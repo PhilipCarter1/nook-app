@@ -43,17 +43,20 @@ export async function GET(request: NextRequest) {
     }
 
     switch (type) {
-      case 'payment-methods':
+      case 'payment-methods': {
         const methodsResult = await getPropertyPaymentMethods(propertyId);
         return NextResponse.json(methodsResult);
+      }
 
-      case 'payment-settings':
+      case 'payment-settings': {
         const settingsResult = await getPropertyPaymentSettings(propertyId);
         return NextResponse.json(settingsResult);
+      }
 
-      case 'rent-splits':
+      case 'rent-splits': {
         const splitsResult = await getPropertyRentSplits(propertyId);
         return NextResponse.json(splitsResult);
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
@@ -92,17 +95,20 @@ export async function POST(request: NextRequest) {
     }
 
     switch (type) {
-      case 'payment-method':
+      case 'payment-method': {
         const methodResult = await addPropertyPaymentMethod(propertyId, data);
         return NextResponse.json(methodResult);
+      }
 
-      case 'payment-settings':
+      case 'payment-settings': {
         const settingsResult = await updatePropertyPaymentSettings(propertyId, data);
         return NextResponse.json(settingsResult);
+      }
 
-      case 'rent-split':
+      case 'rent-split': {
         const splitResult = await addRentSplit(propertyId, data.tenantId, data.splitAmount, data.splitPercentage);
         return NextResponse.json(splitResult);
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
@@ -141,13 +147,15 @@ export async function PUT(request: NextRequest) {
     }
 
     switch (type) {
-      case 'payment-method':
+      case 'payment-method': {
         const methodResult = await updatePropertyPaymentMethod(id, data);
         return NextResponse.json(methodResult);
+      }
 
-      case 'rent-split':
+      case 'rent-split': {
         const splitResult = await updateRentSplit(id, data);
         return NextResponse.json(splitResult);
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
@@ -187,13 +195,15 @@ export async function DELETE(request: NextRequest) {
     }
 
     switch (type) {
-      case 'payment-method':
+      case 'payment-method': {
         const methodResult = await deletePropertyPaymentMethod(id);
         return NextResponse.json(methodResult);
+      }
 
-      case 'rent-split':
+      case 'rent-split': {
         const splitResult = await deleteRentSplit(id);
         return NextResponse.json(splitResult);
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
