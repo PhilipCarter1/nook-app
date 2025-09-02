@@ -73,7 +73,21 @@ export default function BillingPage() {
 
       if (checkoutResult.success && checkoutResult.sessionId) {
         // Redirect to Stripe checkout
-        window.location.href = `/api/checkout?sessionId=${checkoutResult.sessionId}`;
+        const stripe = await import('@stripe/stripe-js');
+        const stripeInstance = await stripe.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+        
+        if (stripeInstance) {
+          const { error } = await stripeInstance.redirectToCheckout({
+            sessionId: checkoutResult.sessionId,
+          });
+          
+          if (error) {
+            console.error('Stripe checkout error:', error);
+            toast.error('Failed to redirect to checkout');
+          }
+        } else {
+          toast.error('Stripe not loaded');
+        }
       } else {
         toast.error(checkoutResult.error || 'Failed to create checkout session');
       }

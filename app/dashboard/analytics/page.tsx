@@ -114,11 +114,11 @@ export default function AnalyticsPage() {
             <div className="flex items-center space-x-6">
               <Button 
                 variant="outline" 
-                onClick={() => router.push('/dashboard/admin')}
+                onClick={() => router.back()}
                 className="border-nook-purple-200 text-nook-purple-700 hover:bg-nook-purple-50 hover:border-nook-purple-300 transition-all duration-200 shadow-sm"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
+                Back
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-nook-purple-700 tracking-tight">Analytics</h1>
