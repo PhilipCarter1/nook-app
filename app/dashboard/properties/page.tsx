@@ -134,8 +134,14 @@ export default function PropertiesPage() {
   const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newProperty.name || !newProperty.address || !newProperty.units) {
-      toast.error('Please fill in all fields');
+    if (!newProperty.name || !newProperty.address || !newProperty.propertyType) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    // For multi-unit properties, units is required
+    if (newProperty.propertyType !== 'house' && !newProperty.units) {
+      toast.error('Please specify the number of units');
       return;
     }
 
@@ -149,13 +155,16 @@ export default function PropertiesPage() {
         return;
       }
 
+      // Determine units based on property type
+      const units = newProperty.propertyType === 'house' ? 1 : parseInt(newProperty.units);
+      
       // Save property to database
       const { data: property, error } = await supabase
         .from('properties')
         .insert({
           name: newProperty.name,
           address: newProperty.address,
-          units: parseInt(newProperty.units),
+          units: units,
           landlord_id: user.id,
           property_type: newProperty.propertyType || 'apartment',
           monthly_rent: newProperty.monthlyRent ? parseFloat(newProperty.monthlyRent) : null
@@ -396,17 +405,26 @@ export default function PropertiesPage() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="units">Number of Units</Label>
-              <Input
-                id="units"
-                type="number"
-                value={newProperty.units}
-                onChange={(e) => setNewProperty({ ...newProperty, units: e.target.value })}
-                placeholder="24"
-                required
-              />
-            </div>
+            {/* Only show units field for multi-unit properties */}
+            {newProperty.propertyType && !['house'].includes(newProperty.propertyType) && (
+              <div>
+                <Label htmlFor="units">Number of Units</Label>
+                <Input
+                  id="units"
+                  type="number"
+                  value={newProperty.units}
+                  onChange={(e) => setNewProperty({ ...newProperty, units: e.target.value })}
+                  placeholder="24"
+                  required
+                />
+              </div>
+            )}
+            {/* For single-unit properties, set units to 1 automatically */}
+            {newProperty.propertyType === 'house' && (
+              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <p>Single-unit property - automatically set to 1 unit</p>
+              </div>
+            )}
             <div>
               <Label htmlFor="propertyType">Property Type</Label>
               <Select value={newProperty.propertyType} onValueChange={(value) => setNewProperty({ ...newProperty, propertyType: value })}>

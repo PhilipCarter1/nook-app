@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,48 +50,51 @@ export default function TenantsPage() {
 
   const loadTenants = async () => {
     try {
-      // TEMPORARY: Use simulated data
-      setTenants([
-        {
-          id: '1',
-          name: 'John Smith',
-          email: 'john.smith@email.com',
-          phone: '+1 (555) 123-4567',
-          property_id: '1',
-          lease_start: '2024-01-01',
-          lease_end: '2024-12-31',
-          status: 'active',
-          rent_amount: 2500
-        },
-        {
-          id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@email.com',
-          phone: '+1 (555) 234-5678',
-          property_id: '2',
-          lease_start: '2024-02-01',
-          lease_end: '2025-01-31',
-          status: 'active',
-          rent_amount: 3200
-        },
-        {
-          id: '3',
-          name: 'Mike Davis',
-          email: 'mike.davis@email.com',
-          phone: '+1 (555) 345-6789',
-          property_id: '1',
-          lease_start: '2024-03-01',
-          lease_end: '2025-02-28',
-          status: 'pending',
-          rent_amount: 2800
-        }
-      ]);
-      
-      /* Comment out actual Supabase code for now
       const supabase = createClient();
-      const { data, error } = await supabase
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No user found');
+        setLoading(false);
+        return;
+      }
+
+      // First get property IDs owned by this landlord
+      const { data: properties, error: propertiesError } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('landlord_id', user.id);
+
+      if (propertiesError) {
+        console.error('Error loading properties:', propertiesError);
+        toast.error('Failed to load properties');
+        return;
+      }
+
+      const propertyIds = properties?.map((p: any) => p.id) || [];
+      
+      if (propertyIds.length === 0) {
+        setTenants([]);
+        return;
+      }
+
+      // Get tenants for properties owned by this landlord
+      const { data: tenants, error } = await supabase
         .from('tenants')
-        .select('*')
+        .select(`
+          id,
+          name,
+          email,
+          phone,
+          property_id,
+          lease_start,
+          lease_end,
+          status,
+          rent_amount,
+          created_at
+        `)
+        .in('property_id', propertyIds)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -99,8 +103,7 @@ export default function TenantsPage() {
         return;
       }
 
-      setTenants(data || []);
-      */
+      setTenants(tenants || []);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to load tenants');
@@ -118,48 +121,42 @@ export default function TenantsPage() {
     }
 
     try {
-      // TEMPORARY: Add to local state
-      const tenant = {
-        id: Date.now().toString(),
-        name: newTenant.name,
-        email: newTenant.email,
-        phone: newTenant.phone,
-        property_id: newTenant.property_id || '1',
-        lease_start: newTenant.lease_start || '2024-01-01',
-        lease_end: newTenant.lease_end || '2024-12-31',
-        status: 'pending' as const,
-        rent_amount: parseInt(newTenant.rent_amount) || 0
-      };
-      
-      setTenants([tenant, ...tenants]);
-      setShowAddForm(false);
-      setNewTenant({
-        name: '',
-        email: '',
-        phone: '',
-        property_id: '',
-        lease_start: '',
-        lease_end: '',
-        rent_amount: '',
-        onboarding_status: 'pending'
-      });
-      toast.success('Tenant added successfully!');
-      
-      /* Comment out actual Supabase code for now
       const supabase = createClient();
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to add tenants');
+        return;
+      }
+
+      // Get the first property owned by this landlord as default
+      const { data: properties, error: propertiesError } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('landlord_id', user.id)
+        .limit(1);
+
+      if (propertiesError || !properties || properties.length === 0) {
+        toast.error('No properties found. Please add a property first.');
+        return;
+      }
+
       const { error } = await supabase
         .from('tenants')
         .insert([{
           name: newTenant.name,
           email: newTenant.email,
           phone: newTenant.phone,
-          property_id: newTenant.property_id,
-          lease_start: newTenant.lease_start,
-          lease_end: newTenant.lease_end,
-          rent_amount: parseInt(newTenant.rent_amount)
+          property_id: newTenant.property_id || properties[0].id,
+          lease_start: newTenant.lease_start || '2024-01-01',
+          lease_end: newTenant.lease_end || '2024-12-31',
+          rent_amount: parseInt(newTenant.rent_amount) || 0,
+          status: 'pending'
         }]);
 
       if (error) {
+        console.error('Error adding tenant:', error);
         toast.error('Failed to add tenant');
         return;
       }
@@ -177,7 +174,6 @@ export default function TenantsPage() {
         onboarding_status: 'pending'
       });
       loadTenants();
-      */
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to add tenant');
