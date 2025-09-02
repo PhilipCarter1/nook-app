@@ -56,7 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (userError) {
             console.error('❌ AuthProvider: Error fetching user data:', userError);
             log.error('Error fetching user data:', userError);
-            throw userError;
+            
+            // If it's a 406 error (RLS issue), try to create the user
+            if (userError.code === 'PGRST116' || userError.message.includes('406')) {
+              console.log('🔧 AuthProvider: RLS error detected, creating user...');
+              // Don't throw error, continue to user creation
+            } else {
+              throw userError;
+            }
           }
 
           console.log('✅ AuthProvider: User data found:', userData);
@@ -86,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
+            // User not found in public.users (either doesn't exist or RLS error), create them
             console.log('🔍 AuthProvider: User not found in public.users, creating new user...');
             
             try {

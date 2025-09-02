@@ -152,3 +152,8 @@ export const createClient = () => {
   }
   return clientInstance;
 };
+
+// Reset client instance (for testing/debugging)
+export const resetClient = () => {
+  clientInstance = null;
+};
