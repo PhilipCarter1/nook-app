@@ -48,6 +48,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/hooks/useTheme';
 import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/components/providers/auth-provider';
 
 interface UserProfile {
   id: string;
@@ -82,6 +83,7 @@ interface SecuritySettings {
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme, mounted } = useTheme();
+  const { user, role } = useAuth();
   
   // Set light mode as default if no theme is set
   useEffect(() => {
@@ -287,7 +289,8 @@ export default function SettingsPage() {
             { id: 'security', label: 'Security', icon: Shield },
             { id: 'preferences', label: 'Preferences', icon: Globe },
             { id: 'privacy', label: 'Privacy', icon: Eye },
-            { id: 'billing', label: 'Billing', icon: CreditCard },
+            // Only show billing for landlords and property managers
+            ...(role === 'landlord' || role === 'property_manager' ? [{ id: 'billing', label: 'Billing', icon: CreditCard }] : []),
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -313,15 +316,15 @@ export default function SettingsPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Settings */}
             {activeTab === 'profile' && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
-                    <User className="h-5 w-5 mr-2 text-nook-purple-600" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
+                  <User className="h-5 w-5 mr-2 text-nook-purple-600" />
                     Profile Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
                     <Label htmlFor="displayName" className="text-sm font-medium text-gray-700 dark:text-gray-200">Display Name</Label>
                     <Input 
                       id="displayName" 
@@ -329,9 +332,9 @@ export default function SettingsPage() {
                       onChange={(e) => setUserProfile(prev => prev ? {...prev, display_name: e.target.value} : null)}
                       className="mt-1 h-11 border-gray-300 focus:ring-nook-purple-500 focus:border-nook-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400" 
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-200">Email Address</Label>
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-200">Email Address</Label>
                     <Input 
                       id="email" 
                       value={userProfile?.id || ''} 
@@ -339,9 +342,9 @@ export default function SettingsPage() {
                       className="mt-1 h-11 border-gray-300 bg-gray-50 dark:bg-gray-600 dark:border-gray-600 dark:text-gray-400" 
                     />
                     <p className="text-xs text-gray-500 mt-1">Email cannot be changed. Contact support if needed.</p>
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700 dark:text-gray-200">Phone Number</Label>
+                </div>
+                <div>
+                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700 dark:text-gray-200">Phone Number</Label>
                     <Input 
                       id="phone" 
                       value={userProfile?.phone_number || ''} 
@@ -360,66 +363,66 @@ export default function SettingsPage() {
                       rows={3}
                       className="mt-1 border-gray-300 focus:ring-nook-purple-500 focus:border-nook-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400" 
                     />
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
             )}
 
             {/* Notification Settings */}
             {activeTab === 'notifications' && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
-                    <Bell className="h-5 w-5 mr-2 text-nook-purple-600" />
-                    Notification Preferences
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
+                  <Bell className="h-5 w-5 mr-2 text-nook-purple-600" />
+                  Notification Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                   {Object.entries(notificationSettings).map(([key, value]) => (
                     <div key={key} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors duration-200">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                          <Mail className="h-5 w-5 text-blue-600 dark:text-blue-300" />
-                        </div>
-                        <div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                      <Mail className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                    </div>
+                    <div>
                           <Label className="text-sm font-medium text-gray-900 dark:text-white">
                             {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                           </Label>
                           <p className="text-sm text-gray-600 dark:text-gray-300">
                             Receive {key.toLowerCase().replace(/([A-Z])/g, ' $1').toLowerCase()} notifications
                           </p>
-                        </div>
-                      </div>
-                      <Switch 
+                    </div>
+                  </div>
+                  <Switch 
                         checked={value}
                         onCheckedChange={(checked) => setNotificationSettings(prev => ({...prev, [key]: checked}))}
-                        className="data-[state=checked]:bg-nook-purple-600"
-                      />
+                    className="data-[state=checked]:bg-nook-purple-600"
+                  />
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
             )}
 
             {/* Security Settings */}
             {activeTab === 'security' && (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
-                    <Shield className="h-5 w-5 mr-2 text-nook-purple-600" />
-                    Security Settings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors duration-200">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
-                        <Shield className="h-5 w-5 text-red-600 dark:text-red-300" />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</Label>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Add an extra layer of security to your account</p>
-                      </div>
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg font-semibold dark:text-white">
+                  <Shield className="h-5 w-5 mr-2 text-nook-purple-600" />
+                  Security Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                      <Shield className="h-5 w-5 text-red-600 dark:text-red-300" />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900 dark:text-white">Two-Factor Authentication</Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Add an extra layer of security to your account</p>
+                    </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Switch 
@@ -477,12 +480,12 @@ export default function SettingsPage() {
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {key === 'loginNotifications' ? 'Get notified of new login attempts' : 'Alert on suspicious account activity'}
                           </p>
-                        </div>
-                        <Switch 
+                  </div>
+                  <Switch 
                           checked={value}
                           onCheckedChange={(checked) => setSecuritySettings(prev => ({...prev, [key]: checked}))}
-                          className="data-[state=checked]:bg-nook-purple-600"
-                        />
+                    className="data-[state=checked]:bg-nook-purple-600"
+                  />
                       </div>
                     ))}
                   </div>
@@ -571,39 +574,39 @@ export default function SettingsPage() {
                         <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                </div>
 
                   <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-                        <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-900 dark:text-white">Theme</Label>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Choose your preferred theme</p>
-                      </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                      <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant={theme === 'light' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setTheme('light')}
-                        className="h-8 px-3 text-xs"
-                      >
-                        Light
-                      </Button>
-                      <Button
-                        variant={theme === 'dark' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setTheme('dark')}
-                        className="h-8 px-3 text-xs"
-                      >
-                        Dark
-                      </Button>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900 dark:text-white">Theme</Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Choose your preferred theme</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('light')}
+                      className="h-8 px-3 text-xs"
+                    >
+                      Light
+                    </Button>
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('dark')}
+                      className="h-8 px-3 text-xs"
+                    >
+                      Dark
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             )}
 
 
@@ -744,15 +747,18 @@ export default function SettingsPage() {
                   Quick Actions
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  onClick={handleBilling}
-                  variant="outline" 
-                  className="w-full justify-start h-10 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-500 dark:text-white dark:hover:bg-gray-600 dark:hover:border-gray-400 transition-all duration-200 bg-white dark:bg-gray-800"
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Manage Billing
-                </Button>
+                            <CardContent className="space-y-3">
+                {/* Only show billing button for landlords and property managers */}
+                {(role === 'landlord' || role === 'property_manager') && (
+                  <Button 
+                    onClick={handleBilling}
+                    variant="outline" 
+                    className="w-full justify-start h-10 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 dark:border-gray-500 dark:text-white dark:hover:bg-gray-600 dark:hover:border-gray-400 transition-all duration-200 bg-white dark:bg-gray-800"
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Manage Billing
+                  </Button>
+                )}
                 <Button 
                   onClick={handleLanguageRegion}
                   variant="outline" 
@@ -817,7 +823,7 @@ export default function SettingsPage() {
               {isLoading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               ) : (
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
               )}
               {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
