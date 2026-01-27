@@ -2,10 +2,12 @@
 
 A premium SaaS web application for property management, built with Next.js, Tailwind CSS, and Supabase.
 
+> **⚠️ IMPORTANT**: See [`guide/00_SUMMARY.md`](./guide/00_SUMMARY.md) for recent fixes and setup instructions.
+
 ## Features
-- Role-based dashboards (Tenant, Landlord, Admin)
+- Role-based dashboards (Tenant, Landlord, Manager, Super, Admin)
 - Secure payment processing with Stripe
-- Document management
+- Document management & approval workflows
 - Maintenance ticket system
 - Responsive design with mobile support
 - Dark mode support
@@ -17,8 +19,8 @@ A premium SaaS web application for property management, built with Next.js, Tail
 ## Tech Stack
 - **Framework**: Next.js 14
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Database**: Supabase
+- **UI Components**: shadcn/ui + Radix UI
+- **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **Payments**: Stripe
 - **Animations**: Framer Motion
@@ -29,25 +31,55 @@ A premium SaaS web application for property management, built with Next.js, Tail
 
 ## Getting Started
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/PhilipCarter1/nook-app.git
-   cd nook-app
-   ```
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Set up environment variables:**
-   - Copy `.env.example` to `.env.local`
-   - Fill in your Supabase, Stripe, and other credentials as needed.
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-5. **Open** [http://localhost:3000](http://localhost:3000) in your browser.
+### Step 1: Set Up Supabase
+Follow the detailed guide: [`guide/01_supabase_restoration.md`](./guide/01_supabase_restoration.md)
 
-## Development Workflow
+**Quick steps**:
+1. Create new Supabase project
+2. Import your database backup (SQL dump)
+3. Restore storage buckets
+4. Get API credentials
+
+### Step 2: Install & Configure Locally
+Follow: [`guide/02_setup_instructions.md`](./guide/02_setup_instructions.md)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/PhilipCarter1/nook-app.git
+cd nook-app
+
+# 2. Install dependencies
+npm install
+
+# 3. Copy environment template
+cp .env.example .env.local
+
+# 4. Fill in Supabase credentials in .env.local
+# NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+# SUPABASE_SERVICE_ROLE_KEY=your-service-key
+
+# 5. Run development server
+npm run dev
+```
+
+Then visit [`http://localhost:3000`](http://localhost:3000)
+
+### Step 3: Deploy to Vercel
+Follow: [`guide/04_deploy_vercel_cursor.md`](./guide/04_deploy_vercel_cursor.md)
+
+## Documentation
+
+All documentation is in the `guide/` directory:
+
+| Document | Purpose |
+|----------|---------|
+| [`guide/00_SUMMARY.md`](./guide/00_SUMMARY.md) | **START HERE** - Overview of recent fixes |
+| [`guide/01_supabase_restoration.md`](./guide/01_supabase_restoration.md) | Restore database from backup |
+| [`guide/02_setup_instructions.md`](./guide/02_setup_instructions.md) | Local dev setup & deployment |
+| [`guide/03_developer_notes.md`](./guide/03_developer_notes.md) | Technical reference & development guide |
+| [`guide/04_deploy_vercel_cursor.md`](./guide/04_deploy_vercel_cursor.md) | Vercel & Cursor preview setup |
+| [`guide/05_run_tests.md`](./guide/05_run_tests.md) | Running tests & quality checks |
 
 - **Branching:** Use feature branches (`feature/your-feature`), keep `main` always deployable.
 - **Pull Requests:** All changes must go through PRs with code review, passing CI checks (lint, type, tests).

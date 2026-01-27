@@ -199,6 +199,7 @@ export default function PremiumAuthForm() {
     const loadingToast = toast.loading('Creating your account...');
 
     try {
+      // Step 1: Create auth account
       const { data, error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
@@ -212,9 +213,8 @@ export default function PremiumAuthForm() {
         }
       });
 
-      toast.dismiss(loadingToast);
-
       if (error) {
+        toast.dismiss(loadingToast);
         console.error('Sign up error:', error);
         
         // Handle specific error cases
@@ -228,21 +228,76 @@ export default function PremiumAuthForm() {
         } else {
           toast.error(`Account creation failed: ${error.message}`);
         }
+        setIsLoading(false);
         return;
       }
 
-      if (data.user) {
+      if (!data.user) {
+        toast.dismiss(loadingToast);
+        toast.error('Account creation failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('✅ Auth account created, now creating user profile...');
+
+      // Step 2: Create user profile in public.users table
+      try {
+        const { data: newUserData, error: createUserError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: data.user.id,
+              email: signupData.email,
+              first_name: signupData.firstName,
+              last_name: signupData.lastName,
+              name: `${signupData.firstName} ${signupData.lastName}`,
+              role: signupData.role,
+              avatar_url: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+          ])
+          .select()
+          .single();
+
+        if (createUserError) {
+          console.error('❌ Error creating user profile:', createUserError);
+          
+          // User is in auth but not in public.users
+          // They can still sign in, but will be redirected to role-select
+          toast.dismiss(loadingToast);
+          toast.success('Account created! Please sign in.');
+          setActiveTab('signin');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!newUserData) {
+          console.warn('⚠️ User profile created but no data returned');
+        } else {
+          console.log('✅ User profile created successfully');
+        }
+
+        toast.dismiss(loadingToast);
+
+        // Step 3: Handle post-signup flow
         if (data.session) {
-          // User is immediately signed in
+          // User is immediately signed in (rare, unless email confirmation is disabled)
           toast.success(`Welcome to Nook, ${signupData.firstName}! Your account has been created.`);
           setTimeout(() => {
             router.push('/dashboard');
           }, 1500);
         } else {
           // User needs to confirm email
-          toast.success('Account created! Please check your email to confirm your account before signing in.');
+          toast.success('Account created! Please check your email to confirm your account.');
           setActiveTab('signin');
         }
+      } catch (profileError) {
+        console.error('Unexpected error creating profile:', profileError);
+        toast.dismiss(loadingToast);
+        toast.warning('Account created, but profile setup had issues. Please sign in and complete your profile.');
+        setActiveTab('signin');
       }
     } catch (err: any) {
       console.error('Unexpected sign up error:', err);
