@@ -4,16 +4,35 @@ All documentation for Nook is organized in the `guide/` directory.
 
 ---
 
+## 🎯 QUICK START (Pick Your Path)
+
+**Just want the app working?**
+→ Read **[GETTING_STARTED_COMPLETE.md](./GETTING_STARTED_COMPLETE.md)** (30-45 min)
+
+**Want full context first?**
+→ Read **[00_SUMMARY.md](./00_SUMMARY.md)** then **[GETTING_STARTED_COMPLETE.md](./GETTING_STARTED_COMPLETE.md)**
+
+---
+
 ## 📚 All Documentation Files
 
 ### Getting Started
 
-**[00_SUMMARY.md](./00_SUMMARY.md)** - START HERE ⭐
+**[GETTING_STARTED_COMPLETE.md](./GETTING_STARTED_COMPLETE.md)** - GET APP WORKING ⭐⭐⭐
+- Step-by-step 5-phase guide from database restoration to deployment
+- Accounts for your database/storage backups
+- Solves common setup issues
+- Integrated with new requirements
+- **Time**: 45 minutes to fully working
+- **Status**: For people who want the app running NOW
+
+**[00_SUMMARY.md](./00_SUMMARY.md)** - Project Context ⭐
 - Executive summary of what was fixed
-- 3 critical auth bugs and their fixes
+- Architecture overview
 - Phases completed and deliverables
-- Next steps and known issues
+- Integration with new requirements analysis
 - **Time**: 5-10 minutes to read
+- **Status**: For understanding the project
 
 **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick Lookup
 - One-page cheat sheet
@@ -21,6 +40,7 @@ All documentation for Nook is organized in the `guide/` directory.
 - Common issues quick-fix
 - Print-friendly format
 - **Time**: 2 minutes to reference
+- **Status**: For developers during active work
 
 ---
 

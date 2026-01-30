@@ -37,7 +37,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+db_cluster-27-08-2025@07-41-19.backup
 
 # IDE
 .idea
 .vscode 
+
+.env.local
