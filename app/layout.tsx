@@ -4,8 +4,12 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { AuthProvider } from '@/components/providers/auth-provider';
+import { validateEnvironmentVariables } from '@/lib/env';
 
 const inter = Inter({ subsets: ['latin'] });
+
+// Validate critical environment variables at startup
+validateEnvironmentVariables();
 
 export const metadata: Metadata = {
   title: 'Nook - Modern Property Management',

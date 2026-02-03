@@ -97,3 +97,6 @@ process.env.NEXT_PUBLIC_APP_DESCRIPTION = 'Modern Property Management Platform';
 process.env.NEXT_PUBLIC_ENABLE_LEGAL_ASSISTANT = 'true';
 process.env.NEXT_PUBLIC_ENABLE_CONCIERGE = 'true';
 process.env.NEXT_PUBLIC_ENABLE_CUSTOM_BRANDING = 'true'; 
+
+// Keep compatibility: tests expect SENDGRID_API_KEY to exist; set to same test key
+process.env.SENDGRID_API_KEY = process.env.RESEND_API_KEY;

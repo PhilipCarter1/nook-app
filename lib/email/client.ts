@@ -1,20 +1,24 @@
 // Mock Resend for preview
 class MockResend {
-  async sendEmail() {
-    return { id: 'mock-email-id' };
-  }
+  emails = {
+    send: async () => ({ id: 'mock-email-id' }),
+  };
 }
 
 // Use real Resend in production, mock in development
-const Resend = process.env.NODE_ENV === 'production' 
-  ? require('resend').Resend 
+const Resend = process.env.NODE_ENV === 'production'
+  ? require('resend').Resend
   : MockResend;
 
-if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === 'production') {
-  throw new Error('RESEND_API_KEY is not set');
+// The project historically used `SENDGRID_API_KEY` env var name for email keys.
+// We keep that env var name but use it as the Resend API key per your request.
+const RESEND_KEY = process.env.SENDGRID_API_KEY || process.env.RESEND_API_KEY;
+
+if (!RESEND_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('SENDGRID_API_KEY (used for Resend) is not set');
 }
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+export const resend = new Resend(RESEND_KEY);
 
 export async function sendWelcomeEmail(email: string, name: string) {
   await resend.emails.send({

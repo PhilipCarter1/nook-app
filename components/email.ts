@@ -1,5 +1,4 @@
-import { Resend } from 'resend';
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { resend } from '@/lib/email/client';
 
 export async function sendEmail({
   to,
@@ -13,7 +12,7 @@ export async function sendEmail({
   try {
     const data = await resend.emails.send({
       from: 'Nook <noreply@nook.com>',
-      to,
+      to: Array.isArray(to) ? to : [to],
       subject,
       html,
     });

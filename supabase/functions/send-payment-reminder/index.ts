@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -37,8 +37,9 @@ serve(async (req) => {
 
     if (propertyError) throw propertyError;
 
-    // Initialize Resend
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+    // Initialize Resend - use SENDGRID_API_KEY env var as requested (fallback to RESEND_API_KEY)
+    const resendKey = Deno.env.get('SENDGRID_API_KEY') ?? Deno.env.get('RESEND_API_KEY');
+    const resend = new Resend(resendKey);
 
     // Send email
     const { data: emailData, error: emailError } = await resend.emails.send({
@@ -82,9 +83,10 @@ serve(async (req) => {
         status: 200,
       }
     );
-  } catch (error) {
+  } catch (err: any) {
+    const message = err?.message || String(err);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

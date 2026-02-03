@@ -1,4 +1,4 @@
-import sgMail from '@sendgrid/mail';
+import { resend } from '@/lib/email/client';
 
 // Simple email templates
 const emailTemplates = {
@@ -24,11 +24,10 @@ const emailTemplates = {
   })
 };
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error('Missing SENDGRID_API_KEY environment variable');
+// Expect the Resend API key to be provided in the SENDGRID_API_KEY env var (per project convention)
+if (!process.env.SENDGRID_API_KEY && !process.env.RESEND_API_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('Missing SENDGRID_API_KEY (used for Resend) environment variable');
 }
-
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 type EmailTemplateData = {
   tenantName: string;
@@ -89,7 +88,12 @@ export async function sendEmail(config: EmailConfig) {
       html,
     };
 
-    await sgMail.send(msg);
+    await resend.emails.send({
+      from: msg.from,
+      to: Array.isArray(msg.to) ? msg.to : [msg.to],
+      subject: msg.subject,
+      html: msg.html,
+    });
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
