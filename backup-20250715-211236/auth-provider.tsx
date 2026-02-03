@@ -6,13 +6,8 @@ import { Database } from '@/types/supabase';
 import { UserWithAuth } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
 import { LoadingPage } from '@/components/ui/loading';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-
-// --- Helper Function (Added this) ---
-const isAuthPage = (pathname: string) => {
-  return ['/login', '/signup', '/forgot-password', '/reset-password'].includes(pathname);
-};
 
 interface AuthContextType {
   user: UserWithAuth | null;
@@ -25,12 +20,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Helper to determine if we are on a page that should redirect if already logged in
+ */
+function isAuthPage(pathname: string): boolean {
+  const authPages = ['/login', '/signup', '/forgot-password', '/reset-password', '/role-select'];
+  return authPages.includes(pathname);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserWithAuth | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
+  const pathname = usePathname(); // Safe way to get pathname in App Router
 
   useEffect(() => {
     let mounted = true;
@@ -40,80 +44,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
-          console.error('Auth error:', authError);
-          throw authError;
+          if (mounted) {
+            setUser(null);
+            setRole(null);
+            setLoading(false);
+          }
+          return;
         }
 
         if (authUser) {
-          // Fetch user profile
-          let { data: userData, error: userError } = await supabase
+          const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', authUser.id)
             .single();
           
-          // Fix: Handle "No rows found" error gracefully so we can create the user in the else block
-          if (userError && userError.code === 'PGRST116') {
-             userError = null;
-             userData = null;
-          }
-
           if (userError) {
-            console.error('Error fetching user data:', userError);
+            // Handle case where auth user exists but profile doesn't
+            if (userError.code === 'PGRST116') {
+               if (mounted) {
+                 setUser(authUser as any);
+                 setLoading(false);
+                 // Redirect to role selection if they are on an auth page but profile missing
+                 if (isAuthPage(pathname ?? '')) {
+                   router.push('/role-select');
+                 }
+               }
+               return;
+            }
             throw userError;
           }
 
-          if (userData) {
-            if (mounted) {
-              setUser({ ...authUser, ...userData } as UserWithAuth);
-              setRole(userData.role as UserRole);
-              setLoading(false);
+          if (userData && mounted) {
+            setUser({ ...authUser, ...userData } as UserWithAuth);
+            setRole(userData.role as UserRole);
+            setLoading(false);
 
-              // Redirect based on role
-              // Fix: Ensure pathname is never null
-              const pathname = typeof window !== 'undefined' ? window.location.pathname || '' : '';
-              
-              if (isAuthPage(pathname)) {
-                switch (userData.role) {
-                  case 'admin':
-                    router.push('/admin/dashboard');
-                    break;
-                  case 'landlord':
-                    router.push('/dashboard/landlord');
-                    break;
-                  case 'tenant':
-                    router.push('/dashboard/tenant');
-                    break;
-                  default:
-                    router.push('/dashboard');
-                }
+            // Role-based redirection logic
+            // The ?? '' ensures pathname is never null for TypeScript
+            if (isAuthPage(pathname ?? '')) {
+              switch (userData.role) {
+                case 'admin':
+                  router.push('/admin/dashboard');
+                  break;
+                case 'landlord':
+                  router.push('/dashboard/landlord');
+                  break;
+                case 'tenant':
+                  router.push('/dashboard/tenant');
+                  break;
+                default:
+                  router.push('/dashboard');
               }
-            }
-          } else {
-            // User authenticated but no profile exists -> Create one
-            const { data: newUserData, error: createError } = await supabase
-              .from('users')
-              .insert([
-                {
-                  id: authUser.id,
-                  email: authUser.email,
-                  role: 'tenant',
-                  created_at: new Date().toISOString(),
-                }
-              ])
-              .select()
-              .single();
-
-            if (createError) {
-              console.error('Error creating user data:', createError);
-              throw createError;
-            }
-
-            if (newUserData && mounted) {
-              setUser({ ...authUser, ...newUserData } as UserWithAuth);
-              setRole(newUserData.role as UserRole);
-              setLoading(false);
-              router.push('/dashboard/tenant');
             }
           }
         } else {
@@ -126,8 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Error in getUser:', error);
         if (mounted) {
-          setUser(null);
-          setRole(null);
           setLoading(false);
         }
       }
@@ -151,51 +131,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, router]);
+  }, [supabase, router, pathname]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        console.error('Sign in error:', error);
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password');
-        } else if (error.message.includes('Email not confirmed')) {
-          throw new Error('Please verify your email address before signing in');
-        } else {
-          throw error;
-        }
-      }
+      if (error) throw error;
+      if (!data.user) throw new Error('No user data received');
 
-      if (!data.user) {
-        throw new Error('No user data received');
-      }
-
-      // Fetch user data immediately after successful sign in
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('id', data.user.id)
         .single();
 
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-        throw new Error('Failed to fetch user data. Please try again.');
-      }
+      if (userError) throw userError;
 
-      if (userData) {
-        setUser({ ...data.user, ...userData } as UserWithAuth);
-        setRole(userData.role as UserRole);
-      } else {
-        throw new Error('User profile not found. Please contact support.');
-      }
+      setUser({ ...data.user, ...userData } as UserWithAuth);
+      setRole(userData.role as UserRole);
     } catch (error: any) {
-      console.error('Error in signIn:', error);
+      toast.error(error.message || 'Sign in failed');
       throw error;
     } finally {
       setLoading(false);
@@ -205,15 +162,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await supabase.auth.signOut();
       setUser(null);
       setRole(null);
       router.push('/');
     } catch (error) {
-      console.error('Error signing out:', error);
-      toast.error('Failed to sign out. Please try again.');
+      toast.error('Failed to sign out');
     } finally {
       setLoading(false);
     }
@@ -223,13 +177,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(newRole);
   };
 
+  // Prevent permanent loading screens
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 5000); 
-
+      if (loading) setLoading(false);
+    }, 8000);
     return () => clearTimeout(timeout);
   }, [loading]);
 
