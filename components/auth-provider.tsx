@@ -10,7 +10,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 // --- 1. Helper Function to define Auth Pages ---
-const isAuthPage = (pathname: string) => {
+const isAuthPage = (pathname: string | null) => {
+  if (!pathname) return false;
   return ['/login', '/signup', '/forgot-password', '/reset-password'].includes(pathname);
 };
 
