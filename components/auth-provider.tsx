@@ -8,6 +8,12 @@ import { UserRole } from '@/lib/types';
 import { LoadingPage } from '@/components/ui/loading';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+
+// --- 1. Helper Function to define Auth Pages ---
+const isAuthPage = (pathname: string) => {
+  return ['/login', '/signup', '/forgot-password', '/reset-password'].includes(pathname);
+};
+
 interface AuthContextType {
   user: UserWithAuth | null;
   role: UserRole | null;
@@ -39,12 +45,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (authUser) {
-          const { data: userData, error: userError } = await supabase
+          // Fetch user profile
+          let { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', authUser.id)
             .single();
           
+          // --- 2. Fix: Handle "No rows found" gracefully ---
+          if (userError && userError.code === 'PGRST116') {
+             userError = null;
+             userData = null;
+          }
+
           if (userError) {
             console.error('Error fetching user data:', userError);
             throw userError;
@@ -56,9 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setRole(userData.role as UserRole);
               setLoading(false);
 
-              // Redirect based on role
-              const pathname = window.location.pathname;
-              if (pathname === '/login' || pathname === '/signup') {
+              // --- 3. Fix: Safe Pathname Check ---
+              // Ensures we don't crash on build and pathname is strictly a string
+              const pathname = typeof window !== 'undefined' ? (window.location.pathname || '') : '';
+              
+              if (isAuthPage(pathname)) {
                 switch (userData.role) {
                   case 'admin':
                     router.push('/admin/dashboard');
@@ -75,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
+            // User authenticated but no profile exists -> Create one
             const { data: newUserData, error: createError } = await supabase
               .from('users')
               .insert([
@@ -160,7 +176,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No user data received');
       }
 
-      
       // Fetch user data immediately after successful sign in
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -193,11 +208,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear user data
       setUser(null);
       setRole(null);
-      
-      // Redirect to home page
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -211,13 +223,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(newRole);
   };
 
-  // Add a timeout to prevent infinite loading
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (loading) {
         setLoading(false);
       }
-    }, 5000); // 5 second timeout
+    }, 5000); 
 
     return () => clearTimeout(timeout);
   }, [loading]);
@@ -239,4 +250,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
