@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setLoading(false);
 
               // Redirect based on role
-              const pathname = window.location.pathname;
+              const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
               if (pathname === '/login' || pathname === '/signup') {
                 switch (userData.role) {
                   case 'admin':
