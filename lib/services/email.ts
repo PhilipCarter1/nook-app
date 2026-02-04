@@ -282,13 +282,32 @@ export async function sendPaymentReceipt(
   propertyName: string,
   receiptUrl: string
 ): Promise<void> {
-  // TODO: Implement actual email sending
-  log.service('EmailService', 'sendPaymentReceipt', { 
-    email, 
-    amount, 
-    propertyName, 
-    receiptUrl 
-  });
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Payment Receipt</h2>
+        <p>Thank you for your payment of <strong>$${(amount / 100).toFixed(2)}</strong> for ${propertyName}.</p>
+        <p>You can view or download your receipt here:</p>
+        <a href="${receiptUrl}" style="display: inline-block; padding: 10px 20px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">View Receipt</a>
+      </div>
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: 'Your Payment Receipt',
+      html,
+    });
+
+    log.service('EmailService', 'sendPaymentReceipt', {
+      email,
+      amount,
+      propertyName,
+      receiptUrl,
+    });
+  } catch (error) {
+    log.error('Failed to send payment receipt email', error as Error);
+    throw error;
+  }
 }
 
 export async function sendUsageAlert(
@@ -297,11 +316,31 @@ export async function sendUsageAlert(
   currentValue: number,
   limitValue: number
 ): Promise<void> {
-  // TODO: Implement actual email sending
-  log.service('EmailService', 'sendUsageAlert', { 
-    email, 
-    alertType, 
-    currentValue, 
-    limitValue 
-  });
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Usage Alert</h2>
+        <p>Alert: <strong>${alertType}</strong></p>
+        <p>Current value: <strong>${currentValue}</strong></p>
+        <p>Limit: <strong>${limitValue}</strong></p>
+        <p>Please review your usage or upgrade your plan if needed.</p>
+      </div>
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: `Usage alert: ${alertType}`,
+      html,
+    });
+
+    log.service('EmailService', 'sendUsageAlert', {
+      email,
+      alertType,
+      currentValue,
+      limitValue,
+    });
+  } catch (error) {
+    log.error('Failed to send usage alert email', error as Error);
+    throw error;
+  }
 } 

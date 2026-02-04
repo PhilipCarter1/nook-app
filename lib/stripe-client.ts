@@ -2,22 +2,19 @@ import Stripe from 'stripe';
 
 declare global {
   // allow caching Stripe instance on globalThis during dev/hot-reload
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // `var` here is required for a global declaration; disable the rule.
+  // `var` here is required for a global declaration.
   // eslint-disable-next-line no-var
-  var __stripe_client__: any | undefined;
+  var __stripe_client__: Stripe | undefined;
 }
 
 export function getStripe(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null;
   if (!globalThis.__stripe_client__) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const StripeLib = Stripe as any;
-    globalThis.__stripe_client__ = new StripeLib(process.env.STRIPE_SECRET_KEY, {
+    globalThis.__stripe_client__ = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
     });
   }
-  return globalThis.__stripe_client__ as Stripe;
+  return globalThis.__stripe_client__ ?? null;
 }
 
 export function requireStripe(): Stripe {
