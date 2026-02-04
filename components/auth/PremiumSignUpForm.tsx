@@ -185,30 +185,34 @@ export default function PremiumSignUpForm() {
       }
 
       if (authData.user) {
-        // Create user profile in database
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
+        // Create user profile via API
+        try {
+          const resp = await fetch('/api/auth/create-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
               id: authData.user.id,
               email: formData.email,
               first_name: formData.firstName,
               last_name: formData.lastName,
-              role: 'admin',
-              trial_status: 'active',
-              trial_start_date: new Date().toISOString(),
-              trial_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-          ]);
+              role: 'landlord'
+            })
+          });
 
-        toast.dismiss(loadingToast);
-        
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // If profile creation fails, we still have the auth user, so we can continue
+          const result = await resp.json();
+          toast.dismiss(loadingToast);
+          
+          if (!resp.ok) {
+            console.error('Profile creation error:', result);
+            // If profile creation fails, we still have the auth user, so we can continue
+            toast.warning('Account created but profile setup incomplete. You can complete it later.');
+          } else {
+            toast.success('Account created successfully! Welcome to Nook Admin.');
+          }
+        } catch (profileError) {
+          console.error('Profile API error:', profileError);
+          toast.dismiss(loadingToast);
           toast.warning('Account created but profile setup incomplete. You can complete it later.');
-        } else {
-          toast.success('Account created successfully! Welcome to Nook Admin.');
         }
         
         // Redirect to admin dashboard

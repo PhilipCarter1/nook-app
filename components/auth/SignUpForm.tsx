@@ -159,10 +159,10 @@ export default function SignUpForm() {
           .insert([
             {
               id: authData.user.id,
-              first_name: formData.firstName,
-              last_name: formData.lastName,
+              name: `${formData.firstName} ${formData.lastName}`,
               email: formData.email,
-              role: 'user',
+              role: 'tenant',
+              password: 'auth-user',
             },
           ]);
 

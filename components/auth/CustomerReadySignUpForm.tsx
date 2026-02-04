@@ -273,9 +273,35 @@ export default function CustomerReadySignUpForm() {
         console.log('User email:', authData.user.email);
         console.log('User metadata:', authData.user.user_metadata);
         
+        // Create user profile via API
+        try {
+          console.log('Creating user profile...');
+          const profileResp = await fetch('/api/auth/create-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: authData.user.id,
+              email: formData.email,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              role: formData.role
+            })
+          });
+
+          const profileResult = await profileResp.json();
+          if (!profileResp.ok) {
+            console.error('Error creating user profile:', profileResult);
+            // Continue anyway - auth was successful
+          } else {
+            console.log('✅ User profile created successfully');
+          }
+        } catch (profileErr) {
+          console.error('Error calling profile API:', profileErr);
+          // Continue anyway - auth was successful
+        }
+        
         toast.dismiss(loadingToast);
         
-        // For now, skip profile creation and just show success
         console.log('Account created successfully! Profile will be created later.');
         alert('Account created successfully! You can now sign in.');
         toast.success(`Account created successfully! Welcome to Nook as a ${formData.role.replace('_', ' ')}.`);
