@@ -241,31 +241,23 @@ export default function PremiumAuthForm() {
 
       console.log('✅ Auth account created, now creating user profile...');
 
-      // Step 2: Create user profile in public.users table
+      // Step 2: Create user profile via secure server API (uses service role key to avoid RLS issues)
       try {
-        const { data: newUserData, error: createUserError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              email: signupData.email,
-              first_name: signupData.firstName,
-              last_name: signupData.lastName,
-              name: `${signupData.firstName} ${signupData.lastName}`,
-              role: signupData.role,
-              avatar_url: null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }
-          ])
-          .select()
-          .single();
+        const resp = await fetch('/api/auth/create-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: data.user.id,
+            email: signupData.email,
+            first_name: signupData.firstName,
+            last_name: signupData.lastName,
+            role: signupData.role
+          })
+        });
 
-        if (createUserError) {
-          console.error('❌ Error creating user profile:', createUserError);
-          
-          // User is in auth but not in public.users
-          // They can still sign in, but will be redirected to role-select
+        const result = await resp.json();
+        if (!resp.ok) {
+          console.error('❌ Error creating user profile (server):', result);
           toast.dismiss(loadingToast);
           toast.success('Account created! Please sign in.');
           setActiveTab('signin');
@@ -273,28 +265,20 @@ export default function PremiumAuthForm() {
           return;
         }
 
-        if (!newUserData) {
-          console.warn('⚠️ User profile created but no data returned');
-        } else {
-          console.log('✅ User profile created successfully');
-        }
-
         toast.dismiss(loadingToast);
 
         // Step 3: Handle post-signup flow
         if (data.session) {
-          // User is immediately signed in (rare, unless email confirmation is disabled)
           toast.success(`Welcome to Nook, ${signupData.firstName}! Your account has been created.`);
           setTimeout(() => {
             router.push('/dashboard');
           }, 1500);
         } else {
-          // User needs to confirm email
           toast.success('Account created! Please check your email to confirm your account.');
           setActiveTab('signin');
         }
       } catch (profileError) {
-        console.error('Unexpected error creating profile:', profileError);
+        console.error('Unexpected error creating profile (server):', profileError);
         toast.dismiss(loadingToast);
         toast.warning('Account created, but profile setup had issues. Please sign in and complete your profile.');
         setActiveTab('signin');
