@@ -1,6 +1,4 @@
 import { supabase } from '../supabase';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth-options';
 
 export interface Organization {
   id: string;
@@ -16,35 +14,6 @@ export interface Organization {
   };
   createdAt: Date;
   updatedAt: Date;
-}
-
-export async function getOrganization(): Promise<Organization | null> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return null;
-  }
-
-  const { data: usersData, error: userError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', session.user.email)
-    .limit(1);
-  if (userError || !usersData || usersData.length === 0) return null;
-  const user = usersData[0];
-  if (!user.organizationId) return null;
-
-  const { data: orgData, error: orgError } = await supabase
-    .from('organizations')
-    .select('*')
-    .eq('id', user.organizationId)
-    .limit(1);
-  if (orgError || !orgData || orgData.length === 0) return null;
-  const organization = orgData[0];
-
-  return {
-    ...organization,
-    role: user.role,
-  } as Organization;
 }
 
 export async function createOrganization(data: {

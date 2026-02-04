@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
-import { createPaymentIntent, confirmPayment } from '@/lib/stripe';
+// Use server API endpoints instead of importing server-side stripe helpers
 import { toast } from 'sonner';
 interface StripePaymentProps {
   amount: number;
@@ -25,8 +25,15 @@ export default function StripePayment({ amount, leaseId, onSuccess, onError }: S
     setLoading(true);
 
     try {
-      // Create payment intent
-      const { clientSecret, paymentIntentId } = await createPaymentIntent(amount, leaseId);
+      // Create payment intent via server API
+      const createRes = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, leaseId, type: 'rent' }),
+      });
+      const created = await createRes.json();
+      const clientSecret = created.clientSecret;
+      const paymentIntentId = created.paymentId;
 
       if (!clientSecret) {
         throw new Error('Failed to create payment intent');
@@ -43,8 +50,14 @@ export default function StripePayment({ amount, leaseId, onSuccess, onError }: S
         throw new Error(paymentError.message);
       }
 
-      // Verify payment status
-      const isConfirmed = await confirmPayment(paymentIntentId);
+      // Verify payment status via server API
+      const confRes = await fetch('/api/confirm-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentIntentId }),
+      });
+      const confJson = await confRes.json();
+      const isConfirmed = confJson?.confirmed;
       if (!isConfirmed) {
         throw new Error('Payment not confirmed');
       }

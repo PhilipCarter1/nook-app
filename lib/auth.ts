@@ -1,6 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth-options';
 
 export interface User {
   id: string;
@@ -46,6 +44,4 @@ export async function updateUserRole(
     .eq('id', userId);
 
   if (error) throw error;
-}
-
-export const auth = () => getServerSession(authOptions); 
+} 

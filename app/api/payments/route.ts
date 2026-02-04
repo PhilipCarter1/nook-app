@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createPaymentIntent } from '@/lib/stripe';
 import { db } from '@/lib/db';
-import { auth } from '@/lib/auth';
+import { getUser } from '@/lib/supabase';
 import { log } from '@/lib/logger';
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const user = await getUser();
+    if (!user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

@@ -1,26 +1,16 @@
-import Stripe from 'stripe';
 import { supabase } from './supabase';
 import { log } from '@/lib/logger';
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
-
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from './stripe-client';
+import Stripe from 'stripe';
 
 export async function createPaymentIntent(amount: number, leaseId: string) {
   try {
-    // Create a PaymentIntent with the order amount and currency
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to cents
+      amount: amount * 100,
       currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      metadata: {
-        leaseId,
-      },
+      automatic_payment_methods: { enabled: true },
+      metadata: { leaseId },
     });
 
     return {
@@ -81,6 +71,7 @@ export async function handleStripeWebhook(event: Stripe.Event) {
 
 export async function confirmPayment(paymentIntentId: string) {
   try {
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     return paymentIntent.status === 'succeeded';
   } catch (error) {

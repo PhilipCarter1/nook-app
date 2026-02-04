@@ -1,19 +1,12 @@
-import Stripe from 'stripe';
 import { getClient } from '@/lib/supabase/client';
+import { requireStripe } from '@/lib/stripe-client';
+import Stripe from 'stripe';
 
 const supabase = getClient();
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
-
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
-
 export async function createPaymentIntent(amount: number, leaseId: string) {
   try {
-    // Create a PaymentIntent with the order amount and currency
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount * 100, // Convert to cents
       currency: 'usd',
@@ -83,6 +76,7 @@ export async function handleStripeWebhook(event: Stripe.Event) {
 
 export async function confirmPayment(paymentIntentId: string) {
   try {
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     return paymentIntent.status === 'succeeded';
   } catch (error) {

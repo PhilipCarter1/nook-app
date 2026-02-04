@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getClient } from '@/lib/supabase/client';
-import Stripe from 'stripe';
 interface PaymentConfigProps {
   propertyId?: string;
   unitId?: string;
@@ -79,16 +78,17 @@ export function PaymentConfig({ propertyId, unitId, level }: PaymentConfigProps)
 
   const handleStripeConnect = async () => {
     try {
-      const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      
-      const accountLink = await stripe.accountLinks.create({
-        account: config.stripe_account_id,
-        refresh_url: `${window.location.origin}/dashboard/landlord`,
-        return_url: `${window.location.origin}/dashboard/landlord`,
-        type: 'account_onboarding',
+      const res = await fetch('/api/create-stripe-account-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: config.stripe_account_id, returnUrl: `${window.location.origin}/dashboard/landlord`, refreshUrl: `${window.location.origin}/dashboard/landlord` }),
       });
-
-      window.location.href = accountLink.url;
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Failed to create account link');
+      }
     } catch (error) {
       console.error('Error connecting Stripe account:', error);
       toast.error('Failed to connect Stripe account');

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { stripe, handleWebhookEvent } from '@/lib/services/stripe';
+import { getStripeInstance, handleWebhookEvent } from '@/lib/services/stripe';
 import { log } from '@/lib/logger';
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -13,6 +13,7 @@ export async function POST(req: Request) {
       return new NextResponse('Missing stripe signature or webhook secret', { status: 400 });
     }
 
+    const stripe = getStripeInstance();
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     await handleWebhookEvent(event);
 

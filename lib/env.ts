@@ -1,4 +1,5 @@
 // Production environment variable validation
+import { log } from './logger';
 // This file ensures all critical environment variables are present before the app starts
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -68,15 +69,12 @@ Deployment will be blocked until these are set.
 
   // Warn about missing recommended vars in production
   if (isProduction && warnings.length > 0) {
-    console.warn(
-      '⚠️  PRODUCTION: Some recommended environment variables are missing:\n' +
-        warnings.map((w) => `  - ${w}`).join('\n')
-    );
+    log.warn('PRODUCTION: Some recommended environment variables are missing', { warnings });
   }
 
   // Log success in production
   if (isProduction) {
-    console.log('✅ All critical environment variables validated');
+    log.info('All critical environment variables validated');
   }
 }
 

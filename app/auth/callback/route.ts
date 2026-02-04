@@ -1,6 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { log } from '@/lib/logger';
 
 /**
  * OAuth Callback Handler
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       
       if (exchangeError) {
-        console.error('❌ Auth callback: Failed to exchange code for session:', exchangeError);
+        log.error('Auth callback: Failed to exchange code for session', exchangeError as Error);
         return NextResponse.redirect(new URL('/login?error=auth_failed', requestUrl.origin));
       }
 
@@ -29,11 +30,11 @@ export async function GET(request: Request) {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
-        console.error('❌ Auth callback: Failed to get user:', userError);
+        log.error('Auth callback: Failed to get user', userError as Error);
         return NextResponse.redirect(new URL('/login?error=no_user', requestUrl.origin));
       }
 
-      console.log('✅ Auth callback: User authenticated:', user.email);
+      log.info('Auth callback: User authenticated', { email: user.email });
 
       // Fetch user profile and role
       const { data: userData, error: profileError } = await supabase
@@ -43,29 +44,29 @@ export async function GET(request: Request) {
         .single();
 
       if (profileError) {
-        console.error('❌ Auth callback: Failed to fetch user profile:', profileError);
+        log.warn('Auth callback: User not in users table, redirecting to role selection', { userId: user.id });
         // User exists in auth but not in public.users - redirect to role selection
         return NextResponse.redirect(new URL('/role-select', requestUrl.origin));
       }
 
       if (!userData?.role) {
-        console.log('🔍 Auth callback: User has no role assigned, redirecting to role selection');
+        log.warn('Auth callback: User has no role, redirecting to role selection');
         return NextResponse.redirect(new URL('/role-select', requestUrl.origin));
       }
 
       // Redirect to role-specific dashboard
       const dashboardPath = getRoleDashboardPath(userData.role);
-      console.log(`✅ Auth callback: Redirecting ${userData.role} to ${dashboardPath}`);
+      log.info('Auth callback: User redirect', { role: userData.role, path: dashboardPath });
       
       return NextResponse.redirect(new URL(dashboardPath, requestUrl.origin));
     }
   } catch (error) {
-    console.error('❌ Auth callback: Unexpected error:', error);
+    log.error('Auth callback: Unexpected error', error as Error);
     return NextResponse.redirect(new URL('/login?error=unexpected', requestUrl.origin));
   }
 
   // If no code provided, redirect to login
-  console.warn('⚠️ Auth callback: No code provided, redirecting to login');
+  log.warn('Auth callback: No code provided, redirecting to login');
   return NextResponse.redirect(new URL('/login?error=no_code', requestUrl.origin));
 }
 
@@ -90,7 +91,7 @@ function getRoleDashboardPath(role: string): string {
       return '/super/dashboard';
     default:
       // Unknown role - send to generic dashboard
-      console.warn(`⚠️ Auth callback: Unknown role '${role}', redirecting to /dashboard`);
+      log.warn('Auth callback: Unknown role', { role });
       return '/dashboard';
   }
 } 

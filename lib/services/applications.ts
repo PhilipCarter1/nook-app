@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { sendEmail } from './email';
-import { auth } from '@/lib/auth';
+import { getUser } from '@/lib/supabase';
 
 export interface ApplicationDocument {
   id: string;
@@ -137,8 +137,8 @@ export async function reviewApplication(
   status: 'approved' | 'rejected',
   notes: string
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getUser();
+  if (!user?.id) {
     throw new Error('User not authenticated');
   }
 
@@ -146,7 +146,7 @@ export async function reviewApplication(
     .from('application_reviews')
     .insert({
       application_id: applicationId,
-      reviewer_id: session.user.id,
+      reviewer_id: user.id,
       status,
       notes,
     })

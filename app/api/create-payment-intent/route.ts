@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import Stripe from 'stripe';
 import { log } from '@/lib/logger';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '@/lib/stripe-client';
 
 export async function POST(request: Request) {
   try {
@@ -50,6 +47,7 @@ export async function POST(request: Request) {
     }
 
     // Create Stripe payment intent
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'usd',

@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '@/lib/stripe-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const stripe = requireStripe();
     // Find the customer
     const customers = await stripe.customers.list({
       limit: 1,

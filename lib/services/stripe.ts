@@ -1,14 +1,10 @@
-import Stripe from 'stripe';
 import { supabase } from '@/lib/supabase';
+import { requireStripe } from '../stripe-client';
+import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY');
-}
-
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-  typescript: true,
-});
+// Export a stripe instance getter for webhook handler
+export const getStripeInstance = (): Stripe => requireStripe();
+const stripe = getStripeInstance();
 
 export async function createStripeCustomer(organizationId: string, email: string) {
   const customer = await stripe.customers.create({

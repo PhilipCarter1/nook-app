@@ -1,14 +1,6 @@
-import Stripe from 'stripe';
 import { supabase } from '../supabase';
 import { sendPaymentReceipt } from './email';
-
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '../stripe-client';
 
 export interface CreatePaymentIntentParams {
   leaseId: string;
@@ -63,6 +55,7 @@ export async function createPaymentIntent({
   // Create or get Stripe customer
   let customerId = lease.stripeCustomerId;
   if (!customerId) {
+    const stripe = requireStripe();
     const customer = await stripe.customers.create({
       email: tenant.email,
       metadata: {
@@ -81,7 +74,8 @@ export async function createPaymentIntent({
   }
 
   // Create payment intent
-  const paymentIntent = await stripe.paymentIntents.create({
+  const stripe2 = requireStripe();
+  const paymentIntent = await stripe2.paymentIntents.create({
     amount: amount * 100, // Convert to cents
     currency: 'usd',
     customer: customerId,

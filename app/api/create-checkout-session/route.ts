@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '@/lib/stripe-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or retrieve Stripe customer
+    const stripe = requireStripe();
     let customer;
     try {
       // Try to find existing customer by email or user ID

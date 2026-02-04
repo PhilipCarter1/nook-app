@@ -1,21 +1,22 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
 import { getClient } from '@/lib/supabase/client';
 import { log } from '@/lib/logger';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '@/lib/stripe-client';
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = headers().get('stripe-signature')!;
 
   let event: Stripe.Event;
+  let stripe: Stripe | undefined;
 
   try {
+    stripe = requireStripe();
+    if (!webhookSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET');
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     log.error('Webhook signature verification failed:', err as Error);

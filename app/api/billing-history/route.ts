@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
+import { requireStripe } from '@/lib/stripe-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +15,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const stripe = requireStripe();
     // Find the customer
     const customers = await stripe.customers.list({
       limit: 1,
