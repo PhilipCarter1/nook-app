@@ -4,6 +4,7 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { log } from './logger';
+import { sendWelcomeEmail } from './email/client';
 import { Database } from '@/types/supabase';
 
 /**
@@ -71,7 +72,12 @@ export async function signUpAction(
     }
 
     log.info(`User signed up: ${email}`);
-
+    // Fire-and-forget welcome email (do not block signup flow)
+    try {
+      void sendWelcomeEmail(email, `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() || email);
+    } catch (e) {
+      log.error('Failed to send welcome email:', e as Error);
+    }
     return {
       success: true,
       user: authData.user,

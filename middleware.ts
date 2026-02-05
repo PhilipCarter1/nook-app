@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
   // Security headers for all responses
   const response = NextResponse.next();
-  
+
   // Add CSP header with Stripe domains
   response.headers.set(
     'Content-Security-Policy',
@@ -135,4 +135,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
-}; 
+};

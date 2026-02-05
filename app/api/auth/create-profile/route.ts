@@ -1,18 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { log } from '@/lib/logger';
+import { createAdminClient } from '@/lib/supabase/server';
+import { sendWelcomeEmail } from '@/lib/email/resend';
 
-// Create a service role client (backend-only, uses service role key)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+// Use admin client factory for service role operations
+const supabaseAdmin = createAdminClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,9 +34,9 @@ export async function POST(request: NextRequest) {
         {
           id,
           email,
-          name: `${first_name} ${last_name}`,
+          first_name,
+          last_name,
           role: role || 'tenant',
-          password: 'auth-user', // Placeholder - actual auth handled by Supabase Auth
         },
       ])
       .select();
@@ -55,6 +47,15 @@ export async function POST(request: NextRequest) {
     }
 
     log.info('User profile created successfully', { data });
+
+    // Send optional welcome email via Resend (best-effort)
+    try {
+      if (process.env.RESEND_API_KEY) {
+        await sendWelcomeEmail(email, `${first_name} ${last_name}`);
+      }
+    } catch (emailErr) {
+      log.error('Failed to send welcome email:', emailErr instanceof Error ? emailErr : new Error(String(emailErr)));
+    }
 
     return NextResponse.json(
       { success: true, data },

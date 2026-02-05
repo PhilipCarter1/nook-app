@@ -21,7 +21,7 @@ export default function SimpleLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    log('Simple login form submitted');
+    log.info('Simple login form submitted');
     
     setIsLoading(true);
     
@@ -31,14 +31,14 @@ export default function SimpleLoginPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
       
-      log('Attempting to sign in with:', formData.email);
+      log.info('Attempting to sign in with', { email: formData.email });
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       
       if (signInError) {
-        log('Sign in error:', signInError.message);
+        log.error('Sign in error', signInError);
         toast.error('Invalid email or password');
         return;
       }
@@ -48,14 +48,14 @@ export default function SimpleLoginPage() {
         return;
       }
       
-      log('Login successful for user:', data.user.id);
+      log.info('Login successful for user', { userId: data.user.id });
       toast.success('Welcome back to Nook!');
       
       // Go directly to a simple dashboard without complex auth provider
       router.push('/simple-dashboard');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
-      log('Login error:', msg);
+      log.error('Login error', err instanceof Error ? err : new Error(msg));
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

@@ -275,7 +275,7 @@ export async function getTenantInvitations(userId: string): Promise<TenantInvita
       return [];
     }
 
-    return (invitations || []).map(invitation => ({
+    return (invitations || []).map((invitation: any) => ({
       id: invitation.id,
       email: invitation.email,
       propertyId: invitation.property_id,

@@ -129,7 +129,7 @@ export async function getPendingDocuments(landlordId: string): Promise<{ success
       return { success: false, error: 'Failed to fetch properties' };
     }
 
-    const propertyIds = properties.map(p => p.id);
+    const propertyIds = properties?.map((p: any) => p.id) || [];
 
     // Get pending documents for these properties
     const { data: documents, error: docsError } = await supabase
@@ -165,7 +165,7 @@ export async function getPendingDocuments(landlordId: string): Promise<{ success
     }
 
     // Transform data to match our interface
-    const transformedDocuments: Document[] = documents.map(doc => ({
+    const transformedDocuments: Document[] = (documents || []).map((doc: any) => ({
       id: doc.id,
       tenantId: doc.tenants.user_id,
       type: doc.type,

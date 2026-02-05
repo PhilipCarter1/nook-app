@@ -10,7 +10,7 @@ const requiredInProduction = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
   'DATABASE_URL',
-  'SENDGRID_API_KEY', // Resend API key (using SENDGRID_API_KEY name)
+  // 'SENDGRID_API_KEY', // Resend API key (using SENDGRID_API_KEY name) - moved to recommended
   'EMAIL_FROM',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
@@ -18,6 +18,7 @@ const requiredInProduction = [
 
 // Optional but recommended in production
 const recommendedInProduction = [
+  'SENDGRID_API_KEY', // Resend API key (kept here so builds warn instead of failing when not set)
   'NEXT_PUBLIC_APP_URL',
   'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
   'ENCRYPTION_KEY',

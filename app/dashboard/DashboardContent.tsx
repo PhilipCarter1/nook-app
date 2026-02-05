@@ -37,7 +37,7 @@ export default function DashboardContent() {
     const checkAuthAndLoadData = async () => {
       try {
         // TEMPORARY: Skip auth check and use simulated user data
-        log('Using simulated user data');
+        log.info('Using simulated user data');
         setUser({
           id: '1',
           email: 'user@example.com',

@@ -164,19 +164,19 @@ export default function CustomerReadySignUpForm() {
 
   const handleCreateAccount = async () => {
     if (!isStepValid(3)) {
-      log('Validation failed:', validation);
+      log.warn('Validation failed', { validation });
       toast.error('Please fix the validation errors before submitting.');
       return;
     }
 
     setIsLoading(true);
-    log('Starting account creation for user:', formData.email);
+    log.info('Starting account creation for user', { email: formData.email });
 
     try {
       // Test Supabase connection
       const { data: testData, error: testError } = await supabase.auth.getSession();
       if (testError) {
-        log('Supabase connection failed:', testError.message);
+        log.error('Supabase connection failed', testError);
         toast.error(`Connection failed: ${testError.message}`);
         setIsLoading(false);
         return;
@@ -185,7 +185,7 @@ export default function CustomerReadySignUpForm() {
       // Show loading toast
       const loadingToast = toast.loading('Creating your account...');
 
-      log('Attempting to create user account...');
+      log.info('Attempting to create user account');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -200,7 +200,7 @@ export default function CustomerReadySignUpForm() {
       });
 
       if (signUpError) {
-        log('Signup failed:', signUpError.message);
+        log.error('Signup failed', signUpError);
         toast.dismiss(loadingToast);
         toast.error(`Failed to create account: ${signUpError.message}`);
         setIsLoading(false);
@@ -209,7 +209,7 @@ export default function CustomerReadySignUpForm() {
 
       // Check if user was created but needs email confirmation
       if (authData.user && !authData.session) {
-        log('User created but needs email confirmation');
+        log.info('User created but needs email confirmation');
         toast.dismiss(loadingToast);
         toast.success('Account created! Please check your email to confirm your account before signing in.');
         setIsLoading(false);
@@ -217,11 +217,11 @@ export default function CustomerReadySignUpForm() {
       }
 
       if (authData.user) {
-        log('User created successfully:', authData.user.id);
+        log.info('User created successfully', { userId: authData.user.id });
         
         // Create user profile via API
         try {
-          log('Creating user profile...');
+          log.info('Creating user profile');
           const profileResp = await fetch('/api/auth/create-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -236,20 +236,20 @@ export default function CustomerReadySignUpForm() {
 
           const profileResult = await profileResp.json();
           if (!profileResp.ok) {
-            log('Error creating user profile:', profileResult);
+            log.warn('Error creating user profile', { profileResult });
             // Continue anyway - auth was successful
           } else {
-            log('User profile created successfully');
+            log.info('User profile created successfully');
           }
         } catch (profileErr: unknown) {
           const msg = profileErr instanceof Error ? profileErr.message : 'Unknown error';
-          log('Error calling profile API:', msg);
+          log.error('Error calling profile API', profileErr instanceof Error ? profileErr : new Error(msg));
           // Continue anyway - auth was successful
         }
         
         toast.dismiss(loadingToast);
         
-        log('Account created successfully');
+        log.info('Account created successfully');
         toast.success(`Account created successfully! Welcome to Nook as a ${formData.role.replace('_', ' ')}.`);
         
         // Redirect to login page instead of dashboard
@@ -257,16 +257,16 @@ export default function CustomerReadySignUpForm() {
           window.location.href = '/login';
         }, 2000);
       } else {
-        log('No user data returned from signup');
+        log.warn('No user data returned from signup');
         toast.dismiss(loadingToast);
         toast.error('Account creation failed. Please try again.');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
-      log('Unexpected error during signup:', msg);
+      log.error('Unexpected error during signup', err instanceof Error ? err : new Error(msg));
       toast.error(`Unexpected error: ${msg || 'Something went wrong'}`);
     } finally {
-      log('Signup process completed');
+      log.info('Signup process completed');
       setIsLoading(false);
     }
   };

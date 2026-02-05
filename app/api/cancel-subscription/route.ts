@@ -1,55 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/supabase/server';
 import { requireStripe } from '@/lib/stripe-client';
+import { createAdminClient } from '@/lib/supabase/server';
+import { log } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await request.json();
+    // Require auth - only authenticated users can cancel their subscriptions
+    const user = await requireAuth();
+    log.info(`Cancel subscription request from user: ${user.id}`);
 
-    if (!userId) {
+    const { subscriptionId } = await request.json();
+
+    if (!subscriptionId) {
       return NextResponse.json(
-        { error: 'Missing userId parameter' },
+        { error: 'Missing subscriptionId parameter' },
         { status: 400 }
       );
     }
 
     const stripe = requireStripe();
-    // Find the customer
-    const customers = await stripe.customers.list({
-      limit: 1,
-      email: userId,
-    });
+    const supabase = createAdminClient();
 
-    if (customers.data.length === 0) {
+    // Verify that this subscription belongs to the user
+    const { data: subscription } = await supabase
+      .from('payment_subscriptions')
+      .select('*')
+      .eq('stripe_subscription_id', subscriptionId)
+      .eq('tenant_id', user.id)
+      .single();
+
+    if (!subscription) {
       return NextResponse.json(
-        { error: 'Customer not found' },
+        { error: 'Subscription not found or access denied' },
         { status: 404 }
       );
     }
 
-    const customer = customers.data[0];
-
-    // Get active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'active',
-    });
-
-    if (subscriptions.data.length === 0) {
-      return NextResponse.json(
-        { error: 'No active subscription found' },
-        { status: 404 }
-      );
-    }
-
-    // Cancel the subscription
-    const subscription = subscriptions.data[0];
-    await stripe.subscriptions.update(subscription.id, {
+    // Cancel the subscription (set cancel_at_period_end to let it run until period end)
+    const stripeSubscription = await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true,
     });
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error canceling subscription:', error);
+    // Update DB record
+    await supabase
+      .from('payment_subscriptions')
+      .update({ status: 'cancel_scheduled', updated_at: new Date().toISOString() })
+      .eq('stripe_subscription_id', subscriptionId);
+    log.info(`Subscription ${subscriptionId} scheduled for cancellation`);
+
+    return NextResponse.json({ success: true, subscription: stripeSubscription });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error('Error canceling subscription:', err instanceof Error ? err : new Error(String(err)));
+
+    if (message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     return NextResponse.json(
       { error: 'Failed to cancel subscription' },
       { status: 500 }

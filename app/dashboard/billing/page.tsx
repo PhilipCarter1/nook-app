@@ -7,22 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Star, Building, Users, Zap, Shield, TrendingUp, Settings, ArrowRight, FileText } from 'lucide-react';
 import { useAuth } from '@/components/providers/auth-provider';
-import { SUBSCRIPTION_PLANS, getUserSubscription, getUserUsage, canUpgradeToPlan, createCheckoutSession } from '@/lib/services/billing';
+import { SUBSCRIPTION_PLANS, getUserSubscription, getUserUsage, canUpgradeToPlan, createCheckoutSession, UserSubscription, BillingUsage } from '@/lib/services/billing';
 import { toast } from 'sonner';
 
 export default function BillingPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [currentSubscription, setCurrentSubscription] = useState<{id: string; status: string}|null>(null);
-  const [usage, setUsage] = useState<{tenants: number}|null>(null);
+  const [currentSubscription, setCurrentSubscription] = useState<UserSubscription | null>(null);
+  const [usage, setUsage] = useState<BillingUsage | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
-  }, [user, loadUserData]);
 
   const loadUserData = async () => {
     try {
@@ -32,11 +26,11 @@ export default function BillingPage() {
       ]);
 
       if (subscriptionResult.success) {
-        setCurrentSubscription(subscriptionResult.subscription);
+        setCurrentSubscription(subscriptionResult.subscription ?? null);
       }
 
       if (usageResult.success) {
-        setUsage(usageResult.usage);
+        setUsage(usageResult.usage ?? null);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -44,6 +38,12 @@ export default function BillingPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+    }
+  }, [user]);
 
   const handleUpgrade = async (planId: string) => {
     if (!user) return;

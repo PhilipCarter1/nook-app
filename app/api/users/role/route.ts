@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    log.error('Error updating user role:', { message, error: err });
+    log.error('Error updating user role:', err instanceof Error ? err : new Error(String(err)));
     return NextResponse.json({ error: message || 'Failed to update user role' }, { status: 500 });
   }
 }

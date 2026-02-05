@@ -151,7 +151,7 @@ export async function getUserUsage(userId: string): Promise<{ success: boolean; 
       return { success: false, error: 'Failed to fetch properties' };
     }
 
-    const propertyIds = properties.map(p => p.id);
+    const propertyIds = properties?.map((p: any) => p.id) || [];
 
     // Get units count
     const { count: unitsCount } = await supabase

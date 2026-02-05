@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    log.error('Checkout session creation failed:', message);
+    log.error('Checkout session creation failed:', err instanceof Error ? err : new Error(String(err)));
 
     if (message === 'Not authenticated') {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { requireStripe } from '../stripe-client';
 import Stripe from 'stripe';
 import { log } from '@/lib/logger';
+import { sendPaymentConfirmationEmail } from '@/lib/email/client';
 
 // Export a stripe instance getter for webhook handler
 export const getStripeInstance = (): Stripe => requireStripe();
@@ -177,7 +178,22 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     log.error('Failed to update payment record', error as Error);
   }
 
-  // TODO: Send payment confirmation email
+  // Send payment confirmation email (if we have user email)
+  try {
+    const { data: user } = await supabase
+      .from('users')
+      .select('email, first_name, last_name')
+      .eq('id', userId)
+      .single();
+
+    if (user?.email) {
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
+      const date = new Date().toISOString();
+      void sendPaymentConfirmationEmail(user.email, `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email, amount, date);
+    }
+  } catch (e) {
+    log.error('Failed to send payment confirmation email', e as Error);
+  }
 }
 
 async function handleCheckoutSessionExpired(session: Stripe.Checkout.Session) {

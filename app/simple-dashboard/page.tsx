@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type User as SupabaseUser } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { log } from '@/lib/logger';
 
 export default function SimpleDashboard() {
-  const [user, setUser] = useState<{id: string; email?: string}|null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -25,22 +25,22 @@ export default function SimpleDashboard() {
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error) {
-          log('Error getting user:', error.message);
+          log.info('Error getting user:', { message: error.message });
           router.push('/simple-login');
           return;
         }
 
         if (!user) {
-          log('No user found, redirecting to login');
+          log.info('No user found, redirecting to login');
           router.push('/simple-login');
           return;
         }
 
-        log('User found:', user.id);
+        log.info('User found:', { userId: user.id });
         setUser(user);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
-        log('Error in checkUser:', msg);
+        log.error('Error in checkUser:', err instanceof Error ? err : new Error(msg));
         router.push('/simple-login');
       } finally {
         setLoading(false);
@@ -59,7 +59,7 @@ export default function SimpleDashboard() {
 
       const { error } = await supabase.auth.signOut();
       if (error) {
-        log('Sign out error:', error.message);
+        log.error('Sign out error:', error);
         toast.error('Failed to sign out');
         return;
       }
@@ -68,7 +68,7 @@ export default function SimpleDashboard() {
       router.push('/simple-login');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
-      log('Sign out error:', msg);
+      log.error('Sign out error:', err instanceof Error ? err : new Error(msg));
       toast.error('Failed to sign out');
     }
   };
@@ -123,7 +123,7 @@ export default function SimpleDashboard() {
               <div className="space-y-2">
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>ID:</strong> {user.id}</p>
-                <p><strong>Created:</strong> {new Date(user.created_at).toLocaleDateString()}</p>
+                <p><strong>Created:</strong> {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
                 <p><strong>Email Confirmed:</strong> {user.email_confirmed_at ? 'Yes' : 'No'}</p>
               </div>
             </CardContent>

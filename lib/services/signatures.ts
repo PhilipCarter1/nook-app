@@ -128,7 +128,7 @@ export async function signDocument(requestId: string, signatureImage?: string): 
     .select('*')
     .eq('document_id', request.documentId);
 
-  const allSigned = allRequests?.every(r => r.status === 'signed');
+  const allSigned = allRequests?.every((r: any) => r.status === 'signed');
 
   if (allSigned) {
     // Update document status

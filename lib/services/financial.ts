@@ -135,7 +135,7 @@ export async function getFinancialSummary(propertyId: string, startDate: Date, e
     categoryBreakdown: {} as Record<string, { income: number; expenses: number }>,
   };
 
-  transactions.forEach((transaction) => {
+  transactions.forEach((transaction: any) => {
     const amount = Number(transaction.amount);
     if (transaction.type === 'income') {
       summary.totalIncome += amount;
