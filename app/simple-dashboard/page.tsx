@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { log } from '@/lib/logger';
 
 export default function SimpleDashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{id: string; email?: string}|null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -24,21 +25,22 @@ export default function SimpleDashboard() {
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error) {
-          console.error('Error getting user:', error);
+          log('Error getting user:', error.message);
           router.push('/simple-login');
           return;
         }
 
         if (!user) {
-          console.log('No user found, redirecting to login');
+          log('No user found, redirecting to login');
           router.push('/simple-login');
           return;
         }
 
-        console.log('✅ User found:', user);
+        log('User found:', user.id);
         setUser(user);
-      } catch (err) {
-        console.error('Error in checkUser:', err);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        log('Error in checkUser:', msg);
         router.push('/simple-login');
       } finally {
         setLoading(false);
@@ -57,15 +59,16 @@ export default function SimpleDashboard() {
 
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Sign out error:', error);
+        log('Sign out error:', error.message);
         toast.error('Failed to sign out');
         return;
       }
 
       toast.success('Signed out successfully');
       router.push('/simple-login');
-    } catch (err) {
-      console.error('Sign out error:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      log('Sign out error:', msg);
       toast.error('Failed to sign out');
     }
   };

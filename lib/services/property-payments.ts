@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
 
 const supabase = createClient();
 
@@ -90,13 +91,13 @@ export async function getPropertyPaymentMethods(propertyId: string): Promise<{
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching payment methods:', error);
+      log.error('Error fetching payment methods', error as Error);
       return { success: false, error: 'Failed to fetch payment methods' };
     }
 
     return { success: true, paymentMethods: data || [] };
-  } catch (error) {
-    console.error('Error in getPropertyPaymentMethods:', error);
+  } catch (err: unknown) {
+    log.error('Error in getPropertyPaymentMethods', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -125,13 +126,13 @@ export async function addPropertyPaymentMethod(
       .single();
 
     if (error) {
-      console.error('Error adding payment method:', error);
+      log.error('Error adding payment method', error as Error);
       return { success: false, error: 'Failed to add payment method' };
     }
 
     return { success: true, paymentMethodId: data.id };
-  } catch (error) {
-    console.error('Error in addPropertyPaymentMethod:', error);
+  } catch (err: unknown) {
+    log.error('Error in addPropertyPaymentMethod', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -165,13 +166,13 @@ export async function updatePropertyPaymentMethod(
       .eq('id', paymentMethodId);
 
     if (error) {
-      console.error('Error updating payment method:', error);
+      log.error('Error updating payment method', error as Error);
       return { success: false, error: 'Failed to update payment method' };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in updatePropertyPaymentMethod:', error);
+  } catch (err: unknown) {
+    log.error('Error in updatePropertyPaymentMethod', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -187,13 +188,13 @@ export async function deletePropertyPaymentMethod(
       .eq('id', paymentMethodId);
 
     if (error) {
-      console.error('Error deleting payment method:', error);
+      log.error('Error deleting payment method', error as Error);
       return { success: false, error: 'Failed to delete payment method' };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in deletePropertyPaymentMethod:', error);
+  } catch (err: unknown) {
+    log.error('Error in deletePropertyPaymentMethod', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -212,13 +213,13 @@ export async function getPropertyPaymentSettings(propertyId: string): Promise<{
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error fetching payment settings:', error);
+      log.error('Error fetching payment settings', error as Error);
       return { success: false, error: 'Failed to fetch payment settings' };
     }
 
     return { success: true, settings: data || null };
-  } catch (error) {
-    console.error('Error in getPropertyPaymentSettings:', error);
+  } catch (err: unknown) {
+    log.error('Error in getPropertyPaymentSettings', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -237,13 +238,13 @@ export async function updatePropertyPaymentSettings(
       });
 
     if (error) {
-      console.error('Error updating payment settings:', error);
+      log.error('Error updating payment settings', error as Error);
       return { success: false, error: 'Failed to update payment settings' };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in updatePropertyPaymentSettings:', error);
+  } catch (err: unknown) {
+    log.error('Error in updatePropertyPaymentSettings', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -271,13 +272,13 @@ export async function getPropertyRentSplits(propertyId: string): Promise<{
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching rent splits:', error);
+      log.error('Error fetching rent splits', error as Error);
       return { success: false, error: 'Failed to fetch rent splits' };
     }
 
     return { success: true, rentSplits: data || [] };
-  } catch (error) {
-    console.error('Error in getPropertyRentSplits:', error);
+  } catch (err: unknown) {
+    log.error('Error in getPropertyRentSplits', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -302,13 +303,13 @@ export async function addRentSplit(
       .single();
 
     if (error) {
-      console.error('Error adding rent split:', error);
+      log.error('Error adding rent split', error as Error);
       return { success: false, error: 'Failed to add rent split' };
     }
 
     return { success: true, rentSplitId: data.id };
-  } catch (error) {
-    console.error('Error in addRentSplit:', error);
+  } catch (err: unknown) {
+    log.error('Error in addRentSplit', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -325,13 +326,13 @@ export async function updateRentSplit(
       .eq('id', rentSplitId);
 
     if (error) {
-      console.error('Error updating rent split:', error);
+      log.error('Error updating rent split', error as Error);
       return { success: false, error: 'Failed to update rent split' };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in updateRentSplit:', error);
+  } catch (err: unknown) {
+    log.error('Error in updateRentSplit', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -347,13 +348,13 @@ export async function deleteRentSplit(
       .eq('id', rentSplitId);
 
     if (error) {
-      console.error('Error deleting rent split:', error);
+      log.error('Error deleting rent split', error as Error);
       return { success: false, error: 'Failed to delete rent split' };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in deleteRentSplit:', error);
+  } catch (err: unknown) {
+    log.error('Error in deleteRentSplit', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -387,7 +388,7 @@ export async function getTenantPaymentInfo(propertyId: string, tenantId: string)
       .single();
 
     if (rentSplitError && rentSplitError.code !== 'PGRST116') {
-      console.error('Error fetching rent split:', rentSplitError);
+      log.error('Error fetching rent split', rentSplitError as Error);
       return { success: false, error: 'Failed to fetch rent split' };
     }
 
@@ -399,7 +400,7 @@ export async function getTenantPaymentInfo(propertyId: string, tenantId: string)
       .single();
 
     if (propertyError) {
-      console.error('Error fetching property rent:', propertyError);
+      log.error('Error fetching property rent', propertyError as Error);
       return { success: false, error: 'Failed to fetch property rent' };
     }
 
@@ -416,8 +417,8 @@ export async function getTenantPaymentInfo(propertyId: string, tenantId: string)
         tenantAmount
       }
     };
-  } catch (error) {
-    console.error('Error in getTenantPaymentInfo:', error);
+  } catch (err: unknown) {
+    log.error('Error in getTenantPaymentInfo', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }

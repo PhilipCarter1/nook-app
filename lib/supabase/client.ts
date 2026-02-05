@@ -1,12 +1,33 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { log } from '@/lib/logger';
+import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/types/supabase';
+import { log } from '@/lib/logger';
 
-const supabase = createClientComponentClient<Database>();
+/**
+ * Create a Supabase client for browser/Client Components
+ * This uses only the public ANON_KEY - safe for browser
+ */
+let clientInstance: ReturnType<typeof createBrowserClient> | null = null;
+
+export function createClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  // Reuse client instance for browser
+  if (!clientInstance) {
+    clientInstance = createBrowserClient<Database>(url, key);
+  }
+
+  return clientInstance;
+}
 
 // Auth Helpers
 export async function getUser() {
   try {
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     return user;
   } catch (error) {
@@ -17,6 +38,7 @@ export async function getUser() {
 
 export async function getUserRole() {
   try {
+    const supabase = createClient();
     const user = await getUser();
     if (!user) return null;
 
@@ -36,6 +58,7 @@ export async function getUserRole() {
 // Property Helpers
 export async function getProperties() {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('properties')
       .select('*')
@@ -51,6 +74,7 @@ export async function getProperties() {
 
 export async function getPropertyById(id: string) {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('properties')
       .select('*')
@@ -68,6 +92,7 @@ export async function getPropertyById(id: string) {
 // Maintenance Ticket Helpers
 export async function getTicketsByProperty(propertyId: string) {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('maintenance_tickets')
       .select(`
@@ -88,6 +113,7 @@ export async function getTicketsByProperty(propertyId: string) {
 
 export async function createTicket(ticket: Database['public']['Tables']['maintenance_tickets']['Insert']) {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('maintenance_tickets')
       .insert(ticket)
@@ -104,6 +130,7 @@ export async function createTicket(ticket: Database['public']['Tables']['mainten
 
 export async function updateTicketStatus(id: string, status: 'open' | 'in_progress' | 'resolved') {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('maintenance_tickets')
       .update({ status })
@@ -122,6 +149,7 @@ export async function updateTicketStatus(id: string, status: 'open' | 'in_progre
 // Payment Helpers
 export async function getPaymentsByProperty(propertyId: string) {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('payments')
       .select(`
@@ -139,21 +167,10 @@ export async function getPaymentsByProperty(propertyId: string) {
   }
 }
 
-// Client Helper
-export function getClient() {
-  return supabase;
-}
-
-// Export createClient for backward compatibility - use singleton pattern
-let clientInstance: any = null;
-export const createClient = () => {
-  if (!clientInstance) {
-    clientInstance = createClientComponentClient<Database>();
-  }
-  return clientInstance;
-};
-
 // Reset client instance (for testing/debugging)
 export const resetClient = () => {
   clientInstance = null;
 };
+
+// Backward compatibility export
+export const getClient = createClient;

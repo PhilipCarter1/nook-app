@@ -15,13 +15,7 @@ import {
   Plus,
   DollarSign,
   TrendingUp,
-  BarChart,
-  Calendar,
-  AlertCircle,
-  Home,
-  MapPin,
-  Phone,
-  Mail
+  BarChart
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';

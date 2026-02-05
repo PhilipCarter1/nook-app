@@ -18,11 +18,9 @@ export async function POST(req: Request) {
     await handleWebhookEvent(event);
 
     return new NextResponse(null, { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     log.error('Error processing webhook:', err as Error);
-    return new NextResponse(
-      `Webhook Error: ${err.message}`,
-      { status: 400 }
-    );
+    return new NextResponse(`Webhook Error: ${message}`, { status: 400 });
   }
 } 

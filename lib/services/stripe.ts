@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { requireStripe } from '../stripe-client';
 import Stripe from 'stripe';
+import { log } from '@/lib/logger';
 
 // Export a stripe instance getter for webhook handler
 export const getStripeInstance = (): Stripe => requireStripe();
@@ -115,6 +116,15 @@ export async function createUsageAlert(
 
 export async function handleWebhookEvent(event: Stripe.Event) {
   switch (event.type) {
+    // Checkout session events (one-time payments)
+    case 'checkout.session.completed':
+      await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+      break;
+    case 'checkout.session.expired':
+      await handleCheckoutSessionExpired(event.data.object as Stripe.Checkout.Session);
+      break;
+
+    // Subscription events
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
       await handleSubscriptionChange(event.data.object as Stripe.Subscription);
@@ -122,13 +132,99 @@ export async function handleWebhookEvent(event: Stripe.Event) {
     case 'customer.subscription.deleted':
       await handleSubscriptionDeletion(event.data.object as Stripe.Subscription);
       break;
+
+    // Invoice events
     case 'invoice.payment_succeeded':
       await handleSuccessfulPayment(event.data.object as Stripe.Invoice);
       break;
     case 'invoice.payment_failed':
       await handleFailedPayment(event.data.object as Stripe.Invoice);
       break;
+
+    // Payment intent events (for payment element)
+    case 'payment_intent.succeeded':
+      await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+      break;
+    case 'payment_intent.payment_failed':
+      await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+      break;
+
+    default:
+      // Ignore other event types
+      break;
   }
+}
+
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId;
+  if (!userId) return;
+
+  // Update payment record
+  const { error } = await supabase
+    .from('payments')
+    .update({
+      status: 'completed',
+      stripe_payment_intent_id: session.payment_intent ? String(session.payment_intent) : null,
+      stripe_customer_id: session.customer ? String(session.customer) : null,
+      amount: session.amount_total ? session.amount_total / 100 : null, // Convert from cents
+      currency: session.currency || 'usd',
+      paid_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_session_id', session.id);
+
+  if (error) {
+    log.error('Failed to update payment record', error as Error);
+  }
+
+  // TODO: Send payment confirmation email
+}
+
+async function handleCheckoutSessionExpired(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId;
+  if (!userId) return;
+
+  // Update payment record
+  await supabase
+    .from('payments')
+    .update({
+      status: 'expired',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_session_id', session.id);
+}
+
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  const userId = paymentIntent.metadata?.userId;
+  if (!userId) return;
+
+  // Update any payment records associated with this intent
+  await supabase
+    .from('payments')
+    .update({
+      status: 'completed',
+      stripe_payment_intent_id: paymentIntent.id,
+      paid_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_payment_intent_id', paymentIntent.id)
+    .or(`stripe_payment_intent_id.is.null`);
+}
+
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+  const userId = paymentIntent.metadata?.userId;
+  if (!userId) return;
+
+  // Update payment record
+  await supabase
+    .from('payments')
+    .update({
+      status: 'failed',
+      stripe_payment_intent_id: paymentIntent.id,
+      error_message: paymentIntent.last_payment_error?.message || 'Payment failed',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_payment_intent_id', paymentIntent.id);
 }
 
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {

@@ -7,20 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { 
   CreditCard, 
   Plus, 
   Download, 
-  Calendar,
   DollarSign,
   CheckCircle,
   Clock,
-  AlertTriangle,
-  ArrowLeft,
   Search,
-  X
+  X,
+  ArrowLeft,
+  Calendar
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 

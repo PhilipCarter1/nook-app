@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { log } from '@/lib/logger';
 
 // Create a service role client (backend-only, uses service role key)
 const supabaseAdmin = createClient(
@@ -15,7 +16,13 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      id?: string;
+      email?: string;
+      first_name?: string;
+      last_name?: string;
+      role?: string;
+    };
     const { id, email, first_name, last_name, role } = body;
 
     // Validate required fields
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Creating user profile for:', { id, email, first_name, last_name, role });
+    log.info('Creating user profile', { id, email, first_name, last_name, role });
 
     // Create user profile in the users table
     const { data, error } = await supabaseAdmin
@@ -43,24 +50,19 @@ export async function POST(request: NextRequest) {
       .select();
 
     if (error) {
-      console.error('Error creating user profile:', error);
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      log.error('Error creating user profile:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log('✅ User profile created successfully:', data);
+    log.info('User profile created successfully', { data });
 
     return NextResponse.json(
       { success: true, data },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Unexpected error creating profile:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error('Unexpected error creating profile:', err as Error);
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 });
   }
 }

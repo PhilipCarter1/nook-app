@@ -31,14 +31,11 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         let receiptUrl: string | null = null;
         if (session.payment_intent) {
-          const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
-          const pi = (paymentIntent as any).charges ? paymentIntent : (paymentIntent as any).data;
-          if (
-            pi.charges &&
-            Array.isArray(pi.charges.data) &&
-            pi.charges.data.length > 0
-          ) {
-            receiptUrl = pi.charges.data[0].receipt_url || null;
+          const paymentIntentRaw = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+          const paymentIntent = paymentIntentRaw as Stripe.PaymentIntent;
+          const chargesData = paymentIntent?.charges?.data;
+          if (chargesData && chargesData.length > 0) {
+            receiptUrl = chargesData[0].receipt_url || null;
           }
         }
         // Update payment status
@@ -130,11 +127,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (error) {
-    log.error('Error processing webhook:', error as Error);
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error('Error processing webhook:', { message, error: err });
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 } 

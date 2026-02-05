@@ -9,19 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Building, 
   Users, 
-  FileText, 
-  Wrench, 
   CreditCard, 
   Settings,
-  Plus,
   Shield,
   Zap,
   TrendingUp,
   BarChart,
-  Home,
-  Calendar,
-  DollarSign,
-  AlertCircle
+  Wrench,
+  FileText,
+  Plus,
+  Home
 } from 'lucide-react';
 
 export default function DashboardPage() {

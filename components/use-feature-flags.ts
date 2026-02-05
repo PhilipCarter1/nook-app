@@ -58,7 +58,7 @@ export function useFeatureFlags() {
               table: 'organizations',
               filter: `id=eq.${orgId}`,
             },
-            (payload) => {
+            (payload: any) => {
               if (payload.new.client_config) {
                 setFlags(payload.new.client_config as FeatureFlags);
               }

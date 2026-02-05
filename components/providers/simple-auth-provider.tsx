@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { log } from '@/lib/logger';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { UserRole } from '@/lib/types';
@@ -47,18 +48,18 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
     const getUser = async () => {
       try {
-        console.log('🔍 SimpleAuthProvider: Getting user...');
+        log.debug('SimpleAuthProvider: Getting user...');
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
-          console.error('❌ SimpleAuthProvider: Auth error:', authError);
+          log.error('SimpleAuthProvider: Auth error', authError as Error);
           throw authError;
         }
 
-        console.log('✅ SimpleAuthProvider: Auth user found:', authUser?.email);
+        log.debug('SimpleAuthProvider: Auth user found', { email: authUser?.email });
 
         if (authUser) {
-          console.log('🔍 SimpleAuthProvider: Fetching user data from public.users...');
+          log.debug('SimpleAuthProvider: Fetching user data from public.users...');
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -66,10 +67,10 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
             .single();
           
           if (userError) {
-            console.error('❌ SimpleAuthProvider: Error fetching user data:', userError);
+            log.error('SimpleAuthProvider: Error fetching user data', userError as Error);
             
             // If user doesn't exist in public.users, create them
-            console.log('🔧 SimpleAuthProvider: Creating user in public.users...');
+            log.debug('SimpleAuthProvider: Creating user in public.users...');
             const { data: newUserData, error: createError } = await supabase
               .from('users')
               .insert([
@@ -89,7 +90,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
               .single();
 
             if (createError) {
-              console.error('❌ SimpleAuthProvider: Error creating user:', createError);
+              log.error('SimpleAuthProvider: Error creating user', createError as Error);
               // Create fallback user
               const fallbackUser = {
                 id: authUser.id,
@@ -108,8 +109,8 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
                 setRole('tenant' as UserRole);
                 setLoading(false);
               }
-            } else {
-              console.log('✅ SimpleAuthProvider: User created successfully:', newUserData);
+              } else {
+              log.debug('SimpleAuthProvider: User created successfully', { user: newUserData });
               if (mounted) {
                 setUser(newUserData as UserWithAuth);
                 setRole(newUserData.role as UserRole);
@@ -117,7 +118,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
               }
             }
           } else {
-            console.log('✅ SimpleAuthProvider: User data found:', userData);
+            log.debug('SimpleAuthProvider: User data found', { user: userData });
             if (mounted) {
               setUser(userData as UserWithAuth);
               setRole(userData.role as UserRole);
@@ -132,7 +133,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
           }
         }
       } catch (error) {
-        console.error('❌ SimpleAuthProvider: Error in getUser:', error);
+        log.error('SimpleAuthProvider: Error in getUser', error as Error);
         if (mounted) {
           setUser(null);
           setRole(null);
@@ -149,25 +150,25 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
   }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('🔐 SimpleAuthProvider: Signing in...');
+    log.debug('SimpleAuthProvider: Signing in', { email });
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('❌ SimpleAuthProvider: Sign in error:', error);
+      log.error('SimpleAuthProvider: Sign in error', error as Error);
       throw error;
     }
 
-    console.log('✅ SimpleAuthProvider: Sign in successful:', data.user?.email);
+    log.debug('SimpleAuthProvider: Sign in successful', { email: data.user?.email });
     
     // Refresh the user data
     window.location.reload();
   };
 
   const signOut = async () => {
-    console.log('🚪 SimpleAuthProvider: Signing out...');
+    log.debug('SimpleAuthProvider: Signing out');
     await supabase.auth.signOut();
     setUser(null);
     setRole(null);

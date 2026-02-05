@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Building, Plus, MapPin, Users, X, ArrowLeft, Search, UserPlus, Eye, Mail, Phone } from 'lucide-react';
+import { Building, Plus, MapPin, Users, ArrowLeft, Search, UserPlus, Eye } from 'lucide-react';
 import TenantOnboardingModal from '@/components/tenant-onboarding/TenantOnboardingModal';
 
 interface Property {

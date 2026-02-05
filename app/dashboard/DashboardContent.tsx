@@ -2,26 +2,24 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { 
-  Home, 
   Building, 
   Users, 
-  FileText, 
-  Wrench, 
   CreditCard, 
   Settings,
-  Plus,
-  Calendar,
-  TrendingUp,
   Shield,
   Zap,
-  BarChart
+  BarChart,
+  TrendingUp,
+  Wrench,
+  FileText,
+  Plus
 } from 'lucide-react';
+import { log } from '@/lib/logger';
 
 interface User {
   id: string;
@@ -39,7 +37,7 @@ export default function DashboardContent() {
     const checkAuthAndLoadData = async () => {
       try {
         // TEMPORARY: Skip auth check and use simulated user data
-        console.log('Using simulated user data');
+        log('Using simulated user data');
         setUser({
           id: '1',
           email: 'user@example.com',

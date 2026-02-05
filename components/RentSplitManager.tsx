@@ -49,7 +49,7 @@ export function RentSplitManager({ unitId, monthlyRent }: RentSplitManagerProps)
         .eq('unit_id', unitId);
 
       if (tenantsError) throw tenantsError;
-      setTenants((tenantsData || []).map(tenant => ({
+      setTenants((tenantsData || []).map((tenant: any) => ({
         id: tenant.id,
         user: tenant.user[0]
       })));

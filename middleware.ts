@@ -1,77 +1,125 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { withRateLimit } from './lib/services/rateLimit';
-import { withErrorHandling } from './lib/services/error';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+/**
+ * Middleware to protect routes and apply security headers
+ * Handles:
+ * - Route authentication (redirect to login if not authenticated)
+ * - Security headers (HSTS, CSP, etc.)
+ * - Rate limiting for API routes
+ */
 
 export async function middleware(request: NextRequest) {
-  // Only apply to API routes
-  if (!request.nextUrl.pathname.startsWith('/api')) {
-    return NextResponse.next();
-  }
+  const pathname = request.nextUrl.pathname;
+  const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password', '/role-select', '/auth'].some(path => pathname.startsWith(path));
+  const isPublicPage = pathname.startsWith('/') && (pathname === '/' || pathname.startsWith('/privacy') || pathname.startsWith('/terms') || pathname.startsWith('/help'));
+  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/(dashboard)');
+  const isAdminPanel = pathname.startsWith('/admin') || pathname.startsWith('/super');
+  const isAPI = pathname.startsWith('/api');
 
-  // Get user from session
-  const { data: { session } } = await supabase.auth.getSession();
-  const userId = session?.user?.id || 'anonymous';
-
-  // Skip rate limiting for public endpoints
-  const publicEndpoints = [
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/auth/reset-password',
-  ];
-
-  if (!publicEndpoints.includes(request.nextUrl.pathname)) {
-    // Apply rate limiting
-    const rateLimitResult = await withRateLimit(
-      userId,
-      request.nextUrl.pathname,
-      request.method
-    );
-    if (!rateLimitResult.allowed) {
-      return new NextResponse(
-        JSON.stringify({
-          error: 'Too many requests',
-          code: 'RATE_LIMIT_EXCEEDED',
-          retryAfter: rateLimitResult.reset,
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': rateLimitResult.reset.toString(),
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
-          },
-        }
-      );
-    }
-  }
-
-  // Add security headers
+  // Security headers for all responses
   const response = NextResponse.next();
+  
+  // Add CSP header with Stripe domains
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.sentry.io; " +
+    "frame-src 'self' https://js.stripe.com; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self';"
+  );
+
+  // Strict Transport Security
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'interest-cohort=()');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-  // Add CORS headers for API routes
-  if (request.nextUrl.pathname.startsWith('/api')) {
+  // CORS headers for API routes
+  if (isAPI) {
     response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_APP_URL || '*');
+    response.headers.set('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
     response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
     response.headers.set(
       'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
     );
+  }
+
+  // Check authentication for protected routes
+  if (isDashboard || isAdminPanel) {
+    const cookieStore = request.cookies;
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
+        },
+      }
+    );
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    // Redirect to login if not authenticated
+    if (error || !user) {
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // For admin routes, check if user has admin role
+    if (isAdminPanel) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || !['admin', 'super'].includes(profile.role)) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (isAuthPage && !isAPI) {
+    const cookieStore = request.cookies;
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      // User is logged in, redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   return response;
@@ -79,6 +127,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/api/:path*',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }; 

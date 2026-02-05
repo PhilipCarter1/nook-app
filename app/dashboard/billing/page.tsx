@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Star, Building, Users, Zap, Shield, TrendingUp, FileText, Settings, ArrowRight } from 'lucide-react';
+import { Check, Crown, Star, Building, Users, Zap, Shield, TrendingUp, Settings, ArrowRight, FileText } from 'lucide-react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { SUBSCRIPTION_PLANS, getUserSubscription, getUserUsage, canUpgradeToPlan, createCheckoutSession } from '@/lib/services/billing';
 import { toast } from 'sonner';
@@ -13,8 +13,8 @@ import { toast } from 'sonner';
 export default function BillingPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
-  const [usage, setUsage] = useState<any>(null);
+  const [currentSubscription, setCurrentSubscription] = useState<{id: string; status: string}|null>(null);
+  const [usage, setUsage] = useState<{tenants: number}|null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ export default function BillingPage() {
     if (user) {
       loadUserData();
     }
-  }, [user]);
+  }, [user, loadUserData]);
 
   const loadUserData = async () => {
     try {

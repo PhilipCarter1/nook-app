@@ -1,5 +1,6 @@
 import { getClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { log } from '@/lib/logger';
 
 export interface SubscriptionPlan {
   id: string;
@@ -123,8 +124,8 @@ export async function getUserSubscription(userId: string): Promise<{ success: bo
     }
 
     return { success: true, subscription: subscription || null };
-  } catch (error) {
-    console.error('Error fetching user subscription:', error);
+  } catch (err: unknown) {
+    log.error('Error fetching user subscription', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -184,8 +185,8 @@ export async function getUserUsage(userId: string): Promise<{ success: boolean; 
     };
 
     return { success: true, usage };
-  } catch (error) {
-    console.error('Error fetching user usage:', error);
+  } catch (err: unknown) {
+    log.error('Error fetching user usage', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -248,8 +249,8 @@ export async function canUpgradeToPlan(userId: string, planId: string): Promise<
     }
 
     return { success: true, canUpgrade: true };
-  } catch (error) {
-    console.error('Error checking upgrade eligibility:', error);
+  } catch (err: unknown) {
+    log.error('Error checking upgrade eligibility', err as Error);
     return { success: false, canUpgrade: false, error: 'Internal server error' };
   }
 }
@@ -293,8 +294,8 @@ export async function createCheckoutSession(planId: string, userId: string, succ
     }
 
     return { success: true, sessionId: data.sessionId };
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
+  } catch (err: unknown) {
+    log.error('Error creating checkout session', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -317,8 +318,8 @@ export async function cancelSubscription(userId: string): Promise<{ success: boo
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error canceling subscription:', error);
+  } catch (err: unknown) {
+    log.error('Error canceling subscription', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 }
@@ -334,8 +335,8 @@ export async function getBillingHistory(userId: string): Promise<{ success: bool
     }
 
     return { success: true, invoices: data.invoices };
-  } catch (error) {
-    console.error('Error fetching billing history:', error);
+  } catch (err: unknown) {
+    log.error('Error fetching billing history', err as Error);
     return { success: false, error: 'Internal server error' };
   }
 } 

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { log } from '@/lib/logger';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { getClient } from '@/lib/supabase/client';
 import { Database } from '@/types/supabase';
 import { UserWithAuth } from '@/types/supabase';
 import { UserRole } from '@/lib/types';
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserWithAuth | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClientComponentClient<Database>();
+  const supabase = getClient();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -132,9 +132,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (userError) throw userError;
 
-      // Fix 3: Remove 'mounted' check here as this is an async trigger, not an effect
+      // Remove 'mounted' check here as this is an async trigger, not an effect
       setUser({ ...data.user, ...userData } as UserWithAuth);
       setRole(userData.role as UserRole);
+      setLoading(false);
       
     } catch (error: any) {
       log.error('Error in signIn:', error);

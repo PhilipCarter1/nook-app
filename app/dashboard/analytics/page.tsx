@@ -2,20 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { 
   BarChart, 
   TrendingUp, 
-  TrendingDown, 
   DollarSign, 
   Users, 
   Building,
-  Calendar,
   PieChart,
-  ArrowLeft,
-  Activity
+  ArrowLeft
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';

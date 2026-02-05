@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, ArrowRight, Sparkles, Loader2, Building2, Home, Users } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, AlertCircle, ArrowRight, Sparkles, Loader2, Building2, Home, Users } from 'lucide-react';
+import { log } from '@/lib/logger';
 
 interface ValidationState {
   email: { isValid: boolean; message: string };
@@ -162,51 +163,20 @@ export default function CustomerReadySignUpForm() {
   };
 
   const handleCreateAccount = async () => {
-    // Simple test to see if function is called
-    console.log('🚨 FUNCTION CALLED! 🚨');
-    alert('Create Account button clicked!');
-    console.log('=== SIGNUP DEBUG START ===');
-    console.log('Create Account button clicked!');
-    console.log('Form data:', formData);
-    console.log('Current step:', currentStep);
-    console.log('Step valid:', isStepValid(3));
-    
-    // Debug environment variables
-    console.log('Environment check:');
-    console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-    
     if (!isStepValid(3)) {
-      console.log('Validation failed:', validation);
-      alert('Validation failed!');
+      log('Validation failed:', validation);
       toast.error('Please fix the validation errors before submitting.');
       return;
     }
 
     setIsLoading(true);
-    console.log('Starting account creation...');
+    log('Starting account creation for user:', formData.email);
 
     try {
-      console.log('Creating Supabase client...');
-      console.log('Using supabase client directly...');
-      console.log('Supabase client created successfully');
-
       // Test Supabase connection
-      console.log('Testing Supabase connection...');
       const { data: testData, error: testError } = await supabase.auth.getSession();
-      console.log('Connection test result:', { testData, testError });
-
-      // Test database access
-      console.log('Testing database access...');
-      const { data: testTableData, error: testTableError } = await supabase
-        .from('user_profiles')
-        .select('count')
-        .limit(1);
-      console.log('Database access test:', { testTableData, testTableError });
-
       if (testError) {
-        console.error('Supabase connection failed:', testError);
-        alert('Supabase connection failed!');
+        log('Supabase connection failed:', testError.message);
         toast.error(`Connection failed: ${testError.message}`);
         setIsLoading(false);
         return;
@@ -215,20 +185,7 @@ export default function CustomerReadySignUpForm() {
       // Show loading toast
       const loadingToast = toast.loading('Creating your account...');
 
-      console.log('Attempting to create user account...');
-      console.log('Signup payload:', {
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: `${formData.firstName} ${formData.lastName}`,
-            role: formData.role
-          }
-        }
-      });
-
-      // Try signup with metadata
-      console.log('Trying signup with metadata...');
+      log('Attempting to create user account...');
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -242,15 +199,8 @@ export default function CustomerReadySignUpForm() {
         }
       });
 
-      console.log('Simple signup result:', { authData, signUpError });
-
       if (signUpError) {
-        console.error('Signup failed:', signUpError);
-        console.error('Signup error details:', {
-          message: signUpError.message,
-          status: signUpError.status
-        });
-        alert(`Signup error: ${signUpError.message}`);
+        log('Signup failed:', signUpError.message);
         toast.dismiss(loadingToast);
         toast.error(`Failed to create account: ${signUpError.message}`);
         setIsLoading(false);
@@ -259,23 +209,19 @@ export default function CustomerReadySignUpForm() {
 
       // Check if user was created but needs email confirmation
       if (authData.user && !authData.session) {
-        console.log('User created but needs email confirmation');
+        log('User created but needs email confirmation');
         toast.dismiss(loadingToast);
         toast.success('Account created! Please check your email to confirm your account before signing in.');
-        alert('Account created successfully! Please check your email to confirm your account before signing in.');
         setIsLoading(false);
         return;
       }
 
       if (authData.user) {
-        console.log('=== USER CREATED SUCCESSFULLY ===');
-        console.log('User ID:', authData.user.id);
-        console.log('User email:', authData.user.email);
-        console.log('User metadata:', authData.user.user_metadata);
+        log('User created successfully:', authData.user.id);
         
         // Create user profile via API
         try {
-          console.log('Creating user profile...');
+          log('Creating user profile...');
           const profileResp = await fetch('/api/auth/create-profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -290,47 +236,37 @@ export default function CustomerReadySignUpForm() {
 
           const profileResult = await profileResp.json();
           if (!profileResp.ok) {
-            console.error('Error creating user profile:', profileResult);
+            log('Error creating user profile:', profileResult);
             // Continue anyway - auth was successful
           } else {
-            console.log('✅ User profile created successfully');
+            log('User profile created successfully');
           }
-        } catch (profileErr) {
-          console.error('Error calling profile API:', profileErr);
+        } catch (profileErr: unknown) {
+          const msg = profileErr instanceof Error ? profileErr.message : 'Unknown error';
+          log('Error calling profile API:', msg);
           // Continue anyway - auth was successful
         }
         
         toast.dismiss(loadingToast);
         
-        console.log('Account created successfully! Profile will be created later.');
-        alert('Account created successfully! You can now sign in.');
+        log('Account created successfully');
         toast.success(`Account created successfully! Welcome to Nook as a ${formData.role.replace('_', ' ')}.`);
         
         // Redirect to login page instead of dashboard
-        console.log('Redirecting to login page...');
-        
         setTimeout(() => {
-          console.log('Executing redirect to login...');
           window.location.href = '/login';
         }, 2000);
       } else {
-        console.error('=== NO USER DATA RETURNED ===');
-        console.error('Auth data structure:', authData);
-        alert('No user data returned from signup!');
+        log('No user data returned from signup');
         toast.dismiss(loadingToast);
         toast.error('Account creation failed. Please try again.');
       }
-    } catch (err: any) {
-      console.error('=== UNEXPECTED ERROR ===');
-      console.error('Error type:', typeof err);
-      console.error('Error message:', err.message);
-      console.error('Error stack:', err.stack);
-      console.error('Full error object:', err);
-      alert(`Unexpected error: ${err.message}`);
-      toast.error(`Unexpected error: ${err.message || 'Something went wrong'}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      log('Unexpected error during signup:', msg);
+      toast.error(`Unexpected error: ${msg || 'Something went wrong'}`);
     } finally {
-      console.log('=== SIGNUP PROCESS COMPLETED ===');
-      console.log('Setting loading to false');
+      log('Signup process completed');
       setIsLoading(false);
     }
   };

@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@supabase/supabase-js';
-import { Mail, Lock, User } from 'lucide-react';
+import { User, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { log } from '@/lib/logger';
 
 export default function SimpleLoginPage() {
   const router = useRouter();
@@ -20,8 +21,7 @@ export default function SimpleLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🚨 SIMPLE LOGIN FORM SUBMITTED! 🚨');
-    console.log('Form data:', formData);
+    log('Simple login form submitted');
     
     setIsLoading(true);
     
@@ -31,14 +31,14 @@ export default function SimpleLoginPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
       
-      console.log('Attempting to sign in with:', formData.email);
+      log('Attempting to sign in with:', formData.email);
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
       
       if (signInError) {
-        console.error('Sign in error:', signInError);
+        log('Sign in error:', signInError.message);
         toast.error('Invalid email or password');
         return;
       }
@@ -48,14 +48,14 @@ export default function SimpleLoginPage() {
         return;
       }
       
-      console.log('✅ Login successful!');
-      console.log('User data:', data.user);
+      log('Login successful for user:', data.user.id);
       toast.success('Welcome back to Nook!');
       
       // Go directly to a simple dashboard without complex auth provider
       router.push('/simple-dashboard');
-    } catch (err: any) {
-      console.error('Login error:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      log('Login error:', msg);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

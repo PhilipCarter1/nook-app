@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { log } from '@/lib/logger';
 
 export interface DocumentRequest {
   id: string;
@@ -70,7 +71,7 @@ export async function getLandlordDocumentRequests(landlordId: string): Promise<{
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching landlord document requests:', error);
+      log.error('Error fetching landlord document requests', error as Error);
       return { success: false, error: error.message };
     }
 
@@ -99,7 +100,7 @@ export async function getTenantDocumentRequests(tenantId: string): Promise<{
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching tenant document requests:', error);
+      log.error('Error fetching tenant document requests', error as Error);
       return { success: false, error: error.message };
     }
 
@@ -137,13 +138,13 @@ export async function createDocumentRequest(requestData: CreateDocumentRequestDa
       .single();
 
     if (error) {
-      console.error('Error creating document request:', error);
+      log.error('Error creating document request', error as Error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data };
-  } catch (error) {
-    console.error('Error in createDocumentRequest:', error);
+    } catch (err: unknown) {
+    log.error('Error in createDocumentRequest', err as Error);
     return { success: false, error: 'Failed to create document request' };
   }
 }
@@ -183,13 +184,13 @@ export async function updateDocumentRequestStatus(
       .single();
 
     if (error) {
-      console.error('Error updating document request status:', error);
+      log.error('Error updating document request status', error as Error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data };
-  } catch (error) {
-    console.error('Error in updateDocumentRequestStatus:', error);
+  } catch (err: unknown) {
+    log.error('Error in updateDocumentRequestStatus', err as Error);
     return { success: false, error: 'Failed to update document request' };
   }
 }
@@ -220,7 +221,7 @@ export async function uploadDocumentRequestFile(
       .upload(filePath, file);
 
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
+      log.error('Error uploading file', uploadError as Error);
       return { success: false, error: uploadError.message };
     }
 
@@ -239,13 +240,13 @@ export async function uploadDocumentRequestFile(
       .single();
 
     if (error) {
-      console.error('Error saving file record:', error);
+      log.error('Error saving file record', error as Error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data };
-  } catch (error) {
-    console.error('Error in uploadDocumentRequestFile:', error);
+  } catch (err: unknown) {
+    log.error('Error in uploadDocumentRequestFile', err as Error);
     return { success: false, error: 'Failed to upload file' };
   }
 }
@@ -264,13 +265,13 @@ export async function getDocumentRequestFiles(requestId: string): Promise<{
       .order('uploaded_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching document request files:', error);
+      log.error('Error fetching document request files', error as Error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: data || [] };
-  } catch (error) {
-    console.error('Error in getDocumentRequestFiles:', error);
+  } catch (err: unknown) {
+    log.error('Error in getDocumentRequestFiles', err as Error);
     return { success: false, error: 'Failed to fetch files' };
   }
 }
@@ -304,7 +305,7 @@ export async function deleteDocumentRequestFile(fileId: string): Promise<{
       .remove([fileData.file_path]);
 
     if (storageError) {
-      console.error('Error deleting file from storage:', storageError);
+      log.error('Error deleting file from storage', storageError as Error);
     }
 
     // Delete from database
@@ -314,13 +315,13 @@ export async function deleteDocumentRequestFile(fileId: string): Promise<{
       .eq('id', fileId);
 
     if (deleteError) {
-      console.error('Error deleting file record:', deleteError);
+      log.error('Error deleting file record', deleteError as Error);
       return { success: false, error: deleteError.message };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error in deleteDocumentRequestFile:', error);
+  } catch (err: unknown) {
+    log.error('Error in deleteDocumentRequestFile', err as Error);
     return { success: false, error: 'Failed to delete file' };
   }
 }
@@ -344,13 +345,13 @@ export async function getDocumentRequest(requestId: string): Promise<{
       .single();
 
     if (error) {
-      console.error('Error fetching document request:', error);
+      log.error('Error fetching document request', error as Error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data };
-  } catch (error) {
-    console.error('Error in getDocumentRequest:', error);
+  } catch (err: unknown) {
+    log.error('Error in getDocumentRequest', err as Error);
     return { success: false, error: 'Failed to fetch document request' };
   }
 }

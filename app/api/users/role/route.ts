@@ -4,7 +4,12 @@ import { cookies } from 'next/headers';
 import { log } from '@/lib/logger';
 export async function POST(request: Request) {
   try {
-    const { userId, role } = await request.json();
+    const body = (await request.json()) as { userId?: string; role?: string };
+    const { userId, role } = body;
+    if (!userId || !role) {
+      return NextResponse.json({ error: 'Missing userId or role' }, { status: 400 });
+    }
+
     const supabase = createRouteHandlerClient({ cookies });
 
     // Update user role
@@ -16,11 +21,9 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    log.error('Error updating user role:', error as Error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to update user role' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error('Error updating user role:', { message, error: err });
+    return NextResponse.json({ error: message || 'Failed to update user role' }, { status: 500 });
   }
-} 
+}
