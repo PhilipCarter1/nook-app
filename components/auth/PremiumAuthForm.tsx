@@ -136,15 +136,24 @@ export default function PremiumAuthForm() {
   };
 
   const isSigninFormValid = () => {
-    return signinData.email.trim() !== '' && 
-           signinData.password.trim() !== '' &&
-           validation.email.isValid && 
-           validation.password.isValid;
+      // For sign-in we only require a valid email format and a non-empty password
+      return signinData.email.trim() !== '' &&
+        signinData.password.trim() !== '' &&
+        validation.email.isValid;
   };
 
   const isSignupFormValid = () => {
-    return Object.values(signupData).every(v => v.trim() !== '') &&
-           Object.values(validation).every(v => v.isValid);
+    // Allow submission if all fields are not empty and all validations pass
+    return signupData.firstName.trim() !== '' &&
+           signupData.lastName.trim() !== '' &&
+           signupData.email.trim() !== '' &&
+           signupData.password.trim() !== '' &&
+           signupData.confirmPassword.trim() !== '' &&
+           validation.firstName.isValid &&
+           validation.lastName.isValid &&
+           validation.email.isValid &&
+           validation.password.isValid &&
+           validation.confirmPassword.isValid;
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -362,11 +371,18 @@ export default function PremiumAuthForm() {
                         id="signin-email"
                         type="email"
                         value={signinData.email}
-                        onChange={(e) => setSigninData(prev => ({ ...prev, email: e.target.value }))}
-                        className="pl-10"
+                        onChange={(e) => {
+                          setSigninData(prev => ({ ...prev, email: e.target.value }));
+                          updateValidation('email', e.target.value);
+                        }}
+                        onBlur={() => setHasInteracted(prev => ({ ...prev, email: true }))}
+                        className={`pl-10 ${hasInteracted.email && !validation.email.isValid ? 'border-red-500' : ''}`}
                         placeholder="Enter your email"
                         required
                       />
+                      {hasInteracted.email && !validation.email.isValid && (
+                        <p className="text-red-500 text-xs mt-1">{validation.email.message}</p>
+                      )}
                     </div>
                   </div>
 
@@ -378,11 +394,18 @@ export default function PremiumAuthForm() {
                         id="signin-password"
                         type={showPassword ? 'text' : 'password'}
                         value={signinData.password}
-                        onChange={(e) => setSigninData(prev => ({ ...prev, password: e.target.value }))}
-                        className="pl-10 pr-10"
+                        onChange={(e) => {
+                          setSigninData(prev => ({ ...prev, password: e.target.value }));
+                          updateValidation('password', e.target.value);
+                        }}
+                        onBlur={() => setHasInteracted(prev => ({ ...prev, password: true }))}
+                        className={`pl-10 pr-10 ${hasInteracted.password && !validation.password.isValid ? 'border-red-500' : ''}`}
                         placeholder="Enter your password"
                         required
                       />
+                      {hasInteracted.password && !validation.password.isValid && (
+                        <p className="text-red-500 text-xs mt-1">{validation.password.message}</p>
+                      )}
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
