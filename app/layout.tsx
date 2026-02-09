@@ -5,6 +5,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { validateEnvironmentVariables } from '@/lib/env';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,6 +34,13 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+            <Toaster
+              position="top-right"
+              theme="system"
+              richColors
+              closeButton
+              expand
+            />
           </AuthProvider>
         </ThemeProvider>
       </body>

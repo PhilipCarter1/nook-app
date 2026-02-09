@@ -27,18 +27,21 @@ export async function POST(request: NextRequest) {
 
     log.info('Creating user profile', { id, email, first_name, last_name, role });
 
-    // Create user profile in the users table
+    // Upsert user profile: update if exists (from trigger), insert if not
     const { data, error } = await supabaseAdmin
       .from('users')
-      .insert([
-        {
-          id,
-          email,
-          first_name,
-          last_name,
-          role: role || 'tenant',
-        },
-      ])
+      .upsert(
+        [
+          {
+            id,
+            email,
+            first_name,
+            last_name,
+            role: role || 'tenant',
+          },
+        ],
+        { onConflict: 'id' }
+      )
       .select();
 
     if (error) {

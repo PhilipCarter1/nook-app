@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/lib/hooks/use-toast';
+import { toast } from 'sonner';
 import { Upload, File, X } from 'lucide-react';
 
 interface DocumentUploadProps {
@@ -33,7 +33,6 @@ export function DocumentUpload({ onUpload, onCancel }: DocumentUploadProps) {
     description: '',
   });
   const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -49,29 +48,22 @@ export function DocumentUpload({ onUpload, onCancel }: DocumentUploadProps) {
     event.preventDefault();
     
     if (!file || !metadata.type || !metadata.name) {
-      toast({
-        title: 'Error',
-        description: 'Please fill in all required fields and select a file.',
-        variant: 'destructive',
-      });
+      toast.error('Please fill in all required fields and select a file.');
       return;
     }
 
     setIsUploading(true);
+    const loadingToast = toast.loading('Uploading document...');
+    
     try {
       await onUpload(file, metadata);
-      toast({
-        title: 'Success',
-        description: 'Document uploaded successfully.',
-      });
+      toast.dismiss(loadingToast);
+      toast.success('Document uploaded successfully.');
       setFile(null);
       setMetadata({ type: '', name: '', description: '' });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to upload document. Please try again.',
-        variant: 'destructive',
-      });
+      toast.dismiss(loadingToast);
+      toast.error('Failed to upload document. Please try again.');
     } finally {
       setIsUploading(false);
     }
